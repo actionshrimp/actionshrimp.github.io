@@ -1,4 +1,5 @@
 $header-height: 72px;
+$subtitle-gap: 15px;
 
 #header{
 	height: $header-height;
@@ -17,17 +18,29 @@ $header-height: 72px;
 			color: $color-main;
 		}
 	}
-	h1{
+	#logo{
 		float: left;
-		padding-left: 100px;
-		height: 74px;
-		background-image: url('../images/shrimp.png');
-		background-repeat: no-repeat;
+		padding-right: 2em;
+	}
+	#title-block {
+		float:left;
+		height: $header-height;
+	}
+	#title {
+		position: relative;
+		top: -$subtitle-gap;
 		font-weight: 300;
 		font-size: 30px;
 		@media screen and (max-width: 1040px){
 			float: none;
 		}
+		z-index: 1;
+	}
+	#subtitle {
+		font-family: $font-serif;
+		position: relative;
+		top: -$header-height + $subtitle-gap;
+		z-index: 0;
 	}
 }
 #main-nav{
