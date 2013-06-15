@@ -34,3 +34,7 @@ THE SOFTWARE IS PROVIDED ‘AS IS’, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR I
 #### If you want to be awesome.
 - Proudly display the 'Powered by Octopress' credit in the footer.
 - Add your site to the Wiki so we can watch the community grow.
+
+#### Dave's Notes
+- On OSX use `bundle exec guard start -i` to start livereload, as `bundle exec guard` doesn't allow browsers to connect for some reason.
+- Start the preview server with `bundle exec rake preview`
