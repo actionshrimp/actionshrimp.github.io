@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[actionshrimp.com]]></title>
+  <link href="http://actionshrimp.github.com/atom.xml" rel="self"/>
+  <link href="http://actionshrimp.github.com/"/>
+  <updated>2013-06-17T16:28:03+01:00</updated>
+  <id>http://actionshrimp.github.com/</id>
+  <author>
+    <name><![CDATA[Dave Aitken]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+</feed>
