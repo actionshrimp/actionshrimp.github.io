@@ -18,22 +18,23 @@ $subtitle-offset: 4px;
 			color: $color-main;
 		}
 	}
-	#logo{
-		float: left;
-		padding-right: 2em;
-	}
 	#title-block {
 		float:left;
+		width: 325px;
 		height: $header-height;
 		@media screen and (max-width: 900px){
 			float: none;
 		}
 	}
+	#logo{
+		float: left;
+		padding-right: 2em;
+	}
 	#title {
+		float: left;
 		position: relative;
 		top: -$subtitle-gap + $subtitle-offset;
 		font-weight: 300;
-		z-index: 1;
 		a{
 			font-family: $font-decorative;
 			color: $color-blue;
@@ -45,10 +46,10 @@ $subtitle-offset: 4px;
 		}
 	}
 	#subtitle {
-		font-family: $font-serif;
+		float: left;
 		position: relative;
 		top: -$header-height + $subtitle-gap + $subtitle-offset;
-		z-index: 0;
+		font-family: $font-serif;
 	}
 }
 #main-nav{
