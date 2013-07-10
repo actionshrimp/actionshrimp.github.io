@@ -1,7 +1,7 @@
 ---
 layout: post
 title: "Installing awesome Window Manager on Ubuntu Intrepid"
-date: 2013-06-23 16:59
+date: 2009-02-02 16:59
 comments: true
 categories: ubuntu
 ---
