@@ -6,7 +6,7 @@ $subtitle-offset: 4px;
 	height: $header-height;
 	padding: 30px 0;
 	border-bottom: 1px solid $color-gray04;
-	@media screen and (max-width: 980px){
+	@media screen and (max-width: 1024px){
 		height: auto;
 		position: relative;
 		padding-bottom: 10px;
@@ -19,9 +19,9 @@ $subtitle-offset: 4px;
 	}
 	#letterhead{
 		float:left;
-		width: 350px;
+		width: 360px;
 		height: $header-height;
-		@media screen and (max-width: 980px){
+		@media screen and (max-width: 1024px){
 			float: none;
 		}
 	}
@@ -32,9 +32,9 @@ $subtitle-offset: 4px;
 	#titles{
 		float: left;
 		#title {
+			margin-top: -3px;
 			float: none;
 			font-weight: 300;
-			margin-top: -5px;
 			a{
 				font-family: $font-decorative;
 				color: $color-blue;
@@ -47,19 +47,20 @@ $subtitle-offset: 4px;
 		}
 		#subtitle {
 			float: none;
-			font-family: $font-serif;
 			font-size: 100%;
 			text-shadow: none;
 			color: $color-gray01;
-			margin-top: -5px;
+			font-style: italic;
 		}
 	}
 }
 #main-nav{
 	float: left;
-	margin-left: 20px;
+	font-family: $font-serif;
+	font-size: 1.2em;
 	line-height: $header-height;
-	@media screen and (max-width: 980px){
+	margin-left: 70px;
+	@media screen and (max-width: 1024px){
 		float: none;
 		margin-top: 15px;
 		line-height: 30px;
@@ -69,7 +70,7 @@ $subtitle-offset: 4px;
 		@media screen and (max-width: 600px){
 			display: none;
 		}
-		//@media screen and (max-width: 980px){
+		//@media screen and (max-width: 1024px){
 		//	&:before{
 		//		content: "\f101";
 		//		color: $color-gray04;
@@ -79,9 +80,9 @@ $subtitle-offset: 4px;
 		//}
 		>li{
 			text-shadow: 0px 0px 1px #aaa;
-			margin-left: 50px;
+			margin-right: 50px;
 			@include inline-block;
-			@media screen and (max-width: 980px){
+			@media screen and (max-width: 1024px){
 				margin-left: 0;
 				margin-right: 50px;
 				&:last-of-type{
@@ -107,7 +108,7 @@ $subtitle-offset: 4px;
 						content: "";
 					}
 				}
-				@media screen and (max-width: 980px){
+				@media screen and (max-width: 1024px){
 					padding: 18px 0;
 				}
 				color: $color-gray01;
@@ -123,7 +124,7 @@ $subtitle-offset: 4px;
 			border: 1px solid $color-gray03;
 			list-style: none;
 			display: none;
-			@media screen and (max-width: 980px){
+			@media screen and (max-width: 1024px){
 				top: 40px;
 			}
 			@include box-shadow(0 4px 8px rgba(0,0,0,0.1));
@@ -301,7 +302,7 @@ $subtitle-offset: 4px;
 }
 #sub-nav{
 	line-height: $header-height;
-	@media screen and (max-width: 980px){
+	@media screen and (max-width: 1024px){
 		position: absolute;
 		top: 30px;
 		right: 0;
@@ -313,7 +314,7 @@ $subtitle-offset: 4px;
 		float: left;
 		margin-top: 22px;
 		position: relative;
-		@media screen and (max-width: 980px){
+		@media screen and (max-width: 1024px){
 			float: none;
 			margin-top: 15px;
 		}
@@ -346,7 +347,7 @@ $subtitle-offset: 4px;
 	.social{
 		float: left;
 		margin-right: 15px;
-		@media screen and (max-width: 980px){
+		@media screen and (max-width: 1024px){
 			float: none;
 			margin-right: 0;
 			a:last-of-type{
