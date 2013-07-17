@@ -10,15 +10,14 @@ body{
 	font-size: 14px;
 	background: $color-background;
 	color: $color-gray01;
-	@media screen and (max-width: 1040px){
+	@media screen and (max-width: 1024px){
 		margin: 0 20px;
 	}
 	@media screen and (max-width: 600px){
-		font-size: 13px;
+		font-size: 12px;
 	}
 }
 h1, h1 a{
-	font-size: 1.63em;
 	font-family: $font-serif;
 }
 h2, h2 a{
@@ -42,7 +41,7 @@ a{
 .inner{
 	width: $max-width;
 	margin: 0 auto;
-	@media screen and (max-width: 1040px){
+	@media screen and (max-width: 1024px){
 		width: 100%;
 	}
 }
