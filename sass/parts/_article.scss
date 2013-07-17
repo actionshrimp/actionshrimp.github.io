@@ -67,6 +67,8 @@ article{
 			}
 		}
 		img, video{
+			float: left;
+			margin-right: 1em;
 			max-width: 100%;
 			height: auto;
 		}
