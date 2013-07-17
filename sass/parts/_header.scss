@@ -31,11 +31,11 @@ $subtitle-offset: 4px;
 	}
 	#titles{
 		float: left;
-		font-size: 130%;
 		#title {
 			float: none;
 			font-weight: 300;
 			a{
+				font-size: 130%;
 				font-family: $font-decorative;
 				color: $color-blue;
 				text-shadow: -1px -1px 0px #557,
