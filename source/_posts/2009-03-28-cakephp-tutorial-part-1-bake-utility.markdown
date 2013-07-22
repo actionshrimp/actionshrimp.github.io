@@ -68,11 +68,11 @@ and you'll be presented with:
     [P]roject
     [Q]uit
     What would you like to Bake? (D/M/V/C/P/Q)
-    &gt; 
+    > 
 
 at this point, if you haven't setup your database configuration yet, you can create it with the "[D]atabase Configuration" option. We'll be choosing the "[M]odel" option however: 
 
-    &gt; m
+    > m
     ---------------------------------------------------------------
     Bake Model
     Path: /home/dave/public_html/kingjon/app/models/
@@ -85,13 +85,13 @@ at this point, if you haven't setup your database configuration yet, you can cre
     5. Work
 
     Enter a number from the list above, type in the name of another model, or 'q' to exit
-    [q] &gt;
+    [q] >
 
 notice our database tables have been read, and cake has automatically figured out that an entry in "works" will be a "Work", "sketches" give a "Sketch" and so on, but "news" is still "News".  We may as well start with the first entry, so enter 1, and hit enter. You'll be asked the following: 
 
-    [q] &gt; 1
+    [q] > 1
     Would you like to supply validation criteria for the fields in your model? (y/n)
-    [y] &gt;
+    [y] >
 
 Cake has a set of predefined validation criteria to make sure that data entered for a model is correct. We may as well take advantage of these, so hit "y" and press return. Next Cake goes through each of the fields in our table, and asks what validation criteria we want for each. 
 
@@ -103,19 +103,19 @@ Cake has a set of predefined validation criteria to make sure that data entered 
     Name:       Friend
     Validation: Array
     (
-        [id] =&gt; blank
-        [url] =&gt; url
+        [id] => blank
+        [url] => url
     )
     
     Associations:
     ---------------------------------------------------------------
     Look okay? (y/n)
-    [y] &gt;
+    [y] >
 
 Confirm this and there's a final question about SimpleTest and unit test files. This is to do with Cake's testing framework which I personally haven't tried, so just hit "n" here unless you feel like giving it a spin.  Congratulations, you've successfully baked your first model! Continue the process now, and bake the other models with appropriate validation criteria (I used "blank" for all the IDs, "date" for the date fields, and no validation for all the title/description fields - although for the users table, I chose "notEmpty" for the username, password and displayname fields as blank entries here would cause problems). Next up, time to bake some controllers. I'll show you the output from my run through first including the options I chose, and explain to you afterwards what some of them mean and why I chose them: 
 
     What would you like to Bake? (D/M/V/C/P/Q)
-    &gt; c
+    > c
     ---------------------------------------------------------------
     Bake Controller
     Path: /home/dave/public_html/kingjon/app/controllers/
@@ -127,29 +127,29 @@ Confirm this and there's a final question about SimpleTest and unit test files. 
     4. Users
     5. Works
     Enter a number from the list above, type in the name of another controller, or 'q' to exit
-    [q] &gt; 1
+    [q] > 1
     ---------------------------------------------------------------
     Baking FriendsController
     ---------------------------------------------------------------
     Would you like to build your controller interactively? (y/n)
-    [y] &gt; y
+    [y] > y
     Would you like to use scaffolding? (y/n)
-    [n] &gt; n
+    [n] > n
     Would you like to include some basic class methods (index(), add(), view(), edit())? (y/n)
-    [n] &gt; y
+    [n] > y
     Would you like to create the methods for admin routing? (y/n)
-    [n] &gt; y
+    [n] > y
     Would you like this controller to use other helpers besides HtmlHelper and FormHelper? (y/n)
-    [n] &gt; n
+    [n] > n
     Would you like this controller to use any components? (y/n)
-    [n] &gt; n
+    [n] > n
     Would you like to use Sessions? (y/n)
-    [y] &gt; y
+    [y] > y
     You need to enable Configure::write('Routing.admin','admin') in /app/config/core.php to use admin routing.
     What would you like the admin route to be?
     Example: www.example.com/admin/controller
     What would you like the admin route to be?
-    [admin] &gt; 
+    [admin] > 
     
     ---------------------------------------------------------------
     The following controller will be created:
@@ -157,12 +157,12 @@ Confirm this and there's a final question about SimpleTest and unit test files. 
     Controller Name:  Friends
     ---------------------------------------------------------------
     Look okay? (y/n)
-    [y] &gt;
+    [y] >
     
     Creating file /home/dave/public_html/kingjon/app/controllers/friends_controller.php
     Wrote /home/dave/public_html/kingjon/app/controllers/friends_controller.php
     SimpleTest is not installed.  Do you want to bake unit test files anyway? (y/n)
-    [y] &gt; n
+    [y] > n
 
 Ok, I started by building the controller for the friends section again. Building interactively gives you access to more options in the setup, so I went for that.
 
@@ -170,7 +170,7 @@ Ok, I started by building the controller for the friends section again. Building
 
     Would you like to create some scaffolded views (index, add, view, edit) for this controller?
     NOTE: Before doing so, you'll need to create your controller and model classes (including associated models). (y/n)
-    [n] &gt; y
+    [n] > y
 
 Before we wanted nothing to do with scaffolding, but here we hit "y": this generates the views for the basic class methods we agreed to in the controller generation. We're then asked about admin routing views, and we press "y" again, and the script tells us it's generated the files we need. Repeat this process for the other views, and then we're done with baking. 
 
