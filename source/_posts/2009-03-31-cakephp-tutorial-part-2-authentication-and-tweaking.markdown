@@ -7,11 +7,13 @@ categories: CakePHP
 ---
 [<img class="alignleft size-full wp-image-252" src="http://www.actionshrimp.com/wordpress/wp-content/uploads/2009/03/cake-logo1.png" width="180" height="180" />][1]In the [first part of my CakePHP tutorial][2], I showed you how to use Cake's Bake utility to set up the basic back end of an online illustration portfolio. In this part, I'll tweak the automatically generated code into useable website and admin section and show you how to use some of Cake's features along the way, including the Authentication component. 
 
+If you followed the first part of the tutorial, we currently have a few sections that we've generated models, controllers and views for. By navigating to your\_app/controllername/action in your browser, you can access the different functions of the application. But unless your users know this in advance, they have no way of accessing them. 
+
 <!--more-->
 
 # Joining the sections together 
 
-If you followed the first part of the tutorial, we currently have a few sections that we've generated models, controllers and views for. By navigating to your\_app/controllername/action in your browser, you can access the different functions of the application. But unless your users know this in advance, they have no way of accessing them. The easiest way of implementing navigation common to all pages is to use Cake's built in templating system, the page "layout". Cake uses its built-in layout if it finds no user defined layout default available. To add one, create the file your\_app_dir/app/views/layouts/default.ctp, and put in your basic page layout. Mine looked like this: 
+The easiest way of implementing navigation common to all pages is to use Cake's built in templating system, the page "layout". Cake uses its built-in layout if it finds no user defined layout default available. To add one, create the file your\_app_dir/app/views/layouts/default.ctp, and put in your basic page layout. Mine looked like this: 
 
     <html xmlns="http://www.w3.org/1999/xhtml">
         <head>
