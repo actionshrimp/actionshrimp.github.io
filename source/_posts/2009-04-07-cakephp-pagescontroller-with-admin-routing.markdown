@@ -9,6 +9,8 @@ categories: CakePHP
 
 For small Cake websites with admin routing enabled, I like to use the Auth component to require a login for all admin routes, and allow access to everything else using the following beforeFilter in the AppController superclass:
 
+``` php
+    <?
     function beforeFilter(){
         $admin = Configure::read('Routing.admin'); 
         if (isset($this->params[$admin]) and $this->params[$admin]){
@@ -17,6 +19,8 @@ For small Cake websites with admin routing enabled, I like to use the Auth compo
             $this->Auth->allow();
         }
     }
+    ?>
+```
 
 The problem with this however is static pages handled by the pages controller cannot be password protected. To resolve this problem, I had to overload the PagesController class that Cake comes with, and add in the required functionality. Part of the reason for doing this for me was to allow a setup where there was a password protected admin welcome page or control panel located at my\_app\_URL/admin, so I'll show you the necessary routing to achieve that too. 
 
@@ -28,15 +32,24 @@ First of all, copy your\_app\_dir/cake/libs/controller/pages\_controller.php int
 
 Open up app/config/routes.php, and underneath the line
 
+``` php
+    <?
     Router::connect('/pages/*', array('controller' => 'pages', 'action' => 'display'));
-    
+    ?>
+```
 
 add in the following route:
 
+``` php
+    <?
     Router::connect('/admin/pages/*', array('controller' => 'pages', 'action' => 'display', 'admin' => true));
+    ?>
+```
 
 Now, when admin routing is enabled, Cake looks for controller actions appened with "admin_", so we'd better add in the function to handle this in PagesController. Open it up, and underneath the display function, add the following:
 
+``` php
+    <?
     function admin_display() {
         $path = func_get_args(); 
         $temp = null;
@@ -71,15 +84,23 @@ Now, when admin routing is enabled, Cake looks for controller actions appened wi
         $this->set(compact('page', 'subpage', 'title'));
         $this->render(join('/', $path));
     }
+    ?>
+```
 
 As you can see it's fairly similar to the display function, with a few extra lines added in that handle admin pages. There are a few subtleties here which I will explain in a second. Before that however, we also require a slight change to the existing, non-admin display function. Look for the if statement below:
 
+``` php
+    <?
     if (!empty($path[0])) {
         $page = $path[0];
     }
+    ?>
+```
 
 and change it to:
 
+``` php
+    <?
     if (!empty($path[0])) {
         $page = $path[0];
         if ($page == 'admin') {
@@ -87,6 +108,8 @@ and change it to:
             $this->redirect(array_merge(array('controller' => 'pages', 'action' => 'display', 'admin' => true), $path));
         }
     }
+    ?>
+```
 
 Ok so what have we done?
 
@@ -96,6 +119,10 @@ Ok so what have we done?
 
 So now this is all in place, everything should work correctly. Requests to /pages/admin/x and /admin/pages/admin/x both get sent to /admin/pages/x, and these require proper authentication. The final step is to add in a route that allows my original use for this whole setup to work properly - displaying an admin homepage or control panel that requires authentication when a user visits your\_app\_URL/admin, i.e. without referring to any controllers or actions. First, create a page in your\_app\_dir/app/views/pages/admin/, called home.ctp that contains the content you want. You can now access this from your\_app\_URL/admin/pages/home, but the shorter URL works after adding the route:
 
+``` php
+    <?
     Router::connect('/admin', array('controller' => 'pages', 'action' => 'display', 'admin' => true, 'home'));
+    ?>
+```
 
 Hooray! We now have an admin homepage. Hope everything worked for you, hit me with a comment if you have an issues and I'll try and help out.
