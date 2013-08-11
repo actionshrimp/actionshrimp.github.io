@@ -124,5 +124,5 @@ Now Skype will launch with your faked video stream, just from the command gstfak
 
  [1]: http://mxhaard.free.fr/download.html
  [2]: http://forums.quickcamteam.net/showthread.php?tid=310
- [3]: http://www.actionshrimp.com/wordpress/wp-content/uploads/2009/01/gspcapatch.gz
+ [3]: /files/gspcapatch.gz
  [4]: http://code.google.com/p/gstfakevideo

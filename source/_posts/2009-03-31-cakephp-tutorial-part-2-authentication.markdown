@@ -5,7 +5,7 @@ date: 2009-03-31 08:02
 comments: true
 categories: CakePHP
 ---
-[<img class="alignleft size-full wp-image-252" src="http://www.actionshrimp.com/wordpress/wp-content/uploads/2009/03/cake-logo1.png" width="180" height="180" />][1]In the [first part of my CakePHP tutorial][2], I showed you how to use Cake's Bake utility to set up the basic back end of an online illustration portfolio. In this part, I'll tweak the automatically generated code into useable website and admin section and show you how to use some of Cake's features along the way, including the Authentication component. 
+<img class="alignleft size-full wp-image-252" src="/images/cake-logo1.png" width="180" height="180" /> In the [first part of my CakePHP tutorial][2], I showed you how to use Cake's Bake utility to set up the basic back end of an online illustration portfolio. In this part, I'll tweak the automatically generated code into useable website and admin section and show you how to use some of Cake's features along the way, including the Authentication component. 
 
 If you followed the first part of the tutorial, we currently have a few sections that we've generated models, controllers and views for. By navigating to your\_app/controllername/action in your browser, you can access the different functions of the application. But unless your users know this in advance, they have no way of accessing them. 
 
@@ -84,7 +84,7 @@ A couple of things to note here. The first line `$this->layout = "splash"`, tell
 
 # Admin section authentication
 
-[<img class="alignleft size-medium wp-image-251" src="http://www.actionshrimp.com/wordpress/wp-content/uploads/2009/03/authentic-screen-300x187.png" width="300" height="187" />][4] At the minute, all our sections are wide open for anyone to just stroll in and start adding news, posting works, and generally delete or edit existing pieces of data. This clearly isn't ideal, so next on the agenda is sorting this out. We'll use the [authentication component][5] for this. First of all, we want all add/edit capabilities to be kept within the admin section, so the first step is to remove the non-admin versions of these. Go through all five of the your\_app\_dir/app/controllers/\*\_controller.php, and delete the functions "add" and "edit" that were automatically generated. 
+[<img class="alignleft size-medium wp-image-251" src="/images/authentic-screen-300x187.png" width="300" height="187" />][4] At the minute, all our sections are wide open for anyone to just stroll in and start adding news, posting works, and generally delete or edit existing pieces of data. This clearly isn't ideal, so next on the agenda is sorting this out. We'll use the [authentication component][5] for this. First of all, we want all add/edit capabilities to be kept within the admin section, so the first step is to remove the non-admin versions of these. Go through all five of the your\_app\_dir/app/controllers/\*\_controller.php, and delete the functions "add" and "edit" that were automatically generated. 
 
 Next, clean up the views associated with these functions - delete the two files your\_app\_dir/app/views/\*/add.ctp and edit.ctp in all five of the view directories. This means now we can only add and edit our data by navigating to your\_app/**admin**/controller/add etc. We're going to want to use authentication for all our controllers, as all of them have an admin section that we need to login for. Instead of telling each controller to use this component individually, we can tell the whole controller superclass that we want to use it, to save repetition. Open the file your\_app\_dir/app/app_controller.php and add the line in the class definition like so: 
 
@@ -148,9 +148,8 @@ This gives access to the admin add and index (which lists all users) actions of 
 
 Now we should be able to navigate the site without any problems. The commented out line above allows the future addition of an admin.ctp layout file that will automatically be loaded when viewing admin sections - I haven't done this yet though. The next phase of the project is to go through and edit all the views, layouts & CSS and get them looking how you want, and this is largely an exercise in usual web development - you can take a look at the default views to see how to include data provided by Cake fairly easily. If I come across anything else I think might be of help while I'm building the rest of the site, I'll make small posts for those too. Hopefully you've been able to follow this introduction to Cake so far, but if not drop me a line in the comments below and I'll try and give you a hand where I can. Good luck!
 
- [1]: http://www.actionshrimp.com/wordpress/wp-content/uploads/2009/03/cake-logo1.png
  [2]: http://www.actionshrimp.com/2009/03/cakephp-tutorial-part-1-bake-utility/
  [3]: http://book.cakephp.org/view/206/Inserting-Well-Formatted-elements
- [4]: http://www.actionshrimp.com/wordpress/wp-content/uploads/2009/03/authentic-screen.png
+ [4]: /images/authentic-screen.png
  [5]: http://book.cakephp.org/view/172/Authentication
  [6]: http://book.cakephp.org/view/60/Callbacks

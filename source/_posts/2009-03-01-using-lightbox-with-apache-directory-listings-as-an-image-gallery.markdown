@@ -9,7 +9,7 @@ author: "Matt Bray"
 
 _This is a guest post from my friend [Matt Bray][1]_
 
-<img src="http://www.actionshrimp.com/wordpress/wp-content/uploads/2009/03/lightbox-300x184.jpg" width="300" height="184" /> As you may know, if it can't find an `index.html` the apache web server will show a list of files in the current directory. I was browsing through lists of images on my file server the other day and I thought, wouldn't it be nice to have a next button? So I started digging around. 
+<img src="/images/lightbox-300x184.jpg" width="300" height="184" /> As you may know, if it can't find an `index.html` the apache web server will show a list of files in the current directory. I was browsing through lists of images on my file server the other day and I thought, wouldn't it be nice to have a next button? So I started digging around. 
 
 In the end I used a wonderful little script called [Lightbox 2][2] and a bit of JavaScript [Prototype][3] magic to produce [this][4] (try clicking on the image files). The directory listings are provided by an apache module going by the name of `mod_autoindex`. This module allows you to insert a custom header and footer through the directives `HeaderName` and `ReadmeName`. The plan is to insert some HTML that includes the Lightbox code and tags all the links to images with the `rel=lightbox` attribute that Lightbox uses to function. 
 
@@ -75,4 +75,4 @@ You can download the files mentioned above [here][6].
  [3]: http://prototypejs.org
  [4]: http://bf.mattjbray.com/lightbox_images
  [5]: http://www.lokeshdhakar.com/projects/lightbox2/#download
- [6]: http://www.actionshrimp.com/wordpress/wp-content/uploads/2009/03/lightbox1.zip
+ [6]: /files/lightbox1.zip

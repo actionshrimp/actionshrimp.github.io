@@ -8,7 +8,7 @@ categories: android java MapView
 
 *Update May 2012*: There have been lots of requests in the comments for the source. Sorry for the delay on this one - I finally put the whole app that I'd been working on up on github. [The part from this tutorial specifically is here if you want to take a look][1].
 
-[<img class="alignleft size-medium wp-image-362" title="bubble-screen-cropped" src="http://www.actionshrimp.com/wordpress/wp-content/uploads/2011/05/bubble-screen-cropped-293x300.png" alt="" width="293" height="300" />][2] I've recently been playing around with Android, and have been building a small app that uses MapView to display various locations on the map. I succeeded in drawing markers on the MapView using [ItemizedOverlay][3], but was having a fair bit of difficulty drawing little bubble popups that appeared when you tapped on the OverlayItems (which unfortunately isn't available in the API as a 'standard' feature).
+[<img class="alignleft size-medium wp-image-362" title="bubble-screen-cropped" src="/images/bubble-screen-cropped-293x300.png" alt="" width="293" height="300" />][2] I've recently been playing around with Android, and have been building a small app that uses MapView to display various locations on the map. I succeeded in drawing markers on the MapView using [ItemizedOverlay][3], but was having a fair bit of difficulty drawing little bubble popups that appeared when you tapped on the OverlayItems (which unfortunately isn't available in the API as a 'standard' feature).
 
 My main problem was I wanted to be able to draw a full View on top of the map at the right location. I had a good old search on Google for a while, and couldn't seem to find any easy way to do this, so I thought I'd write up how I ended up with the bubble in the screenshot. (Now I know how it's done however, the Google results seem a lot more knowledgeable on the subject - I was probably searching for the wrong things :-( ).
 
@@ -94,7 +94,7 @@ This next part is the important bit, and actually positions the bubble on the Ma
 That's it! It's a fairly quick example but feel free to let me know in the comments if you want any more detail.
 
  [1]: https://github.com/actionshrimp/lastorders/blob/master/lastorders-android/src/com/actionshrimp/android/lastorders/SearchMapResultsDisplayer.java
- [2]: http://www.actionshrimp.com/wordpress/wp-content/uploads/2011/05/bubble-screen-cropped.png
+ [2]: /images/bubble-screen-cropped.png
  [3]: http://code.google.com/android/add-ons/google-apis/reference/com/google/android/maps/ItemizedOverlay.html
  [4]: http://developer.android.com/reference/android/app/Dialog.html
  [5]: http://developer.android.com/reference/android/app/Dialog.html#setContentView(int)

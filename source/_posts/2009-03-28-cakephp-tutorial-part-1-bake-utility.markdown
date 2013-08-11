@@ -6,7 +6,7 @@ comments: true
 categories: CakePHP
 ---
 
-<img class="alignleft size-full wp-image-130" src="http://www.actionshrimp.com/wordpress/wp-content/uploads/2009/03/cake-logo.png" width="180" height="180" />A friend of mine recently asked me to help him build an online portfolio for his illustration pieces, and I decided to use <a href="http://cakephp.org/" target="_blank">CakePHP 1.2</a> to get the back end up and running quickly. I thought someone might find a tutorial taking a simple website through from start to finish useful, so this tutorial series will do just that. This part of the series takes you through the first few steps I took to get the basic code together.  You'll need a web server and database server such as MySQL, and some basic PHP and webserver management knowledge. We'll be using Cake's "bake" utility to create the basic code as well, so you'll need console access to your webserver, and PHP's command line utility (in Ubuntu/PHP5 you can just install the package php5-cli). 
+<img class="alignleft size-full wp-image-130" src="/images/cake-logo.png" width="180" height="180" />A friend of mine recently asked me to help him build an online portfolio for his illustration pieces, and I decided to use <a href="http://cakephp.org/" target="_blank">CakePHP 1.2</a> to get the back end up and running quickly. I thought someone might find a tutorial taking a simple website through from start to finish useful, so this tutorial series will do just that. This part of the series takes you through the first few steps I took to get the basic code together.  You'll need a web server and database server such as MySQL, and some basic PHP and webserver management knowledge. We'll be using Cake's "bake" utility to create the basic code as well, so you'll need console access to your webserver, and PHP's command line utility (in Ubuntu/PHP5 you can just install the package php5-cli). 
 
 <!--more-->
 
@@ -32,7 +32,7 @@ Cake's bake utility is a handy way of generating the basic code structure for a 
 
 Next up, a sketches model. This is pretty much the same as "works" but will contain sketches as opposed to finished pieces. Create a table called "sketches" with the same four fields as above. 
 
-[<img class="alignright size-medium wp-image-153" src="http://www.actionshrimp.com/wordpress/wp-content/uploads/2009/03/screenshot-1-300x187.png" width="300" height="187" />][4] 
+[<img class="alignright size-medium wp-image-153" src="/images/screenshot-1-300x187.png" width="300" height="187" />][4] 
 
 A friends model for a page that will contain links to websites belonging to friends of the owner, along with a thumbnail and description. Create the table "friends", with the fields: 
 
@@ -52,7 +52,7 @@ There is one last model we'll need: "users". By creating a table with a username
 
 and you'll be presented with: 
 
-<a href="http://www.actionshrimp.com/wordpress/wp-content/uploads/2009/03/screenshot-2.png"><img class="alignright size-medium wp-image-154" src="http://www.actionshrimp.com/wordpress/wp-content/uploads/2009/03/screenshot-2-300x187.png" width="300" height="187" /></a>
+<a href="/images/screenshot-2.png"><img class="alignright size-medium wp-image-154" src="/images/screenshot-2-300x187.png" width="300" height="187" /></a>
 
     Welcome to CakePHP v1.2.2.8120 Console
     ---------------------------------------------------------------
@@ -176,14 +176,14 @@ Before we wanted nothing to do with scaffolding, but here we hit "y": this gener
 
 # Let's see what we've done so far...
 
-[<img class="alignleft size-medium wp-image-143" src="http://www.actionshrimp.com/wordpress/wp-content/uploads/2009/03/screenshot-300x187.png" width="300" height="187" />][8] Now what exactly has all that baking achieved? If you go to the index page of your app directory in the web browser, you'll just be greeted with the same welcome page. But try navigating to your\_app\_folder/news or your\_app\_folder/works and a new page comes up. You can give adding a piece of a news a go with the "New News" link on the news page. A form pops up letting you fill in the date, title and post body, and you'll notice the entry form lets you fill in the date correctly and so on.  We aren't prompted to enter an ID because our validation criteria said we wanted this to be blank as it would be generated automatically. Once the post has been added, an entry comes up on the main page, letting us view the individual post, edit it or delete it. In fact, if you've been keeping an eye on the URLs, you'll have noticed that they take the form your\_app\_folder/controller/action. The actions were generated automatically by our baking process, and we'll take a look at them in a bit more detail later on. You'll notice you can also go to your\_app\_folder/admin/news to get the same page - this is our admin routing. At the minute there is no difference between the two sections, but we'll edit it so that you wont be able to add/edit/delete thing unless you're in the admin section, and logged in correctly. As you can see, baking has set up all the basic logic for our various sections, we just need to tweak it and glue it together a bit, and I'll deal with that in the [next part of the tutorial][9].
+[<img class="alignleft size-medium wp-image-143" src="/images/screenshot-300x187.png" width="300" height="187" />][8] Now what exactly has all that baking achieved? If you go to the index page of your app directory in the web browser, you'll just be greeted with the same welcome page. But try navigating to your\_app\_folder/news or your\_app\_folder/works and a new page comes up. You can give adding a piece of a news a go with the "New News" link on the news page. A form pops up letting you fill in the date, title and post body, and you'll notice the entry form lets you fill in the date correctly and so on.  We aren't prompted to enter an ID because our validation criteria said we wanted this to be blank as it would be generated automatically. Once the post has been added, an entry comes up on the main page, letting us view the individual post, edit it or delete it. In fact, if you've been keeping an eye on the URLs, you'll have noticed that they take the form your\_app\_folder/controller/action. The actions were generated automatically by our baking process, and we'll take a look at them in a bit more detail later on. You'll notice you can also go to your\_app\_folder/admin/news to get the same page - this is our admin routing. At the minute there is no difference between the two sections, but we'll edit it so that you wont be able to add/edit/delete thing unless you're in the admin section, and logged in correctly. As you can see, baking has set up all the basic logic for our various sections, we just need to tweak it and glue it together a bit, and I'll deal with that in the [next part of the tutorial][9].
 
  [1]: http://book.cakephp.org/view/331/Cake-Database-Configuration
  [2]: http://book.cakephp.org/view/332/Optional-Configuration
  [3]: http://book.cakephp.org/view/333/A-Note-on-mod_rewrite
- [4]: http://www.actionshrimp.com/wordpress/wp-content/uploads/2009/03/screenshot-1.png
+ [4]: /images/screenshot-1.png
  [5]: http://book.cakephp.org/view/105/Scaffolding
  [6]: http://book.cakephp.org/view/181/Core-Helpers
  [7]: http://book.cakephp.org/view/170/Core-Components
- [8]: http://www.actionshrimp.com/wordpress/wp-content/uploads/2009/03/screenshot.png
+ [8]: /images/screenshot.png
  [9]: http://www.actionshrimp.com/2009/03/cakephp-tutorial-part-2-authentication/
