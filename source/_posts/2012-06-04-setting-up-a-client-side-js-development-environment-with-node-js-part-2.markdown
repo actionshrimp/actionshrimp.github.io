@@ -5,6 +5,8 @@ date: 2012-06-04 16:14
 comments: true
 categories: puzzli node.js coffeescript express jade TDD
 ---
+**Edit 2015/03/14**: *This post was written a couple of years ago so is a bit outdated now. Express in particular has changed quite a bit since this was written*
+
 This is another post in my [puzzli series][1].
 
 I've already set up node in [part 1][2], to serve up a simple page to use as a JS development environment. Next I'll be setting up [jasmine][3] so I can do TDD on the client side code for puzz.li. This commits for this post are from where we left off on the previous post, up to [this commit][4].
@@ -86,7 +88,7 @@ and now we run it with our new command:
 
 We're finally in a position to get underway with actually building something, and that will be the subject of the next post.
 
- [1]: http://www.actionshrimp.com/category/puzzli/
+ [1]: http://www.actionshrimp.com/blog/categories/puzzli/
  [2]: http://www.actionshrimp.com/2012/06/setting-up-a-simple-client-side-development-environment-with-node-js-part-1/
  [3]: http://pivotal.github.com/jasmine/
  [4]: https://github.com/actionshrimp/puzz.li/commit/5f1783328516cec99febb01b4d0ce41d112019c7
