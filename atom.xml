@@ -4,7 +4,7 @@
   <title><![CDATA[actionshrimp.com]]></title>
   <link href="http://actionshrimp.github.com/atom.xml" rel="self"/>
   <link href="http://actionshrimp.github.com/"/>
-  <updated>2013-06-20T15:20:49+01:00</updated>
+  <updated>2015-05-20T19:22:36+01:00</updated>
   <id>http://actionshrimp.github.com/</id>
   <author>
     <name><![CDATA[Dave Aitken]]></name>
@@ -12,5 +12,1682 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Shortest Knight Moves from a to b in Haskell]]></title>
+    <link href="http://actionshrimp.github.com/2012/11/knight-moves/"/>
+    <updated>2012-11-19T16:41:00+00:00</updated>
+    <id>http://actionshrimp.github.com/2012/11/knight-moves</id>
+    <content type="html"><![CDATA[<p>I&#8217;ve got back onto the excellent &#8217;<a href="http://learnyouahaskell.com/">Learn you a Haskell for Great Good</a>&#8217; recently, which I would highly recommend.</p>
+
+<p>Near the end of chapter 12 (about Monads), there is a section on <a href="http://learnyouahaskell.com/a-fistful-of-monads#the-list-monad">the list monad</a>, which has an example &#8216;a knight&#8217;s quest&#8217; at the end. Modification of the example code to print out possible routes from one position to another is left as an exercise to the reader. I decided to give it a go in attempt to solidify my knowledge about monads a bit, and below is the result.</p>
+
+<p>I&#8217;m sure there are far more efficient ways of doing this, and potentially more monad-y ways of implementing shortestMovesFor, so if any other beginners come across this, I&#8217;d be interested to see what you came up with!</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+</pre></td><td class='code'><pre><code class='haskell'><span class='line'><span class="kr">import</span> <span class="k">qualified</span> <span class="nn">Control.Monad</span> <span class="k">as</span> <span class="n">M</span>
+</span><span class='line'><span class="kr">import</span> <span class="nn">Data.List</span>
+</span><span class='line'>
+</span><span class='line'><span class="kr">type</span> <span class="kt">KnightPos</span> <span class="ow">=</span> <span class="p">(</span><span class="kt">Int</span><span class="p">,</span> <span class="kt">Int</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">--As given in learn you a haskell</span>
+</span><span class='line'><span class="nf">moveKnight</span> <span class="ow">::</span> <span class="kt">KnightPos</span> <span class="ow">-&gt;</span> <span class="p">[</span><span class="kt">KnightPos</span><span class="p">]</span>
+</span><span class='line'><span class="nf">moveKnight</span> <span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span> <span class="ow">=</span> <span class="kr">do</span>
+</span><span class='line'>    <span class="p">(</span><span class="n">c&#39;</span><span class="p">,</span> <span class="n">r&#39;</span><span class="p">)</span> <span class="ow">&lt;-</span> <span class="p">[(</span><span class="n">c</span><span class="o">+</span><span class="mi">2</span><span class="p">,</span> <span class="n">r</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="n">c</span><span class="o">+</span><span class="mi">2</span><span class="p">,</span> <span class="n">r</span><span class="o">+</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="n">c</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="n">r</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="n">c</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="n">r</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+</span><span class='line'>                <span class="p">,(</span><span class="n">c</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">r</span><span class="o">-</span><span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="n">c</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">r</span><span class="o">+</span><span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="n">c</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">r</span><span class="o">-</span><span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="n">c</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">r</span><span class="o">+</span><span class="mi">2</span><span class="p">)</span>
+</span><span class='line'>                <span class="p">]</span>
+</span><span class='line'>    <span class="kt">M</span><span class="o">.</span><span class="n">guard</span> <span class="p">(</span><span class="n">c&#39;</span> <span class="p">`</span><span class="n">elem</span><span class="p">`</span> <span class="p">[</span><span class="mi">1</span><span class="o">..</span><span class="mi">8</span><span class="p">]</span> <span class="o">&amp;&amp;</span> <span class="n">r&#39;</span> <span class="p">`</span><span class="n">elem</span><span class="p">`</span> <span class="p">[</span><span class="mi">1</span><span class="o">..</span><span class="mi">8</span><span class="p">])</span>
+</span><span class='line'>    <span class="n">return</span> <span class="p">(</span><span class="n">c&#39;</span><span class="p">,</span> <span class="n">r&#39;</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">--moveKnight, but modified to apply move n times</span>
+</span><span class='line'><span class="nf">moveNWithHistory</span> <span class="ow">::</span> <span class="kt">Int</span> <span class="ow">-&gt;</span> <span class="p">[</span><span class="kt">KnightPos</span><span class="p">]</span> <span class="ow">-&gt;</span> <span class="p">[[</span><span class="kt">KnightPos</span><span class="p">]]</span>
+</span><span class='line'><span class="nf">moveNWithHistory</span> <span class="n">n</span> <span class="p">(</span><span class="n">current</span><span class="kt">:</span><span class="n">history</span><span class="p">)</span> <span class="ow">=</span> <span class="kr">do</span>
+</span><span class='line'>    <span class="kr">if</span> <span class="p">(</span><span class="n">n</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="kr">then</span> <span class="kr">do</span>
+</span><span class='line'>        <span class="n">nextMove</span> <span class="ow">&lt;-</span> <span class="p">(</span><span class="n">return</span> <span class="n">current</span><span class="p">)</span> <span class="o">&gt;&gt;=</span> <span class="n">moveKnight</span>
+</span><span class='line'>        <span class="n">moveNWithHistory</span> <span class="p">(</span><span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">=&lt;&lt;</span> <span class="n">return</span> <span class="p">(</span><span class="n">nextMove</span> <span class="kt">:</span> <span class="n">current</span> <span class="kt">:</span> <span class="n">history</span><span class="p">)</span>
+</span><span class='line'>    <span class="kr">else</span> <span class="n">return</span> <span class="p">(</span><span class="n">current</span><span class="kt">:</span><span class="n">history</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'><span class="nf">shortestMovesFor</span> <span class="ow">::</span> <span class="kt">KnightPos</span> <span class="ow">-&gt;</span> <span class="kt">KnightPos</span> <span class="ow">-&gt;</span> <span class="p">[[</span><span class="kt">KnightPos</span><span class="p">]]</span>
+</span><span class='line'><span class="nf">shortestMovesFor</span> <span class="n">start</span> <span class="n">end</span> <span class="ow">=</span> <span class="n">map</span> <span class="n">reverse</span> <span class="p">(</span><span class="n">filter</span> <span class="p">(</span><span class="n">endsOn</span> <span class="n">end</span><span class="p">)</span> <span class="n">historiesForMinN</span><span class="p">)</span> <span class="kr">where</span>
+</span><span class='line'>    <span class="n">endsOn</span> <span class="n">target</span> <span class="p">(</span><span class="n">current</span><span class="kt">:</span><span class="n">history</span><span class="p">)</span> <span class="ow">=</span> <span class="p">(</span><span class="n">target</span> <span class="o">==</span> <span class="n">current</span><span class="p">)</span>
+</span><span class='line'>    <span class="kt">Just</span> <span class="n">historiesForMinN</span> <span class="ow">=</span> <span class="n">find</span> <span class="p">(</span><span class="n">any</span> <span class="p">(</span><span class="n">endsOn</span> <span class="n">end</span><span class="p">))</span> <span class="p">(</span><span class="n">map</span> <span class="p">(</span><span class="nf">\</span><span class="n">n</span> <span class="ow">-&gt;</span> <span class="n">moveNWithHistory</span> <span class="n">n</span> <span class="p">[</span><span class="n">start</span><span class="p">])</span> <span class="p">[</span><span class="mi">0</span><span class="o">..</span><span class="p">])</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>And here&#8217;s some example output:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='haskell'><span class='line'><span class="o">*</span><span class="kt">Main</span><span class="o">&gt;</span> <span class="n">shortestMovesFor</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">)</span>
+</span><span class='line'><span class="p">[[(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">),(</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="p">),(</span><span class="mi">5</span><span class="p">,</span><span class="mi">3</span><span class="p">),(</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">)],[(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">),(</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="p">),(</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">),(</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">)],[(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">),(</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">),(</span><span class="mi">4</span><span class="p">,</span><span class="mi">2</span><span class="p">),(</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">)],[(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">),(</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">),(</span><span class="mi">1</span><span class="p">,</span><span class="mi">5</span><span class="p">),(</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">)]]</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>As you can see it returns a list of the shortest chains of moves from the start square to the target square.</p>
+
+<p>Changes I made to the code from the book:</p>
+
+<ul>
+<li><p>moveNWithHistory is a new function to apply moveKnight n times. It also generates a list of chains of moves for a given n, rather than just the final positions (by passing <code>nextMove : current : history</code> to the next iteration, rather than just the next move).</p></li>
+<li><p>shortestMovesFor is not monadic, and returns the final list of moves. We first generate all move chains from our starting position for increasing n, until we find the smallest n which creates a set of chains that contains a chain ending on the target square. We then filter down the set we found to return only chains that do end on the target square. Finally we map reverse over the chains to make them more readable.</p></li>
+</ul>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[jasmine-node --autotest with vim on OSX]]></title>
+    <link href="http://actionshrimp.github.com/2012/06/jasmine-node-autotest-with-vim-on-osx/"/>
+    <updated>2012-06-17T16:39:00+01:00</updated>
+    <id>http://actionshrimp.github.com/2012/06/jasmine-node-autotest-with-vim-on-osx</id>
+    <content type="html"><![CDATA[<p>My <a href="http://www.actionshrimp.com/2012/06/setting-up-a-client-side-js-development-environment-with-node-js-part-2/">last post</a> was about setting up <code>jasmine-node</code>. I had this all in place, and was getting ready to dive into some development, hoping to use the <code>--autotest</code> feature to help with TDD. I fired up jasmine-node with</p>
+
+<pre><code>jasmine-node --autotest --coffee spec
+</code></pre>
+
+<p>At first glance it looked like everything was working correctly. All specs ran the first time, and when I made a change to a file the specs in just that single file were run. However, any subsequent changes to the file then no longer caused the test runner to trigger automatically.</p>
+
+<p>At first I assumed this was an issue with node.js&#8217; implementation of <code>fs.watch</code>, which at the time of writing appears to have <a href="https://github.com/joyent/node/issues/search?q=fs.watch">quite a few issues open against it</a>. After looking at the changelog for some recent node releases, it looked like there were some <code>fs.watch</code> fixes, so I updated to the latest version at the time (v0.6.19). Still no joy - I was having the same problem.</p>
+
+<p>Next I decided to have a poke around in the jasmine-node code itself and see if I could find any problems. The area of code in question is the file jasmine-node/lib/jasmine-node/autotest.js. There is the call to <code>fs.watch</code>, which takes a callback that takes the event as its first parameter:</p>
+
+<pre><code>var watcher = fs.watch(file, function(ev) {
+    ...
+</code></pre>
+
+<p>According to the <a href="http://nodejs.org/docs/latest/api/fs.html#fs_fs_watch_filename_options_listener">node documentation for fs.watch</a>:</p>
+
+<blockquote><p>The listener callback gets two arguments (event, filename). event is either &#8216;rename&#8217; or &#8216;change&#8217;, and filename is the name of the file which triggered the event.</p></blockquote>
+
+<p>I found that when saving a file in vim, the &#8216;rename&#8217; event was being triggered, rather than the &#8216;change&#8217; event, which gave me a clue to what was happening. I then tracked down <a href="http://stackoverflow.com/questions/7591527/writing-a-file-with-vim-doesnt-fire-a-file-change-event-on-os-x">this post on stackoverflow</a> which seems to describe a similar problem, only with the python library watchdog. Watchdog uses kqueue to implement FS monitoring on OSX - the same implementation as node.</p>
+
+<p>What&#8217;s happening is vim&#8217;s use of .swp files is triggering rename. I assume after swapping, kqueue continues to monitor the swapped file rather than the actual filename we&#8217;re interested in. The workaround that watchdog suggests is to set <code>noswapfile</code> in your .vimrc, which is a solution that some people might be happy with. However as much as I love vim it does occasionally crash on me, and losing changes that would be stored in a swp file during a crash isn&#8217;t too appealing.</p>
+
+<p>I fiddled around with the autotest.js file to try and get kqueue to set up a new watch on the swapped file briefly, without much success (often the file being swapped in hadn&#8217;t been moved yet, so node would throw errors saying the file wasn&#8217;t found). My solution was to instead change the call to fs.watch to use fs.watchFile instead, which slots in exactly in place with the same arguments:</p>
+
+<pre><code>var watcher = fs.watchFile(file, function(ev) {
+    ...
+</code></pre>
+
+<p>The <a href="http://nodejs.org/docs/latest/api/fs.html#fs_fs_watchfile_filename_options_listener">documentation</a> recommends using <code>fs.watch</code> instead of <code>fs.watchFile</code> where possible, but in this case it doesn&#8217;t look like it cuts the mustard. <code>fs.watchFile</code> is a little less snappy that <code>fs.watch</code> (it polls the file&#8217;s last modified date to see if there are changes, rather than using an event driven system like kqueue), but it definitely does the trick for now and allows a nice TDD workflow. As it&#8217;s for testing and won&#8217;t be in live code I can&#8217;t see it causing too much harm.</p>
+
+<p>If anyone knows of a better way of getting this working then please let me know below in the comments! I&#8217;ll update if I find a nicer workaround too.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Setting up a client side JS dev environment with node.js - Part 2]]></title>
+    <link href="http://actionshrimp.github.com/2012/06/setting-up-a-client-side-js-development-environment-with-node-js-part-2/"/>
+    <updated>2012-06-04T16:14:00+01:00</updated>
+    <id>http://actionshrimp.github.com/2012/06/setting-up-a-client-side-js-development-environment-with-node-js-part-2</id>
+    <content type="html"><![CDATA[<p><strong>Edit 2015/03/14</strong>: <em>This post was written a couple of years ago so is a bit outdated now. Express in particular has changed quite a bit since this was written</em></p>
+
+<p>This is another post in my <a href="http://www.actionshrimp.com/blog/categories/puzzli/">puzzli series</a>.</p>
+
+<p>I&#8217;ve already set up node in <a href="http://www.actionshrimp.com/2012/06/setting-up-a-simple-client-side-development-environment-with-node-js-part-1/">part 1</a>, to serve up a simple page to use as a JS development environment. Next I&#8217;ll be setting up <a href="http://pivotal.github.com/jasmine/">jasmine</a> so I can do TDD on the client side code for puzz.li. This commits for this post are from where we left off on the previous post, up to <a href="https://github.com/actionshrimp/puzz.li/commit/5f1783328516cec99febb01b4d0ce41d112019c7">this commit</a>.</p>
+
+<p>First a quick diversion about dependency management. Up until now I&#8217;d just been doing:</p>
+
+<p><code>npm install &lt;modulename&gt;</code></p>
+
+<p>However unless I check all the node_modules I&#8217;ve added into git, as more and more dependencies are added deploying the app elsewhere will become a bit tricky. The solution to this problem is to create a package.json file, where you can define dependencies. This is what mine looks like so far:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+</pre></td><td class='code'><pre><code class='json'><span class='line'><span class="err">##</span> <span class="err">package.json</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>    <span class="nt">&quot;name&quot;</span><span class="p">:</span>         <span class="s2">&quot;puzz.li&quot;</span><span class="p">,</span>
+</span><span class='line'>    <span class="nt">&quot;version&quot;</span><span class="p">:</span>      <span class="s2">&quot;0.0.1&quot;</span><span class="p">,</span>
+</span><span class='line'>    <span class="nt">&quot;description&quot;</span><span class="p">:</span>  <span class="s2">&quot;A puzzle website&quot;</span><span class="p">,</span>
+</span><span class='line'>    <span class="nt">&quot;homepage&quot;</span><span class="p">:</span>     <span class="s2">&quot;http://puzz.li&quot;</span><span class="p">,</span>
+</span><span class='line'>    <span class="nt">&quot;repository&quot;</span><span class="p">:</span>   <span class="p">{</span>
+</span><span class='line'>                        <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;git&quot;</span><span class="p">,</span>
+</span><span class='line'>                        <span class="nt">&quot;url&quot;</span><span class="p">:</span>  <span class="s2">&quot;https://github.com/actionshrimp/puzz.li&quot;</span>
+</span><span class='line'>                    <span class="p">},</span>
+</span><span class='line'>    <span class="nt">&quot;author&quot;</span><span class="p">:</span>       <span class="s2">&quot;Dave Aitken &lt;dave.aitken@gmail.com&gt;&quot;</span><span class="p">,</span>
+</span><span class='line'>    <span class="nt">&quot;licences&quot;</span><span class="p">:</span>     <span class="p">[</span><span class="s2">&quot;MIT&quot;</span><span class="p">],</span>
+</span><span class='line'>    <span class="nt">&quot;dependencies&quot;</span><span class="p">:</span> <span class="p">{</span>
+</span><span class='line'>                        <span class="nt">&quot;express&quot;</span><span class="p">:</span> <span class="s2">&quot;2.5.9&quot;</span><span class="p">,</span>
+</span><span class='line'>                        <span class="nt">&quot;connect-assets&quot;</span><span class="p">:</span> <span class="s2">&quot;2.2.0&quot;</span><span class="p">,</span>
+</span><span class='line'>                        <span class="nt">&quot;jade&quot;</span><span class="p">:</span> <span class="s2">&quot;0.26.0&quot;</span>
+</span><span class='line'>                     <span class="p">}</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>As you can see it gives a bit of info about the package itself, as well as defining the dependencies to get it up and running. Now when checking the app out from the github repo, it just requires a single command:</p>
+
+<p><code>npm install</code></p>
+
+<p>and all the dependencies of the right version will be grabbed automatically as you&#8217;d expect.</p>
+
+<p>Back to setting up jasmine now. We kick off by install jasmine-node, a module that sets up jasmine nicely in a node environment, and supports specs written in coffeescript as well. As we (hopefully) won&#8217;t need jasmine-node to actually deploy the app to production, we can add it into package.json as a devDependency like so:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='json'><span class='line'><span class="p">{</span>
+</span><span class='line'>    <span class="err">...</span>
+</span><span class='line'>    <span class="nt">&quot;devDependencies&quot;</span><span class="p">:</span> <span class="p">{</span>
+</span><span class='line'>        <span class="nt">&quot;jasmine-node&quot;</span><span class="p">:</span> <span class="s2">&quot;&gt;= 1.0.26&quot;</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'>    <span class="err">...</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>and again</p>
+
+<p><code>npm install</code></p>
+
+<p>Finally, we just need to set up a simple link to jasmine&#8217;s script runner so it&#8217;s nice and accessible:</p>
+
+<pre><code>$ ln -s node_modules/jasmine-node/bin/jasmine-node run_specs
+$ chmod u+x run_specs
+</code></pre>
+
+<p>Let&#8217;s see if everything&#8217;s working by trying to get a simple always-true spec running.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='coffeescript'><span class='line'><span class="c1">## spec/jasmine_spec.coffee</span>
+</span><span class='line'>
+</span><span class='line'><span class="nx">describe</span> <span class="s">&#39;Jasmine&#39;</span><span class="p">,</span> <span class="nf">-&gt;</span>
+</span><span class='line'>    <span class="nx">it</span> <span class="s">&#39;should be set up correctly&#39;</span><span class="p">,</span> <span class="nf">-&gt;</span>
+</span><span class='line'>        <span class="nx">expect</span><span class="p">(</span><span class="kc">true</span><span class="p">).</span><span class="nx">toBeTruthy</span><span class="p">()</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>and now we run it with our new command:</p>
+
+<pre><code>$ ./run_specs --coffee spec
+
+.
+
+Finished in 0.008 seconds
+1 test, 1 assertion, 0 failures
+</code></pre>
+
+<p>We&#8217;re finally in a position to get underway with actually building something, and that will be the subject of the next post.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Setting up a client side JS dev environment with node.js - Part 1]]></title>
+    <link href="http://actionshrimp.github.com/2012/06/setting-up-a-simple-client-side-development-environment-with-node-js-part-1/"/>
+    <updated>2012-06-03T16:14:00+01:00</updated>
+    <id>http://actionshrimp.github.com/2012/06/setting-up-a-simple-client-side-development-environment-with-node-js-part-1</id>
+    <content type="html"><![CDATA[<p><strong>Edit 2015/03/14</strong>: <em>This post was written a couple of years ago so is a bit outdated now. Express in particular has changed quite a bit since this was written</em></p>
+
+<p>This is another post in my <a href="http://www.actionshrimp.com/bloc/categories/puzzli/">puzzli series</a>. This post documents getting node set up to create a simple environment to work on the client side JS code in. I could potentially just use a static web page to begin with and start the basics of the client side in there, but I may as well set up a simple server side so I can stub in any server side endpoints as they arise. I&#8217;ll also get good ease of install and use of coffeescript and other JS ecosystem stuff. If you want to see the final code, this post runs from the start of my puzz.li repo up until <a href="https://github.com/actionshrimp/puzz.li/commit/2d44c2c6d8d1a52f724fa5099e2e3741149681bc">this commit</a>.</p>
+
+<p>I already had node installed through the download from the node website - the installer is a cinch on OSX. I&#8217;m going to use the <a href="http://expressjs.com">express</a> web framework for node:</p>
+
+<p><code>npm install express</code></p>
+
+<p>I&#8217;ll also use the rails-style asset pipeline middleware for the node connect layer (which express uses), connect-assets:</p>
+
+<p><code>npm install connect-assets</code></p>
+
+<p>This should take care of auto-compiling my CoffeeScript when it gets sent down to the client side. Finally I&#8217;ll be starting off with the jade template engine which seems to have good support by default with express, although I may well swap this out for something else down the line:</p>
+
+<p><code>npm install jade</code></p>
+
+<p>Next, getting underway with a bit of boilerplate (always happy to know if any of my code looks a bit off or there is a better way of doing anything, please let me know :-)):</p>
+
+<h2>boot.js</h2>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='javascript'><span class='line'><span class="err">#</span><span class="o">!</span><span class="err">/usr/bin/env node </span>
+</span><span class='line'>
+</span><span class='line'><span class="kd">var</span> <span class="nx">server</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;./&#39;</span><span class="p">);</span>
+</span><span class='line'><span class="nx">server</span><span class="p">.</span><span class="nx">listen</span><span class="p">(</span><span class="mi">3000</span><span class="p">);</span>
+</span><span class='line'><span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">&quot;Express server listening on port %d in %s mode&quot;</span><span class="p">,</span> <span class="nx">server</span><span class="p">.</span><span class="nx">address</span><span class="p">().</span><span class="nx">port</span><span class="p">,</span> <span class="nx">server</span><span class="p">.</span><span class="nx">settings</span><span class="p">.</span><span class="nx">env</span><span class="p">);</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>index.js</h2>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+</pre></td><td class='code'><pre><code class='javascript'><span class='line'><span class="kd">var</span> <span class="nx">express</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;express&#39;</span><span class="p">);</span>
+</span><span class='line'><span class="kd">var</span> <span class="nx">assets</span><span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;connect-assets&#39;</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'><span class="kd">var</span> <span class="nx">app</span> <span class="o">=</span> <span class="nx">module</span><span class="p">.</span><span class="nx">exports</span> <span class="o">=</span> <span class="nx">express</span><span class="p">.</span><span class="nx">createServer</span><span class="p">();</span>
+</span><span class='line'>
+</span><span class='line'><span class="nx">app</span><span class="p">.</span><span class="nx">configure</span><span class="p">(</span><span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+</span><span class='line'>    <span class="nx">app</span><span class="p">.</span><span class="nx">set</span><span class="p">(</span><span class="s1">&#39;views&#39;</span><span class="p">,</span> <span class="nx">__dirname</span> <span class="o">+</span> <span class="s1">&#39;/views&#39;</span><span class="p">);</span>
+</span><span class='line'>    <span class="nx">app</span><span class="p">.</span><span class="nx">set</span><span class="p">(</span><span class="s1">&#39;view engine&#39;</span><span class="p">,</span> <span class="s1">&#39;jade&#39;</span><span class="p">);</span>
+</span><span class='line'>    <span class="nx">app</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="nx">express</span><span class="p">.</span><span class="nx">bodyParser</span><span class="p">());</span>
+</span><span class='line'>    <span class="nx">app</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="nx">express</span><span class="p">.</span><span class="nx">methodOverride</span><span class="p">());</span>
+</span><span class='line'>    <span class="nx">app</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="nx">app</span><span class="p">.</span><span class="nx">router</span><span class="p">);</span>
+</span><span class='line'>    <span class="nx">app</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="nx">assets</span><span class="p">());</span>
+</span><span class='line'>    <span class="nx">app</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="nx">express</span><span class="p">.</span><span class="kr">static</span><span class="p">(</span><span class="nx">__dirname</span> <span class="o">+</span> <span class="s1">&#39;/public&#39;</span><span class="p">));</span>
+</span><span class='line'><span class="p">});</span>
+</span><span class='line'>
+</span><span class='line'><span class="nx">app</span><span class="p">.</span><span class="nx">configure</span><span class="p">(</span><span class="s1">&#39;development&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(){</span>
+</span><span class='line'>    <span class="nx">app</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="nx">express</span><span class="p">.</span><span class="nx">errorHandler</span><span class="p">({</span> <span class="nx">dumpExceptions</span><span class="o">:</span> <span class="kc">true</span><span class="p">,</span> <span class="nx">showStack</span><span class="o">:</span> <span class="kc">true</span> <span class="p">}));</span>
+</span><span class='line'><span class="p">});</span>
+</span><span class='line'>
+</span><span class='line'><span class="nx">app</span><span class="p">.</span><span class="nx">configure</span><span class="p">(</span><span class="s1">&#39;production&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(){</span>
+</span><span class='line'>    <span class="nx">app</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="nx">express</span><span class="p">.</span><span class="nx">errorHandler</span><span class="p">());</span>
+</span><span class='line'><span class="p">});</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">//Set up basic routing</span>
+</span><span class='line'><span class="nx">require</span><span class="p">(</span><span class="s1">&#39;./routes.js&#39;</span><span class="p">)(</span><span class="nx">app</span><span class="p">);</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>routes.js</h2>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='javascript'><span class='line'><span class="nx">module</span><span class="p">.</span><span class="nx">exports</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">app</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="nx">app</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">req</span><span class="p">,</span> <span class="nx">res</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>        <span class="nx">res</span><span class="p">.</span><span class="nx">render</span><span class="p">(</span><span class="s1">&#39;index&#39;</span><span class="p">,</span> <span class="p">{</span><span class="nx">title</span><span class="o">:</span> <span class="s1">&#39;Puzzli&#39;</span><span class="p">});</span>
+</span><span class='line'>    <span class="p">});</span>
+</span><span class='line'>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>This should be enough to get a server up and running, and serve up the first couple of pages:</p>
+
+<h2>layout.jade</h2>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='jade'><span class='line'><span class="nn">!!!</span>
+</span><span class='line'><span class="nt">html</span>
+</span><span class='line'>  <span class="nt">head</span>
+</span><span class='line'>    <span class="nt">title</span><span class="p">=</span> <span class="n">title</span>
+</span><span class='line'>    <span class="err">!= </span><span class="nt">css</span>(<span class="err">&#39;</span><span class="na">master</span><span class="err">&#39;</span>)
+</span><span class='line'>  <span class="nt">body</span><span class="p">!=</span> <span class="n">body</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>index.jade</h2>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='jade'><span class='line'><span class="nt">h1</span><span class="p">=</span> <span class="n">title</span>
+</span><span class='line'><span class="nt">p</span> Welcome to <span class="si">#{</span><span class="n">title</span><span class="si">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Looks like it&#8217;s working so far. Up next I&#8217;ll be setting up jasmine for TDD on the client side, and then getting underway with building something.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Getting underway]]></title>
+    <link href="http://actionshrimp.github.com/2012/05/getting-underway/"/>
+    <updated>2012-05-19T16:13:00+01:00</updated>
+    <id>http://actionshrimp.github.com/2012/05/getting-underway</id>
+    <content type="html"><![CDATA[<p>I need to write more code. I also need to write more blog posts. As a result, I&#8217;m combining my efforts for my latest mini-project.</p>
+
+<p><em>The idea:</em> a small website with a few standard puzzle &#8220;templates&#8221;. People who tackle daily newspaper puzzles (codewords, sudoku, crosswords) can fire it up, quickly enter that days puzzle for their own personal use, then solve it more easily than with a pencil and paper using auto-complete, easy undo, and possibly some kind of hint system. I admit the idea is perhaps slightly flawed due to lack of overlap between daily newspaper puzzle tacklers and the kind of people who&#8217;d use a website to make daily puzzle solving more efficient. It should be fun to make anyway.</p>
+
+<p>I want the interface to be nice and slick and efficient which will involve a lot of javascript (I have some experience with backbone.js, which I intend to use again). I&#8217;ve also scratched the surface of server-side javascript with node.js in the past, and would like to delve into it properly. To start with I think the server will just be used mostly to serve up some static content, which I&#8217;ve heard is not really node&#8217;s strongest point, but it has nice support for javascript tech in general (in particular coffeescript), and should be a nice easy way to get something up and running quickly. If it then expands out into something slightly more complicated, then having all the components in JS should save quite a few integration headaches. I doubt the backend will ever be particularly wild though, but if goes that way I&#8217;ll worry about that problem and potentially switching when the need arises. The posts will all be added under the <a href="http://www.actionshrimp.com/blog/categories/puzzli/">&#8216;Puzzli&#8217; category</a>.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Speech Bubble Popups containing a View for Android MapView]]></title>
+    <link href="http://actionshrimp.github.com/2011/05/speech-bubble-popups-containing-a-view-for-android-mapview/"/>
+    <updated>2011-05-12T11:40:00+01:00</updated>
+    <id>http://actionshrimp.github.com/2011/05/speech-bubble-popups-containing-a-view-for-android-mapview</id>
+    <content type="html"><![CDATA[<p><em>Update May 2012</em>: There have been lots of requests in the comments for the source. Sorry for the delay on this one - I finally put the whole app that I&#8217;d been working on up on github. <a href="https://github.com/actionshrimp/lastorders/blob/master/lastorders-android/src/com/actionshrimp/android/lastorders/SearchMapResultsDisplayer.java">The part from this tutorial specifically is here if you want to take a look</a>.</p>
+
+<p><a href="http://actionshrimp.github.com/images/bubble-screen-cropped.png"><img class="alignleft size-medium wp-image-362" title="bubble-screen-cropped" src="http://actionshrimp.github.com/images/bubble-screen-cropped-293x300.png" alt="" width="293" height="300" /></a> I&#8217;ve recently been playing around with Android, and have been building a small app that uses MapView to display various locations on the map. I succeeded in drawing markers on the MapView using <a href="http://code.google.com/android/add-ons/google-apis/reference/com/google/android/maps/ItemizedOverlay.html">ItemizedOverlay</a>, but was having a fair bit of difficulty drawing little bubble popups that appeared when you tapped on the OverlayItems (which unfortunately isn&#8217;t available in the API as a &#8216;standard&#8217; feature).</p>
+
+<p>My main problem was I wanted to be able to draw a full View on top of the map at the right location. I had a good old search on Google for a while, and couldn&#8217;t seem to find any easy way to do this, so I thought I&#8217;d write up how I ended up with the bubble in the screenshot. (Now I know how it&#8217;s done however, the Google results seem a lot more knowledgeable on the subject - I was probably searching for the wrong things :-( ).</p>
+
+<p>My first approach was to build a subclass of Overlay and override its draw() method, where I converted the View to a Drawable to draw it directly onto the MapView canvas (passed to draw() ). This worked, but naturally events would no longer work properly in the View if it contained things like buttons, so it was back to the drawing board.</p>
+
+<p>Next, I tried subclassing <a href="http://developer.android.com/reference/android/app/Dialog.html">Dialog</a>, and used a custom Dialog theme with my bubble background. The View I wanted was just injected into the Dialog through its <a href="http://developer.android.com/reference/android/app/Dialog.html#setContentView(int)">setContentView</a> method. This worked again, but I found myself fighting with the Dialog class a fair bit, and positioning it turned out to be a bit fiddly - there had to be a better way.</p>
+
+<p>Finally I noticed that MapView inherits from the Android <a href="http://developer.android.com/reference/android/view/ViewGroup.html">ViewGroup</a>, which means it can contain other Views. After a bit more probing, and a peek at the implementation of <a href="https://github.com/jgilfelt/android-mapviewballoons">android-mapviewballoons</a> (which is excellent, but didn&#8217;t quite fit my purposes due to lack of custom balloon layouts) found a way to do it which should probably have been obvious from the outset!</p>
+
+<p>The general approach is to add a new child View to the MapView, and then use the <a href="http://code.google.com/android/add-ons/google-apis/reference/com/google/android/maps/MapView.LayoutParams.html">MapView.LayoutParams</a> to position it. Here&#8217;s a quick outline example if you&#8217;re unfamiliar (the View I&#8217;m displaying has a <a href="http://developer.android.com/reference/android/graphics/NinePatch.html">NinePatch</a> as the background attribute of a top level LinearLayout, which makes the bubble wrap the content):</p>
+
+<p>This is in the initial activity setup - my balloon is re-used for all OverlayItems drawn on my map:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="c1">//Reference to our MapView </span>
+</span><span class='line'><span class="n">MapView</span> <span class="n">mapView</span> <span class="o">=</span> <span class="o">(</span><span class="n">MapView</span><span class="o">)</span> <span class="n">activity</span><span class="o">.</span><span class="na">findViewById</span><span class="o">(</span><span class="n">R</span><span class="o">.</span><span class="na">id</span><span class="o">.</span><span class="na">mapview</span><span class="o">);</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">//Get a LayoutInflater and load up the view we want to display. </span>
+</span><span class='line'><span class="c1">//The false in inflater.inflate prevents the bubble View being added to the MapView straight away </span>
+</span><span class='line'><span class="n">LayoutInflater</span> <span class="n">inflater</span> <span class="o">=</span> <span class="n">activity</span><span class="o">.</span><span class="na">getLayoutInflater</span><span class="o">();</span>
+</span><span class='line'><span class="n">LinearLayout</span> <span class="n">bubble</span> <span class="o">=</span> <span class="o">(</span><span class="n">LinearLayout</span><span class="o">)</span> <span class="n">inflater</span><span class="o">.</span><span class="na">inflate</span><span class="o">(</span><span class="n">R</span><span class="o">.</span><span class="na">layout</span><span class="o">.</span><span class="na">bubble</span><span class="o">,</span> <span class="n">mapView</span><span class="o">,</span> <span class="kc">false</span><span class="o">);</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">//Set up the bubble&#39;s close button </span>
+</span><span class='line'><span class="n">ImageButton</span> <span class="n">bubbleClose</span> <span class="o">=</span> <span class="o">(</span><span class="n">ImageButton</span><span class="o">)</span> <span class="n">bubble</span><span class="o">.</span><span class="na">findViewById</span><span class="o">(</span><span class="n">R</span><span class="o">.</span><span class="na">id</span><span class="o">.</span><span class="na">bubbleclose</span><span class="o">);</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">bubbleClose</span><span class="o">.</span><span class="na">setOnClickListener</span><span class="o">(</span><span class="k">new</span> <span class="n">View</span><span class="o">.</span><span class="na">OnClickListener</span><span class="o">()</span> <span class="o">{</span>
+</span><span class='line'>    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">onClick</span><span class="o">(</span><span class="n">View</span> <span class="n">v</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>        <span class="n">Animation</span> <span class="n">fadeOut</span> <span class="o">=</span> <span class="n">AnimationUtils</span><span class="o">.</span><span class="na">loadAnimation</span><span class="o">(</span><span class="n">ResultsMapResultsDisplayer</span><span class="o">.</span><span class="na">this</span><span class="o">.</span><span class="na">activity</span><span class="o">,</span> <span class="n">R</span><span class="o">.</span><span class="na">anim</span><span class="o">.</span><span class="na">fadeout</span><span class="o">);</span>
+</span><span class='line'>        <span class="n">bubble</span><span class="o">.</span><span class="na">startAnimation</span><span class="o">(</span><span class="n">fadeOut</span><span class="o">);</span>
+</span><span class='line'>        <span class="n">bubble</span><span class="o">.</span><span class="na">setVisibility</span><span class="o">(</span><span class="n">View</span><span class="o">.</span><span class="na">GONE</span><span class="o">);</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'><span class="o">});</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>This next part is the important bit, and actually positions the bubble on the MapView using MapView.LayoutParams. It&#8217;s called by the onTap method of the ItemizedOverlay that contains my map markers:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">private</span> <span class="kt">void</span> <span class="nf">displaySearchResultBubble</span><span class="o">(</span><span class="kd">final</span> <span class="n">SearchResult</span> <span class="n">result</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">map</span><span class="o">.</span><span class="na">removeView</span><span class="o">(</span><span class="n">bubble</span><span class="o">);</span>
+</span><span class='line'>    <span class="n">bubble</span><span class="o">.</span><span class="na">setVisibility</span><span class="o">(</span><span class="n">View</span><span class="o">.</span><span class="na">GONE</span><span class="o">);</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">TextView</span> <span class="n">venueName</span> <span class="o">=</span> <span class="o">(</span><span class="n">TextView</span><span class="o">)</span> <span class="n">bubble</span><span class="o">.</span><span class="na">findViewById</span><span class="o">(</span><span class="n">R</span><span class="o">.</span><span class="na">id</span><span class="o">.</span><span class="na">venuename</span><span class="o">);</span>
+</span><span class='line'>    <span class="n">venueName</span><span class="o">.</span><span class="na">setText</span><span class="o">(</span><span class="n">result</span><span class="o">.</span><span class="na">getName</span><span class="o">());</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">TextView</span> <span class="n">venueTime</span> <span class="o">=</span> <span class="o">(</span><span class="n">TextView</span><span class="o">)</span> <span class="n">bubble</span><span class="o">.</span><span class="na">findViewById</span><span class="o">(</span><span class="n">R</span><span class="o">.</span><span class="na">id</span><span class="o">.</span><span class="na">venueopenfor</span><span class="o">);</span>
+</span><span class='line'>    <span class="n">venueTime</span><span class="o">.</span><span class="na">setText</span><span class="o">(</span><span class="s">&quot;Open for &quot;</span> <span class="o">+</span> <span class="n">result</span><span class="o">.</span><span class="na">getOpenFor</span><span class="o">()</span> <span class="o">+</span> <span class="s">&quot;h&quot;</span><span class="o">);</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">TextView</span> <span class="n">venueFee</span> <span class="o">=</span> <span class="o">(</span><span class="n">TextView</span><span class="o">)</span> <span class="n">bubble</span><span class="o">.</span><span class="na">findViewById</span><span class="o">(</span><span class="n">R</span><span class="o">.</span><span class="na">id</span><span class="o">.</span><span class="na">venuefee</span><span class="o">);</span>
+</span><span class='line'>    <span class="n">venueFee</span><span class="o">.</span><span class="na">setText</span><span class="o">(</span><span class="s">&quot;Entry fee &quot;</span> <span class="o">+</span> <span class="n">result</span><span class="o">.</span><span class="na">getPrice</span><span class="o">());</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">MapView</span><span class="o">.</span><span class="na">LayoutParams</span> <span class="n">params</span> <span class="o">=</span> <span class="k">new</span> <span class="n">MapView</span><span class="o">.</span><span class="na">LayoutParams</span><span class="o">(</span>
+</span><span class='line'>            <span class="n">LayoutParams</span><span class="o">.</span><span class="na">WRAP_CONTENT</span><span class="o">,</span> <span class="n">LayoutParams</span><span class="o">.</span><span class="na">WRAP_CONTENT</span><span class="o">,</span>
+</span><span class='line'>            <span class="n">result</span><span class="o">.</span><span class="na">getPoint</span><span class="o">(),</span> <span class="n">MapView</span><span class="o">.</span><span class="na">LayoutParams</span><span class="o">.</span><span class="na">BOTTOM_CENTER</span><span class="o">);</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">bubble</span><span class="o">.</span><span class="na">setLayoutParams</span><span class="o">(</span><span class="n">params</span><span class="o">);</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">map</span><span class="o">.</span><span class="na">addView</span><span class="o">(</span><span class="n">bubble</span><span class="o">);</span>
+</span><span class='line'>    <span class="n">map</span><span class="o">.</span><span class="na">measure</span><span class="o">(</span><span class="n">MeasureSpec</span><span class="o">.</span><span class="na">makeMeasureSpec</span><span class="o">(</span><span class="mi">0</span><span class="o">,</span> <span class="n">MeasureSpec</span><span class="o">.</span><span class="na">UNSPECIFIED</span><span class="o">),</span> <span class="n">MeasureSpec</span><span class="o">.</span><span class="na">makeMeasureSpec</span><span class="o">(</span><span class="mi">0</span><span class="o">,</span> <span class="n">MeasureSpec</span><span class="o">.</span><span class="na">UNSPECIFIED</span><span class="o">));</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">Runnable</span> <span class="n">r</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Runnable</span><span class="o">()</span> <span class="o">{</span>
+</span><span class='line'>        <span class="kd">public</span> <span class="kt">void</span> <span class="nf">run</span><span class="o">()</span> <span class="o">{</span>
+</span><span class='line'>            <span class="n">Animation</span> <span class="n">fadeIn</span> <span class="o">=</span> <span class="n">AnimationUtils</span><span class="o">.</span><span class="na">loadAnimation</span><span class="o">(</span><span class="n">activity</span><span class="o">,</span> <span class="n">R</span><span class="o">.</span><span class="na">anim</span><span class="o">.</span><span class="na">fadein</span><span class="o">);</span>
+</span><span class='line'>            <span class="n">bubble</span><span class="o">.</span><span class="na">setVisibility</span><span class="o">(</span><span class="n">View</span><span class="o">.</span><span class="na">VISIBLE</span><span class="o">);</span>
+</span><span class='line'>            <span class="n">bubble</span><span class="o">.</span><span class="na">startAnimation</span><span class="o">(</span><span class="n">fadeIn</span><span class="o">);</span>
+</span><span class='line'>        <span class="o">}</span>
+</span><span class='line'>    <span class="o">};</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">Projection</span> <span class="n">projection</span> <span class="o">=</span> <span class="n">map</span><span class="o">.</span><span class="na">getProjection</span><span class="o">();</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">Point</span> <span class="n">p</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Point</span><span class="o">();</span>
+</span><span class='line'>    <span class="n">projection</span><span class="o">.</span><span class="na">toPixels</span><span class="o">(</span><span class="n">result</span><span class="o">.</span><span class="na">getPoint</span><span class="o">(),</span> <span class="n">p</span><span class="o">);</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">p</span><span class="o">.</span><span class="na">offset</span><span class="o">(</span><span class="mi">0</span><span class="o">,</span> <span class="o">-(</span><span class="n">bubble</span><span class="o">.</span><span class="na">getMeasuredHeight</span><span class="o">()</span> <span class="o">/</span> <span class="mi">2</span><span class="o">));</span>
+</span><span class='line'>    <span class="n">GeoPoint</span> <span class="n">target</span> <span class="o">=</span> <span class="n">projection</span><span class="o">.</span><span class="na">fromPixels</span><span class="o">(</span><span class="n">p</span><span class="o">.</span><span class="na">x</span><span class="o">,</span> <span class="n">p</span><span class="o">.</span><span class="na">y</span><span class="o">);</span>
+</span><span class='line'>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">mapController</span><span class="o">.</span><span class="na">animateTo</span><span class="o">(</span><span class="n">target</span><span class="o">,</span> <span class="n">r</span><span class="o">);</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>That&#8217;s it! It&#8217;s a fairly quick example but feel free to let me know in the comments if you want any more detail.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Vim XPath Plugin]]></title>
+    <link href="http://actionshrimp.github.com/2011/04/vim-xpath-plugin/"/>
+    <updated>2011-04-03T22:21:00+01:00</updated>
+    <id>http://actionshrimp.github.com/2011/04/vim-xpath-plugin</id>
+    <content type="html"><![CDATA[<p>I&#8217;ve built a plugin that adds XPath search functionality to Vim. Check out the demo video below.</p>
+
+<p>This video and blurb is actually about the old version of the plugin. It has since been rewritten, although it is functionally very similar to the video below. There is no XPath auto-completion anymore though, and results instead appear in the vim location list.</p>
+
+<iframe src="http://player.vimeo.com/video/21857707" width="500" height="431" frameborder="0" webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe>
+
+
+<p style="font-style: italic"><a href="http://vimeo.com/21857707">Vim XPath Plugin Demo</a> from <a href="http://vimeo.com/actionshrimp">Dave Aitken</a> on <a href="https://vimeo.com">Vimeo</a>.</p>
+
+
+<p>Features:
+  *   Results shown in a pop-up results window. Jump to the line of a matching result easily</p>
+
+<p>Requirements:
+  *   Python support enabled in Vim
+  *   lxml library installed for Python. For more info, and to grab the plugin visit <a href="https://github.com/actionshrimp/vim-xpath">my github</a>. Let me know what you think / any improvement suggestions in the comments below.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Streaming Spotify to a PS3 from Ubuntu]]></title>
+    <link href="http://actionshrimp.github.com/2010/08/streaming-spotify-to-a-ps3-from-ubuntu/"/>
+    <updated>2010-08-15T08:59:00+01:00</updated>
+    <id>http://actionshrimp.github.com/2010/08/streaming-spotify-to-a-ps3-from-ubuntu</id>
+    <content type="html"><![CDATA[<p><img class="alignleft" src="http://actionshrimp.github.com/images/spotify-logo.png" width="76" height="76" /> A post came up a couple of days ago on the Spotify &#8220;What&#8217;s new&#8221; feed: <a href="http://www.simpleeditions.com/8001/how-to-stream-spotify-wirelessly-to-your-stereo">how to stream spotify wirelessly to your stereo</a>, which got me thinking about something I&#8217;ve been after for a while - the ability to stream spotify audio to PS3. This is mentioned in the link, but the main method they talk about is for Windows, and a solution for mac is touched upon. I figured I&#8217;d have a go at doing this on Ubuntu. Before you have a go at this, I should mention a slight drawback - there&#8217;s a fair delay on the audio steam that reaches the PS3, around 20 or 30 seconds. This makes it good for playing a playlist as background music, but if you&#8217;re wanting to be able to flick around loads of different songs then you might get a bit frustrated. Read on if you&#8217;re still keen&#8230;</p>
+
+<!--more-->
+
+
+<p>The general approach we&#8217;re going for is to convert the computer that&#8217;s playing spotify&#8217;s audio feed into a web radio station, which can then be played through a UPnP server that can be read by the ps3. Sounds a bit long winded? Well it is really! I&#8217;m sure there are better ways - I tried to pipe the spotify feed to a file and then play the file through the UPnP server instead, but this didn&#8217;t work with the way the PS3 buffers. Let me know if you find a better way though. Here&#8217;s how I did it anyway:</p>
+
+<h1>1. Install ps3mediaserver</h1>
+
+<p>You may have come across <a href="http://http://ps3mediaserver.blogspot.com/">ps3mediaserver</a> before if you&#8217;re a PS3 owner - it&#8217;s a great UPnP server that requires little setup. Head over to the <a href="http://code.google.com/p/ps3mediaserver/downloads/list">downloads page</a>. I grabbed <code>pms-generic-linux-unix-1.20.409-BETA.tgz</code>, although I&#8217;m pretty sure this will work fine with the stable version too. Extract the archive somewhere and fire up ps3mediaserver to try it out. With any luck it should locate your ps3. Add a share with some mp3s/videos in, restart it and give them a spin to check it all works. Try and make sure this is all working fine before carrying on, otherwise the later steps are unlikely to work.</p>
+
+<h1>2. Grab pmsencoder</h1>
+
+<p>The next thing we need is a plugin for ps3mediaserver called <a href="http://github.com/chocolateboy/pmsencoder">pmsencoder</a>. This is pretty handy in itself - it allows you to stream podcasts from a feed URL, shoutcast radio stations and various web video streams. Head over to the pmsencoder page, and look in the installation instructions on how to install the plugin. You pretty much just need to download the plugin .jar file to your ps3mediaserver /plugins folder, and then add the pmsencoder engine to the engines line in the PMS.conf configuration file (if the PMS.conf configuration doesn&#8217;t exist, open up ps3media server, fiddle with some settings (like adding a share or changing transcoding options, then hit &#8216;save&#8217;. This will create the file). When that&#8217;s all done, restart ps3mediaserver and have a look on your PS3 again. With any luck, there should be a folder called &#8216;Web&#8217;, with some default web sources available to have a look at (Endgadget Podcast, various Youtube feeds). Again, try these out and see if they work, as if they don&#8217;t then you&#8217;ll probably want to get this working before proceeding. In particular, make sure the &#8216;Radio&#8217; sources are working, as we&#8217;re gonna be pushing our Spotify feed through as a radio station.</p>
+
+<h1>3. Grab icecast2</h1>
+
+<p>Once ps3mediaserver and pmsencoder are working, we need to set up an icecast server to broadcast our soon-to-be-made stream to pmsencoder. If you&#8217;re on ubuntu, you can just do <code>sudo apt-get install icecast2</code> to grab the icecast2 server. Once this is done, edit <code>/etc/icecast2/icecast.xml</code> and change the source and admin password to prevent random hijacking of your radio station. When the passwords have been changed, you&#8217;ll want to edit <code>/etc/default/icecast2</code> and change the line at the bottom <code>ENABLE=false</code> to <code>ENABLE=true</code>. Now you can launch the icecast server: <code>sudo /etc/init.d/icecast2 start</code> Try and visit http://localhost:8000/ and see if anything displays. If all has gone well, you should get the icecast2 status page.</p>
+
+<h1>4. Add a spotify radio source to pmsencoder</h1>
+
+<p>Now our icecast server is running, we need to let pmsencoder and ps3mediaserver know about it. Open up the file WEB.conf in the directory where you&#8217;ve been running ps3mediaserver from. Under the #shoutcasts section, add a new source:</p>
+
+<pre><code>audiostream.Web,Radios=Spotify,http://localhost:8000/spotify.ogg
+</code></pre>
+
+<p>then restart ps3mediaserver.</p>
+
+<h1>5. Send the computer&#8217;s audio to icecast2</h1>
+
+<p>Next, we grab the computer&#8217;s audio and use gstreamer to send it to icecast2. Type the following <code>pacmd list-sources | less</code> to get a list of pulseaudio sources. You should get a bunch of output back, but it should hopefully only list one device. You&#8217;re looking for the part beginning like this:</p>
+
+<pre><code>...
+&lt;div id="_mcePaste"&gt;index: 0&lt;/div&gt;
+&lt;div id="_mcePaste"&gt;name: &lt;alsa_output.pci-0000_00_08.0.analog-stereo.monitor&gt;&lt;/div&gt;
+&lt;div id="_mcePaste"&gt;driver: &lt;module-alsa-card.c&gt;&lt;/div&gt;
+&lt;div id="_mcePaste"&gt;flags: DECIBEL_VOLUME LATENCY DYNAMIC_LATENCY&lt;/div&gt;
+&lt;div id="_mcePaste"&gt;state: IDLE&lt;/div&gt;
+... 
+</code></pre>
+
+<p>in particular the name, which in my case is alsa_output.pci-0000_00_08.0.analog-stereo.monitor. Make a note of yours. Next we just run a command to convert this pulse source into an ogg file, which is then sent to the icecast2 server. Run the following, replacing the device with your own, and the password at the end with the icecast2 source password you set earlier:</p>
+
+<pre><code>gst-launch-0.10 pulsesrc device=alsa_output.pci-0000_00_08.0.analog-stereo.monitor ! audioconvert ! vorbisenc ! oggmux ! shout2send ip=localhost port=8000 password=hackme mount=spotify.ogg
+</code></pre>
+
+<p>Now all sound that comes through your computer&#8217;s speakers is being sent to your icecast2 server. All that remains is to fire up Spotify. Start playing a track, and then on your ps3 navigate to the Web folder > Radio > Spotify. With any luck, after 20 or 30 seconds you should hear the track starting on your ps3 as well! Let me know if you have any problems with the last few steps, although any problems with ps3mediaserver or pmsencoder are probably best tackled through the ps3mediaserver forums as I&#8217;m no expert on these two. Hopefully someone out there will have found this useful - again, let me know if you do :-)</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[CakePHP: PagesController with Admin Routing]]></title>
+    <link href="http://actionshrimp.github.com/2009/04/cakephp-pagescontroller-with-admin-routing/"/>
+    <updated>2009-04-07T08:44:00+01:00</updated>
+    <id>http://actionshrimp.github.com/2009/04/cakephp-pagescontroller-with-admin-routing</id>
+    <content type="html"><![CDATA[<p><em>Note this page was first published in April 2009, so is likely to be quite out of date now.</em></p>
+
+<p>For small Cake websites with admin routing enabled, I like to use the Auth component to require a login for all admin routes, and allow access to everything else using the following beforeFilter in the AppController superclass:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+</pre></td><td class='code'><pre><code class='php'><span class='line'><span class="cp">&lt;?</span>
+</span><span class='line'><span class="k">function</span> <span class="nf">beforeFilter</span><span class="p">(){</span>
+</span><span class='line'>    <span class="nv">$admin</span> <span class="o">=</span> <span class="nx">Configure</span><span class="o">::</span><span class="na">read</span><span class="p">(</span><span class="s1">&#39;Routing.admin&#39;</span><span class="p">);</span>
+</span><span class='line'>    <span class="k">if</span> <span class="p">(</span><span class="nb">isset</span><span class="p">(</span><span class="nv">$this</span><span class="o">-&gt;</span><span class="na">params</span><span class="p">[</span><span class="nv">$admin</span><span class="p">])</span> <span class="k">and</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">params</span><span class="p">[</span><span class="nv">$admin</span><span class="p">]){</span>
+</span><span class='line'>        <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">layout</span> <span class="o">=</span> <span class="s1">&#39;admin&#39;</span><span class="p">;</span>
+</span><span class='line'>    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span><span class='line'>        <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">Auth</span><span class="o">-&gt;</span><span class="na">allow</span><span class="p">();</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'><span class="cp">?&gt;</span><span class="x"></span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>The problem with this however is static pages handled by the pages controller cannot be password protected. To resolve this problem, I had to overload the PagesController class that Cake comes with, and add in the required functionality. Part of the reason for doing this for me was to allow a setup where there was a password protected admin welcome page or control panel located at my_app_URL/admin, so I&#8217;ll show you the necessary routing to achieve that too.</p>
+
+<!--more-->
+
+
+<h1>Adding a route and overloading PagesController</h1>
+
+<p>First of all, copy your_app_dir/cake/libs/controller/pages_controller.php into your_app_dir/app/controllers with the rest of your application&#8217;s controllers. Then fire up an editor and take a look at your newly copied version.  You&#8217;ll see there is a function called display, this is what the pages controller uses to display pages. There is a route in app/config/routes.php that maps /pages/* to /pages/display/* to make the URL easier on the eyes, so if we&#8217;re gonna have /admin/pages/* working properly, we&#8217;ll need a similar route.</p>
+
+<p>Open up app/config/routes.php, and underneath the line</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='php'><span class='line'><span class="cp">&lt;?</span>
+</span><span class='line'><span class="nx">Router</span><span class="o">::</span><span class="na">connect</span><span class="p">(</span><span class="s1">&#39;/pages/*&#39;</span><span class="p">,</span> <span class="k">array</span><span class="p">(</span><span class="s1">&#39;controller&#39;</span> <span class="o">=&gt;</span> <span class="s1">&#39;pages&#39;</span><span class="p">,</span> <span class="s1">&#39;action&#39;</span> <span class="o">=&gt;</span> <span class="s1">&#39;display&#39;</span><span class="p">));</span>
+</span><span class='line'><span class="cp">?&gt;</span><span class="x"></span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>add in the following route:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='php'><span class='line'><span class="cp">&lt;?</span>
+</span><span class='line'><span class="nx">Router</span><span class="o">::</span><span class="na">connect</span><span class="p">(</span><span class="s1">&#39;/admin/pages/*&#39;</span><span class="p">,</span> <span class="k">array</span><span class="p">(</span><span class="s1">&#39;controller&#39;</span> <span class="o">=&gt;</span> <span class="s1">&#39;pages&#39;</span><span class="p">,</span> <span class="s1">&#39;action&#39;</span> <span class="o">=&gt;</span> <span class="s1">&#39;display&#39;</span><span class="p">,</span> <span class="s1">&#39;admin&#39;</span> <span class="o">=&gt;</span> <span class="k">true</span><span class="p">));</span>
+</span><span class='line'><span class="cp">?&gt;</span><span class="x"></span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Now, when admin routing is enabled, Cake looks for controller actions appened with &#8220;admin_&#8221;, so we&#8217;d better add in the function to handle this in PagesController. Open it up, and underneath the display function, add the following:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+</pre></td><td class='code'><pre><code class='php'><span class='line'><span class="cp">&lt;?</span>
+</span><span class='line'><span class="k">function</span> <span class="nf">admin_display</span><span class="p">()</span> <span class="p">{</span>
+</span><span class='line'>    <span class="nv">$path</span> <span class="o">=</span> <span class="nb">func_get_args</span><span class="p">();</span>
+</span><span class='line'>    <span class="nv">$temp</span> <span class="o">=</span> <span class="k">null</span><span class="p">;</span>
+</span><span class='line'>    <span class="nv">$count</span> <span class="o">=</span> <span class="nb">count</span><span class="p">(</span><span class="nv">$path</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">if</span> <span class="p">(</span><span class="nv">$path</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;admin&#39;</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>        <span class="c1">//This adds admin to the beginning of the path so the pages controller will look in the &#39;admin&#39; folder in pages directory</span>
+</span><span class='line'>        <span class="nv">$path</span> <span class="o">=</span> <span class="nb">array_merge</span><span class="p">((</span><span class="k">array</span><span class="p">)</span><span class="s1">&#39;admin&#39;</span><span class="p">,</span> <span class="nv">$path</span><span class="p">);</span>
+</span><span class='line'>    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span><span class='line'>        <span class="c1">//This removes admin from the beginning if it&#39;s there already, and sends the request round again so we end up with URLs </span>
+</span><span class='line'>        <span class="c1">//that look like app/admin/pages/x when app/admin/pages/admin/x is requested somehow. </span>
+</span><span class='line'>        <span class="nv">$path</span> <span class="o">=</span> <span class="nb">array_slice</span><span class="p">(</span><span class="nv">$path</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>
+</span><span class='line'>        <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">redirect</span><span class="p">(</span><span class="nb">array_merge</span><span class="p">(</span><span class="k">array</span><span class="p">(</span><span class="s1">&#39;controller&#39;</span> <span class="o">=&gt;</span> <span class="s1">&#39;pages&#39;</span><span class="p">,</span> <span class="s1">&#39;action&#39;</span> <span class="o">=&gt;</span> <span class="s1">&#39;display&#39;</span><span class="p">,</span> <span class="s1">&#39;admin&#39;</span> <span class="o">=&gt;</span> <span class="k">true</span><span class="p">),</span> <span class="nv">$path</span><span class="p">));</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nv">$count</span><span class="p">)</span> <span class="p">{</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">redirect</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">);</span> <span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="nv">$page</span> <span class="o">=</span> <span class="nv">$subpage</span> <span class="o">=</span> <span class="nv">$title</span> <span class="o">=</span> <span class="k">null</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="k">empty</span><span class="p">(</span><span class="nv">$path</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span> <span class="p">{</span>
+</span><span class='line'>        <span class="nv">$page</span> <span class="o">=</span> <span class="nv">$path</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="k">empty</span><span class="p">(</span><span class="nv">$path</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span> <span class="p">{</span>
+</span><span class='line'>        <span class="nv">$subpage</span> <span class="o">=</span> <span class="nv">$path</span><span class="p">[</span><span class="mi">1</span><span class="p">];</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="k">empty</span><span class="p">(</span><span class="nv">$path</span><span class="p">[</span><span class="nv">$count</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]))</span> <span class="p">{</span>
+</span><span class='line'>        <span class="nv">$title</span> <span class="o">=</span> <span class="nx">Inflector</span><span class="o">::</span><span class="na">humanize</span><span class="p">(</span><span class="nv">$path</span><span class="p">[</span><span class="nv">$count</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]);</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">set</span><span class="p">(</span><span class="nb">compact</span><span class="p">(</span><span class="s1">&#39;page&#39;</span><span class="p">,</span> <span class="s1">&#39;subpage&#39;</span><span class="p">,</span> <span class="s1">&#39;title&#39;</span><span class="p">));</span>
+</span><span class='line'>    <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">render</span><span class="p">(</span><span class="nb">join</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">,</span> <span class="nv">$path</span><span class="p">));</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'><span class="cp">?&gt;</span><span class="x"></span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>As you can see it&#8217;s fairly similar to the display function, with a few extra lines added in that handle admin pages. There are a few subtleties here which I will explain in a second. Before that however, we also require a slight change to the existing, non-admin display function. Look for the if statement below:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='php'><span class='line'><span class="cp">&lt;?</span>
+</span><span class='line'><span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="k">empty</span><span class="p">(</span><span class="nv">$path</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span> <span class="p">{</span>
+</span><span class='line'>    <span class="nv">$page</span> <span class="o">=</span> <span class="nv">$path</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'><span class="cp">?&gt;</span><span class="x"></span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>and change it to:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class='php'><span class='line'><span class="cp">&lt;?</span>
+</span><span class='line'><span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="k">empty</span><span class="p">(</span><span class="nv">$path</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span> <span class="p">{</span>
+</span><span class='line'>    <span class="nv">$page</span> <span class="o">=</span> <span class="nv">$path</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+</span><span class='line'>    <span class="k">if</span> <span class="p">(</span><span class="nv">$page</span> <span class="o">==</span> <span class="s1">&#39;admin&#39;</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>        <span class="c1">//Sends admin page requests to their proper place to stop sneaky access attempts</span>
+</span><span class='line'>        <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">redirect</span><span class="p">(</span><span class="nb">array_merge</span><span class="p">(</span><span class="k">array</span><span class="p">(</span><span class="s1">&#39;controller&#39;</span> <span class="o">=&gt;</span> <span class="s1">&#39;pages&#39;</span><span class="p">,</span> <span class="s1">&#39;action&#39;</span> <span class="o">=&gt;</span> <span class="s1">&#39;display&#39;</span><span class="p">,</span> <span class="s1">&#39;admin&#39;</span> <span class="o">=&gt;</span> <span class="k">true</span><span class="p">),</span> <span class="nv">$path</span><span class="p">));</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'><span class="cp">?&gt;</span><span class="x"></span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Ok so what have we done?</p>
+
+<ol>
+<li>The added nested if statement in the display() function redirects requests for /pages/admin/x to their proper place, /admin/pages/x.</li>
+<li>The &#8216;else&#8217; clause of the if ($path[0] == &#8216;admin&#8217;) in admin_display redirects requests for /admin/pages/admin/x to /admin/pages/x, which just tidies up a URL aesthetics issue.</li>
+<li>Finally, the first part of the same if statement is what handles the /admin/pages/x requests proper - it adds the &#8216;admin&#8217; part back to the beginning of the $path variable that point 2 removes. This is actually just exploiting a subtlety of the pages controller, &#8216;subpages&#8217; (this seems to be quite hard to find in the documentation actually) - requests sent to /pages/a/b will display a page b stored in the folder your_app_dir/app/views/pages/a, rather than a page b stored in the pages root. Adding this additional logic helps organisation a bit by storing all admin pages in your_app_dir/app/views/pages/admin/.</li>
+</ol>
+
+
+<p>So now this is all in place, everything should work correctly. Requests to /pages/admin/x and /admin/pages/admin/x both get sent to /admin/pages/x, and these require proper authentication. The final step is to add in a route that allows my original use for this whole setup to work properly - displaying an admin homepage or control panel that requires authentication when a user visits your_app_URL/admin, i.e. without referring to any controllers or actions. First, create a page in your_app_dir/app/views/pages/admin/, called home.ctp that contains the content you want. You can now access this from your_app_URL/admin/pages/home, but the shorter URL works after adding the route:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='php'><span class='line'><span class="cp">&lt;?</span>
+</span><span class='line'><span class="nx">Router</span><span class="o">::</span><span class="na">connect</span><span class="p">(</span><span class="s1">&#39;/admin&#39;</span><span class="p">,</span> <span class="k">array</span><span class="p">(</span><span class="s1">&#39;controller&#39;</span> <span class="o">=&gt;</span> <span class="s1">&#39;pages&#39;</span><span class="p">,</span> <span class="s1">&#39;action&#39;</span> <span class="o">=&gt;</span> <span class="s1">&#39;display&#39;</span><span class="p">,</span> <span class="s1">&#39;admin&#39;</span> <span class="o">=&gt;</span> <span class="k">true</span><span class="p">,</span> <span class="s1">&#39;home&#39;</span><span class="p">));</span>
+</span><span class='line'><span class="cp">?&gt;</span><span class="x"></span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Hooray! We now have an admin homepage. Hope everything worked for you, hit me with a comment if you have an issues and I&#8217;ll try and help out.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[CakePHP Tutorial Part 2: Authentication and Tweaking]]></title>
+    <link href="http://actionshrimp.github.com/2009/03/cakephp-tutorial-part-2-authentication/"/>
+    <updated>2009-03-31T08:02:00+01:00</updated>
+    <id>http://actionshrimp.github.com/2009/03/cakephp-tutorial-part-2-authentication</id>
+    <content type="html"><![CDATA[<p><img class="alignleft size-full wp-image-252" src="http://actionshrimp.github.com/images/cake-logo1.png" width="180" height="180" /> In the <a href="http://www.actionshrimp.com/2009/03/cakephp-tutorial-part-1-bake-utility/">first part of my CakePHP tutorial</a>, I showed you how to use Cake&#8217;s Bake utility to set up the basic back end of an online illustration portfolio. In this part, I&#8217;ll tweak the automatically generated code into useable website and admin section and show you how to use some of Cake&#8217;s features along the way, including the Authentication component.</p>
+
+<p>If you followed the first part of the tutorial, we currently have a few sections that we&#8217;ve generated models, controllers and views for. By navigating to your_app/controllername/action in your browser, you can access the different functions of the application. But unless your users know this in advance, they have no way of accessing them.</p>
+
+<!--more-->
+
+
+<h1>Joining the sections together</h1>
+
+<p>The easiest way of implementing navigation common to all pages is to use Cake&#8217;s built in templating system, the page &#8220;layout&#8221;. Cake uses its built-in layout if it finds no user defined layout default available. To add one, create the file your_app_dir/app/views/layouts/default.ctp, and put in your basic page layout. Mine looked like this:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+</pre></td><td class='code'><pre><code class='html'><span class='line'><span class="nt">&lt;html</span> <span class="na">xmlns=</span><span class="s">&quot;http://www.w3.org/1999/xhtml&quot;</span><span class="nt">&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;head&gt;</span>
+</span><span class='line'>        <span class="nt">&lt;meta</span> <span class="na">http-equiv=</span><span class="s">&quot;Content-Type&quot;</span> <span class="na">content=</span><span class="s">&quot;text/html; charset=utf-8&quot;</span> <span class="nt">/&gt;</span>
+</span><span class='line'>        <span class="nt">&lt;title&gt;</span><span class="cp">&lt;?php echo $title_for_layout ?&gt;</span><span class="nt">&lt;/title&gt;</span>
+</span><span class='line'>        <span class="nt">&lt;link</span> <span class="na">href=</span><span class="s">&quot;favicon.ico&quot;</span> <span class="na">type=</span><span class="s">&quot;image/x-icon&quot;</span> <span class="na">rel=</span><span class="s">&quot;shortcut icon&quot;</span> <span class="nt">/&gt;</span>
+</span><span class='line'>        <span class="cp">&lt;?php echo $html-&gt;css(&#39;default&#39;) ?&gt;</span>
+</span><span class='line'>        <span class="cp">&lt;?php echo $scripts_for_layout ?&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;/head&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;body&gt;</span>
+</span><span class='line'>        <span class="nt">&lt;div</span> <span class="na">id=</span><span class="s">&quot;container&quot;</span><span class="nt">&gt;</span>
+</span><span class='line'>            <span class="nt">&lt;div</span> <span class="na">id=</span><span class="s">&quot;header&quot;</span><span class="nt">&gt;</span>
+</span><span class='line'>                 <span class="nt">&lt;h1&gt;</span>King-Jon Illustration<span class="nt">&lt;/h1&gt;</span>
+</span><span class='line'>            <span class="nt">&lt;/div&gt;</span>
+</span><span class='line'>            <span class="nt">&lt;div</span> <span class="na">id=</span><span class="s">&quot;navigation&quot;</span><span class="nt">&gt;</span>
+</span><span class='line'>                <span class="nt">&lt;ul&gt;</span>
+</span><span class='line'>                    <span class="nt">&lt;li&gt;</span><span class="cp">&lt;?php echo $html-&gt;link(&#39;News&#39;, array(&#39;controller&#39;=&gt;&#39;News&#39;))?&gt;</span><span class="nt">&lt;/li&gt;</span>
+</span><span class='line'>                    <span class="nt">&lt;li&gt;</span><span class="cp">&lt;?php echo $html-&gt;link(&#39;Works&#39;, array(&#39;controller&#39;=&gt;&#39;Works&#39;))?&gt;</span><span class="nt">&lt;/li&gt;</span>
+</span><span class='line'>                    <span class="nt">&lt;li&gt;</span><span class="cp">&lt;?php echo $html-&gt;link(&#39;Sketches&#39;, array(&#39;controller&#39;=&gt;&#39;Sketches&#39;))?&gt;</span><span class="nt">&lt;/li&gt;</span>
+</span><span class='line'>                    <span class="nt">&lt;li&gt;</span><span class="cp">&lt;?php echo $html-&gt;link(&#39;Friends&#39;, array(&#39;controller&#39;=&gt;&#39;Friends&#39;))?&gt;</span><span class="nt">&lt;/li&gt;</span>
+</span><span class='line'>                <span class="nt">&lt;/ul&gt;</span>
+</span><span class='line'>            <span class="nt">&lt;/div&gt;</span>
+</span><span class='line'>            <span class="nt">&lt;div</span> <span class="na">id=</span><span class="s">&quot;content&quot;</span><span class="nt">&gt;</span>
+</span><span class='line'>                <span class="cp">&lt;?php echo $content_for_layout ?&gt;</span>
+</span><span class='line'>            <span class="nt">&lt;/div&gt;</span>
+</span><span class='line'>            <span class="nt">&lt;div</span> <span class="na">id=</span><span class="s">&quot;footer&quot;</span><span class="nt">&gt;</span>
+</span><span class='line'>            <span class="nt">&lt;/div&gt;</span>
+</span><span class='line'>        <span class="nt">&lt;/div&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;/body&gt;</span>
+</span><span class='line'><span class="nt">&lt;/html&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>You&#8217;ll notice this looks like a pretty normal basic page skeleton, with a few extra bits of PHP inserted. The $title_for_layout, $scripts_for_layout and $content_for_layout variables are filled in by Cake automatically depending on what the current page request is and the title and content are fairly self-explanitory.  The scripts variable lets you specify scripts on a per-page basis but still include them in the <code>&lt;head&gt;</code> section. The <code>$html-&gt;xxx</code> code snippets are part of the <a href="http://book.cakephp.org/view/206/Inserting-Well-Formatted-elements">Cake HtmlHelper</a>. This allows you to insert well formatted elements easily - the <code>$html-&gt;css('default')</code> includes the stylesheet &#8220;css/default.css&#8221; (this is stored in the your_app_dir/app/webroot/css directory), and the <code>$html-&gt;link</code> lines let you point to different parts of your app easily. You could just add normal links, such as <code>&lt;a href="http://actionshrimp.github.com/news/"&gt;</code>, but pointing to the controller allows a bit of flexibility if you want to change anything further down the line.</p>
+
+<h1>Adding a splash page</h1>
+
+<p>As it was an art portfolio website, the owner decided a splash page would be useful, to give a good first impact when entering the site and the ability to show off a bit of artwork right away. Cake uses its built-in pages controller to handle static pages, and the different pages are stored in the folder your_app_dir/app/views/pages. To view a page, you navigate to the URL your_app/pages/pagename. Here, the pages controller doesn&#8217;t take an action, so the additional directory level on the URL is an argument passed to the controller, in this case the name of the page to display. Cake also automatically serves up a default page, called &#8220;home&#8221;, when a user requests the root of your_app. The name of this page is set by Cake&#8217;s router, and if we look in your_app_dir/app/config/routes.php, we see at the bottom, the lines:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+</pre></td><td class='code'><pre><code class='php'><span class='line'><span class="cp">&lt;?</span>
+</span><span class='line'><span class="sd">/**</span>
+</span><span class='line'><span class="sd">* Here, we are connecting &#39;/&#39; (base path) to controller called &#39;Pages&#39;,</span>
+</span><span class='line'><span class="sd">* its action called &#39;display&#39;, and we pass a param to select the view file</span>
+</span><span class='line'><span class="sd">* to use (in this case, /app/views/pages/home.ctp)...</span>
+</span><span class='line'><span class="sd">*/</span>
+</span><span class='line'><span class="nx">Router</span><span class="o">::</span><span class="na">connect</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">,</span> <span class="k">array</span><span class="p">(</span><span class="s1">&#39;controller&#39;</span> <span class="o">=&gt;</span> <span class="s1">&#39;pages&#39;</span><span class="p">,</span> <span class="s1">&#39;action&#39;</span> <span class="o">=&gt;</span> <span class="s1">&#39;display&#39;</span><span class="p">,</span> <span class="s1">&#39;home&#39;</span><span class="p">));</span>
+</span><span class='line'><span class="sd">/**</span>
+</span><span class='line'><span class="sd">* ...and connect the rest of &#39;Pages&#39; controller&#39;s urls.</span>
+</span><span class='line'><span class="sd">*/</span>
+</span><span class='line'><span class="nx">Router</span><span class="o">::</span><span class="na">connect</span><span class="p">(</span><span class="s1">&#39;/pages/*&#39;</span><span class="p">,</span> <span class="k">array</span><span class="p">(</span><span class="s1">&#39;controller&#39;</span> <span class="o">=&gt;</span> <span class="s1">&#39;pages&#39;</span><span class="p">,</span> <span class="s1">&#39;action&#39;</span> <span class="o">=&gt;</span> <span class="s1">&#39;display&#39;</span><span class="p">));</span>
+</span><span class='line'><span class="cp">?&gt;</span><span class="x"></span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>The comments tell us what&#8217;s going on - this is what maps the pages to the locations I have talked about. You can add your own mappings here too if you like.  For our splash screen however, we can just make use of the already defined &#8220;home&#8221; page, so edit this to make it look how you want, you&#8217;ll find it in your_app_dir/app/views/pages/home.ctp. Mine looked like this:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='php'><span class='line'><span class="cp">&lt;?php</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">layout</span> <span class="o">=</span> <span class="s2">&quot;splash&quot;</span> <span class="cp">?&gt;</span><span class="x"></span>
+</span><span class='line'><span class="x">&lt;div id=&quot;splash&quot;&gt;</span>
+</span><span class='line'><span class="x">    </span><span class="cp">&lt;?php</span> <span class="k">echo</span> <span class="nv">$html</span><span class="o">-&gt;</span><span class="na">image</span><span class="p">(</span><span class="s2">&quot;splash.png&quot;</span><span class="p">,</span>
+</span><span class='line'>        <span class="k">array</span><span class="p">(</span><span class="s2">&quot;alt&quot;</span> <span class="o">=&gt;</span> <span class="s2">&quot;King Jon Illustration&quot;</span><span class="p">,</span>
+</span><span class='line'>        <span class="s2">&quot;url&quot;</span> <span class="o">=&gt;</span> <span class="k">array</span><span class="p">(</span><span class="s2">&quot;controller&quot;</span> <span class="o">=&gt;</span> <span class="s2">&quot;news&quot;</span><span class="p">)));</span>
+</span><span class='line'>    <span class="cp">?&gt;</span><span class="x"></span>
+</span><span class='line'><span class="x">&lt;/div&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>A couple of things to note here. The first line <code>$this-&gt;layout = "splash"</code>, tells Cake not to use the &#8220;default&#8221; layout we created earlier, but to instead use one called &#8220;splash&#8221;. I sneakily created a splash layout without telling you here, but it is in fact just an exact copy of the default layout with the navigation div removed, to give the page a more &#8220;splashy&#8221; feel. Next, I used the image HtmlHelper to include an image called &#8220;splash.png&#8221; - this is located in my_app_dir/app/webroot/img, the location the image helper looks in. The second argument is an array of additional attributes, &#8220;alt&#8221; being the alt text, and &#8220;url&#8221; puts an <a> element around the image, creating a link to the specified address.</p>
+
+<h1>Admin section authentication</h1>
+
+<p><a href="http://actionshrimp.github.com/images/authentic-screen.png"><img class="alignleft size-medium wp-image-251" src="http://actionshrimp.github.com/images/authentic-screen-300x187.png" width="300" height="187" /></a> At the minute, all our sections are wide open for anyone to just stroll in and start adding news, posting works, and generally delete or edit existing pieces of data. This clearly isn&#8217;t ideal, so next on the agenda is sorting this out. We&#8217;ll use the <a href="http://book.cakephp.org/view/172/Authentication">authentication component</a> for this. First of all, we want all add/edit capabilities to be kept within the admin section, so the first step is to remove the non-admin versions of these. Go through all five of the your_app_dir/app/controllers/*_controller.php, and delete the functions &#8220;add&#8221; and &#8220;edit&#8221; that were automatically generated.</p>
+
+<p>Next, clean up the views associated with these functions - delete the two files your_app_dir/app/views/*/add.ctp and edit.ctp in all five of the view directories. This means now we can only add and edit our data by navigating to your_app/<strong>admin</strong>/controller/add etc. We&#8217;re going to want to use authentication for all our controllers, as all of them have an admin section that we need to login for. Instead of telling each controller to use this component individually, we can tell the whole controller superclass that we want to use it, to save repetition. Open the file your_app_dir/app/app_controller.php and add the line in the class definition like so:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='php'><span class='line'><span class="cp">&lt;?</span>
+</span><span class='line'><span class="k">class</span> <span class="nc">AppController</span> <span class="k">extends</span> <span class="nx">Controller</span> <span class="p">{</span>
+</span><span class='line'>    <span class="k">var</span> <span class="nv">$components</span> <span class="o">=</span> <span class="k">array</span><span class="p">(</span><span class="s1">&#39;Auth&#39;</span><span class="p">);</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'><span class="cp">?&gt;</span><span class="x"></span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Now if you try and visit an admin page in your_app, you&#8217;ll be greeted with an error messages telling you there&#8217;s no login action in the Users controller, which is where the Auth component looks by default, so we&#8217;d better add this in. Edit the file your_app_dir/app/controllers/users_controller.php, and right at the bottom of the class definition, add these two functions:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='php'><span class='line'><span class="cp">&lt;?</span>
+</span><span class='line'><span class="k">function</span> <span class="nf">admin_login</span><span class="p">()</span> <span class="p">{</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'><span class="k">function</span> <span class="nf">admin_logout</span><span class="p">()</span> <span class="p">{</span>
+</span><span class='line'>    <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">Redirect</span><span class="p">(</span><span class="nv">$this</span><span class="o">-&gt;</span><span class="na">Auth</span><span class="o">-&gt;</span><span class="na">logout</span><span class="p">());</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'><span class="cp">?&gt;</span><span class="x"></span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Now try and navigate to an admin section again. You&#8217;re told that there&#8217;s a missing view this time! Better do what Cake says and add one in. Create the new file your_app_dir/app/views/users/admin_login.ctp, and fill it with the following skeleton login form:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='php'><span class='line'><span class="cp">&lt;?php</span>
+</span><span class='line'>    <span class="k">if</span><span class="err"> </span> <span class="p">(</span><span class="nv">$session</span><span class="o">-&gt;</span><span class="na">check</span><span class="p">(</span><span class="s1">&#39;Message.auth&#39;</span><span class="p">))</span> <span class="nv">$session</span><span class="o">-&gt;</span><span class="na">flash</span><span class="p">(</span><span class="s1">&#39;auth&#39;</span><span class="p">);</span>
+</span><span class='line'>    <span class="k">echo</span> <span class="nv">$form</span><span class="o">-&gt;</span><span class="na">create</span><span class="p">(</span><span class="s1">&#39;User&#39;</span><span class="p">,</span> <span class="k">array</span><span class="p">(</span><span class="s1">&#39;action&#39;</span> <span class="o">=&gt;</span> <span class="s1">&#39;admin_login&#39;</span><span class="p">));</span>
+</span><span class='line'>    <span class="k">echo</span> <span class="nv">$form</span><span class="o">-&gt;</span><span class="na">input</span><span class="p">(</span><span class="s1">&#39;username&#39;</span><span class="p">);</span>
+</span><span class='line'>    <span class="k">echo</span> <span class="nv">$form</span><span class="o">-&gt;</span><span class="na">input</span><span class="p">(</span><span class="s1">&#39;password&#39;</span><span class="p">);</span>
+</span><span class='line'>    <span class="k">echo</span> <span class="nv">$form</span><span class="o">-&gt;</span><span class="na">end</span><span class="p">(</span><span class="s1">&#39;Login&#39;</span><span class="p">);</span>
+</span><span class='line'><span class="cp">?&gt;</span><span class="x"></span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Now there are two problems: we&#8217;re greeted with a login for all the admin sections - a slight problem as we don&#8217;t have credentials&#8230; we&#8217;ve locked ourselves out of the whole website! There are also some error messages when we try and view the non-admin sections of the site, which seem to want us to login but can&#8217;t find a login() action (remember we only created admin_login, and didnt bother with login). Fortunately, we can get around these problems by adding exceptions to the authentication. Open up the users controller, your_app_dir/app/controllers/users_controller.php, and then add in the following <a href="http://book.cakephp.org/view/60/Callbacks">controller callback function</a> (I added it in near the top):</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='php'><span class='line'><span class="cp">&lt;?</span>
+</span><span class='line'><span class="k">function</span> <span class="nf">beforeFilter</span><span class="p">()</span> <span class="p">{</span>
+</span><span class='line'>    <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">Auth</span><span class="o">-&gt;</span><span class="na">allow</span><span class="p">(</span><span class="s1">&#39;admin_add&#39;</span><span class="p">,</span> <span class="s1">&#39;admin_index&#39;</span><span class="p">);</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'><span class="cp">?&gt;</span><span class="x"></span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>This gives access to the admin add and index (which lists all users) actions of the users controller. So now, navigate to your_app/admin/users/add, and create a login for yourself! You&#8217;ll probably want to remove the allow line once you&#8217;ve added yourself to prevent anyone else creating a login for themselves when you&#8217;re not looking. We&#8217;re still however stuck with the problem that none of the non-admin sections work, so we need to add an Auth exception to all non-admin sections. The best way to do this is by adding the following into the your_app_dir/app/app_controller.php AppController class definition, underneath where we told it to load the Auth component earlier:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+</pre></td><td class='code'><pre><code class='php'><span class='line'><span class="cp">&lt;?</span>
+</span><span class='line'><span class="k">function</span> <span class="nf">beforeFilter</span><span class="p">()</span> <span class="p">{</span>
+</span><span class='line'>    <span class="nv">$admin</span> <span class="o">=</span> <span class="nx">Configure</span><span class="o">::</span><span class="na">read</span><span class="p">(</span><span class="s1">&#39;Routing.admin&#39;</span><span class="p">);</span>
+</span><span class='line'>    <span class="k">if</span> <span class="p">(</span><span class="nb">isset</span><span class="p">(</span><span class="nv">$this</span><span class="o">-&gt;</span><span class="na">params</span><span class="p">[</span><span class="nv">$admin</span><span class="p">])</span> <span class="k">and</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">params</span><span class="p">[</span><span class="nv">$admin</span><span class="p">]){</span>
+</span><span class='line'>        <span class="c1">//$this-&gt;layout = &#39;admin&#39;;</span>
+</span><span class='line'>    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span><span class='line'>        <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">Auth</span><span class="o">-&gt;</span><span class="na">allow</span><span class="p">();</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'><span class="cp">?&gt;</span><span class="x"></span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Now we should be able to navigate the site without any problems. The commented out line above allows the future addition of an admin.ctp layout file that will automatically be loaded when viewing admin sections - I haven&#8217;t done this yet though. The next phase of the project is to go through and edit all the views, layouts &amp; CSS and get them looking how you want, and this is largely an exercise in usual web development - you can take a look at the default views to see how to include data provided by Cake fairly easily. If I come across anything else I think might be of help while I&#8217;m building the rest of the site, I&#8217;ll make small posts for those too. Hopefully you&#8217;ve been able to follow this introduction to Cake so far, but if not drop me a line in the comments below and I&#8217;ll try and give you a hand where I can. Good luck!</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[CakePHP Tutorial Part 1: Bake Utility]]></title>
+    <link href="http://actionshrimp.github.com/2009/03/cakephp-tutorial-part-1-bake-utility/"/>
+    <updated>2009-03-28T17:04:00+00:00</updated>
+    <id>http://actionshrimp.github.com/2009/03/cakephp-tutorial-part-1-bake-utility</id>
+    <content type="html"><![CDATA[<p><img class="alignleft size-full wp-image-130" src="http://actionshrimp.github.com/images/cake-logo.png" width="180" height="180" />A friend of mine recently asked me to help him build an online portfolio for his illustration pieces, and I decided to use <a href="http://cakephp.org/" target="_blank">CakePHP 1.2</a> to get the back end up and running quickly. I thought someone might find a tutorial taking a simple website through from start to finish useful, so this tutorial series will do just that. This part of the series takes you through the first few steps I took to get the basic code together.  You&#8217;ll need a web server and database server such as MySQL, and some basic PHP and webserver management knowledge. We&#8217;ll be using Cake&#8217;s &#8220;bake&#8221; utility to create the basic code as well, so you&#8217;ll need console access to your webserver, and PHP&#8217;s command line utility (in Ubuntu/PHP5 you can just install the package php5-cli).</p>
+
+<!--more-->
+
+
+<h1>Downloading and setting up CakePHP</h1>
+
+<p>Create a new directory on your webserver where your cake website will reside (or just use the web root if this is going to be the main webpage).  Next, we&#8217;ll need to actually download CakePHP.  If you have shell access to your webserver, you can use SVN to get the latest stable release automatically: navigate to the directory and use the command (note the &#8220;.&#8221; at the end of the command)</p>
+
+<pre>$ svn checkout https://svn.cakephp.org/repo/trunk/cake/1.2.x.x/ .</pre>
+
+
+<p> to do so.  If you don&#8217;t know what any of this means, just download the latest stable release from the CakePHP website and extract the files into the directory you created - make sure the various .htaccess files don&#8217;t go astray in the process. Some standard setup is also required: we need to tell cake how to connect to our database server, to do this follow the steps on <a href="http://book.cakephp.org/view/331/Cake-Database-Configuration">this page</a>. There&#8217;s also a couple of optional (but recommended) configuration steps <a href="http://book.cakephp.org/view/332/Optional-Configuration">here</a>. After this, you should be able to browse to the directory in a web browser and see the default page - there shouldn&#8217;t be any errors or warnings if all configuration has been completed correctly (N.B. if the default page looks a bit plain - no colours, CSS styles etc., then you probably have a mod_rewrite issue, check out <a href="http://book.cakephp.org/view/333/A-Note-on-mod_rewrite">this page</a>). Now we can begin work on the site.</p>
+
+<h1>Bake a cake</h1>
+
+<p>Cake&#8217;s bake utility is a handy way of generating the basic code structure for a web application, saving a lot of the tedious grunt work that often comes with setting up a new project. The general idea is often seen in frameworks that take advantage of the MVC (model-view-controller) design pattern (such as Ruby on Rails, and others). It involves creating a database structure that describes the various data entites - or &#8220;models&#8221; - of our application, then running a script that reads this structure and generates the framework code for the models. It can then generate standard interfaces (or &#8220;views&#8221;) for displaying the data, and &#8220;controllers&#8221; which tie our interfaces and models together, allowing data to be input and manipulated. Of course, these standard pieces of generated code probably won&#8217;t be exactly what we want, but they can provide a great starting point to work from and then tweak. First of all, we&#8217;ll create our database structure. I&#8217;m using an empty database for this project, although if you&#8217;re using a database with tables from other projects in, you can set Cake to work with a table prefix fairly easily. Let&#8217;s get to work building the tables. The first model will be &#8220;News&#8221;, containing data for a news section where the owner can post updates and information onto the site.  To represent this, I created a table &#8220;news&#8221;, with four fields:</p>
+
+<ul>
+<li><strong>id</strong> - type: int - extra: auto_increment - primary key <em>(A unique identifier for each record)</em></li>
+<li><strong>date</strong> - type: date</li>
+<li><strong>title</strong> - type: text</li>
+<li><p><strong>body</strong> - type: text The next model is for representing finished works placed onto the site - the main part of the portfolio. Create a table called &#8220;works&#8221; with the four fields:</p></li>
+<li><p><strong>id</strong> - type: int - extra: auto_increment - primary key</p></li>
+<li><strong>date</strong> - type: date</li>
+<li><strong>title</strong> - type: text</li>
+<li><strong>desc</strong> - type: text</li>
+</ul>
+
+
+<p>Next up, a sketches model. This is pretty much the same as &#8220;works&#8221; but will contain sketches as opposed to finished pieces. Create a table called &#8220;sketches&#8221; with the same four fields as above.</p>
+
+<p><a href="http://actionshrimp.github.com/images/screenshot-1.png"><img class="alignright size-medium wp-image-153" src="http://actionshrimp.github.com/images/screenshot-1-300x187.png" width="300" height="187" /></a></p>
+
+<p>A friends model for a page that will contain links to websites belonging to friends of the owner, along with a thumbnail and description. Create the table &#8220;friends&#8221;, with the fields:</p>
+
+<ul>
+<li><strong>id</strong> - type: int - extra: auto_increment - primary key</li>
+<li><strong>name</strong> - type: text</li>
+<li><strong>url</strong> - type:  text</li>
+<li><strong>desc</strong> - type:  text</li>
+</ul>
+
+
+<p>There is one last model we&#8217;ll need: &#8220;users&#8221;. By creating a table with a username/password, we can let the owner login to manage the site, add new works, sketches and friends. Multiple users will mean we can also have a login to test out the site. So create the &#8220;users&#8221; table, with fields:</p>
+
+<ul>
+<li><strong>id</strong> - type: int - extra: auto_increment - primary key</li>
+<li><strong>username</strong> - type: varchar(20)</li>
+<li><strong>password</strong> - type:  varchar(50)</li>
+<li><p><strong>displayname</strong> - type:  varchar(20) (Name shown when making posts etc - can be different from login name) Now all our tables are created, we can get to baking. In a console, navigate to yourdir/cake/console, and then run the command</p>
+
+<p>$ ./cake bake</p></li>
+</ul>
+
+
+<p>and you&#8217;ll be presented with:</p>
+
+<p><a href="http://actionshrimp.github.com/images/screenshot-2.png"><img class="alignright size-medium wp-image-154" src="http://actionshrimp.github.com/images/screenshot-2-300x187.png" width="300" height="187" /></a></p>
+
+<pre><code>Welcome to CakePHP v1.2.2.8120 Console
+---------------------------------------------------------------
+App : app
+Path: /home/dave/public_html/kingjon/app
+---------------------------------------------------------------
+Interactive Bake Shell
+---------------------------------------------------------------
+[D]atabase Configuration
+[M]odel
+[V]iew
+[C]ontroller
+[P]roject
+[Q]uit
+What would you like to Bake? (D/M/V/C/P/Q)
+&gt; 
+</code></pre>
+
+<p>at this point, if you haven&#8217;t setup your database configuration yet, you can create it with the &#8220;[D]atabase Configuration&#8221; option. We&#8217;ll be choosing the &#8220;[M]odel&#8221; option however:</p>
+
+<pre><code>&gt; m
+---------------------------------------------------------------
+Bake Model
+Path: /home/dave/public_html/kingjon/app/models/
+---------------------------------------------------------------
+Possible Models based on your current database:
+1. Friend
+2. News
+3. Sketch
+4. User
+5. Work
+
+Enter a number from the list above, type in the name of another model, or 'q' to exit
+[q] &gt;
+</code></pre>
+
+<p>notice our database tables have been read, and cake has automatically figured out that an entry in &#8220;works&#8221; will be a &#8220;Work&#8221;, &#8221;sketches&#8221; give a &#8220;Sketch&#8221; and so on, but &#8220;news&#8221; is still &#8220;News&#8221;.  We may as well start with the first entry, so enter 1, and hit enter. You&#8217;ll be asked the following:</p>
+
+<pre><code>[q] &gt; 1
+Would you like to supply validation criteria for the fields in your model? (y/n)
+[y] &gt;
+</code></pre>
+
+<p>Cake has a set of predefined validation criteria to make sure that data entered for a model is correct. We may as well take advantage of these, so hit &#8220;y&#8221; and press return. Next Cake goes through each of the fields in our table, and asks what validation criteria we want for each.</p>
+
+<p><strong>id</strong> is first, and I chose &#8220;blank&#8221; (number 3 in my case, athough I guess this number may change depending on which version of cake you&#8217;re using). This ensures that no data is entered for the id, which is what we want as the field is auto generated by mySQL&#8217;s auto_increment. For <strong>name</strong> I chose &#8220;Do not do any validation on this field&#8221; as the name can contain any text. For <strong>url</strong> I chose the rather fitting &#8220;url&#8221; (number 27) validation type. Finally, for <strong>desc</strong> I chose &#8220;Do not do any validation on this field&#8221; as well. A final couple of questions now pop up: model associations - for this I just hit &#8220;n&#8221; as our model is simple and has no relational properties - and a confirmation to check your settings are ok:</p>
+
+<pre><code>---------------------------------------------------------------
+The following Model will be created:
+---------------------------------------------------------------
+Name:       Friend
+Validation: Array
+(
+    [id] =&gt; blank
+    [url] =&gt; url
+)
+
+Associations:
+---------------------------------------------------------------
+Look okay? (y/n)
+[y] &gt;
+</code></pre>
+
+<p>Confirm this and there&#8217;s a final question about SimpleTest and unit test files. This is to do with Cake&#8217;s testing framework which I personally haven&#8217;t tried, so just hit &#8220;n&#8221; here unless you feel like giving it a spin.  Congratulations, you&#8217;ve successfully baked your first model! Continue the process now, and bake the other models with appropriate validation criteria (I used &#8220;blank&#8221; for all the IDs, &#8220;date&#8221; for the date fields, and no validation for all the title/description fields - although for the users table, I chose &#8220;notEmpty&#8221; for the username, password and displayname fields as blank entries here would cause problems). Next up, time to bake some controllers. I&#8217;ll show you the output from my run through first including the options I chose, and explain to you afterwards what some of them mean and why I chose them:</p>
+
+<pre><code>What would you like to Bake? (D/M/V/C/P/Q)
+&gt; c
+---------------------------------------------------------------
+Bake Controller
+Path: /home/dave/public_html/kingjon/app/controllers/
+---------------------------------------------------------------
+Possible Controllers based on your current database:
+1. Friends
+2. News
+3. Sketches
+4. Users
+5. Works
+Enter a number from the list above, type in the name of another controller, or 'q' to exit
+[q] &gt; 1
+---------------------------------------------------------------
+Baking FriendsController
+---------------------------------------------------------------
+Would you like to build your controller interactively? (y/n)
+[y] &gt; y
+Would you like to use scaffolding? (y/n)
+[n] &gt; n
+Would you like to include some basic class methods (index(), add(), view(), edit())? (y/n)
+[n] &gt; y
+Would you like to create the methods for admin routing? (y/n)
+[n] &gt; y
+Would you like this controller to use other helpers besides HtmlHelper and FormHelper? (y/n)
+[n] &gt; n
+Would you like this controller to use any components? (y/n)
+[n] &gt; n
+Would you like to use Sessions? (y/n)
+[y] &gt; y
+You need to enable Configure::write('Routing.admin','admin') in /app/config/core.php to use admin routing.
+What would you like the admin route to be?
+Example: www.example.com/admin/controller
+What would you like the admin route to be?
+[admin] &gt; 
+
+---------------------------------------------------------------
+The following controller will be created:
+---------------------------------------------------------------
+Controller Name:  Friends
+---------------------------------------------------------------
+Look okay? (y/n)
+[y] &gt;
+
+Creating file /home/dave/public_html/kingjon/app/controllers/friends_controller.php
+Wrote /home/dave/public_html/kingjon/app/controllers/friends_controller.php
+SimpleTest is not installed.  Do you want to bake unit test files anyway? (y/n)
+[y] &gt; n
+</code></pre>
+
+<p>Ok, I started by building the controller for the friends section again. Building interactively gives you access to more options in the setup, so I went for that.</p>
+
+<p><a href="http://book.cakephp.org/view/105/Scaffolding">Scaffolding</a> is basically a flag you set in your controller telling cake that you want basic skeleton app behaviour to be created at runtime. By baking we are given the advantage of pre-generating code that does more or less the same thing, but that we can also edit later, so choosing &#8220;n&#8221; for scaffolding is a wise plan in our case. The next question about basic methods is where our pre-generated skeleton code comes from, so choose &#8220;y&#8221; here. Admin routing creates an admin section for adding/deleting/modifying records. As we don&#8217;t want visitors to the website to be able to do this, but the portfolio owner will be wanting to do this, an admin section is a good idea, so &#8220;y&#8221; to this question as well. We are now asked about <a href="http://book.cakephp.org/view/181/Core-Helpers">helpers</a>. Helpers are libraries built into cake that add functionality and generally make your life easier. At the minute we&#8217;ll just use the default two, so choose &#8220;n&#8221;, although more can be added later easily if we need them. Next up are <a href="http://book.cakephp.org/view/170/Core-Components">components</a> which are similar to helpers, although these are more at a behind-the-scenes level, and helpers are used more for displaying and formatting data on the interface side of things. Again we may use some of these later, but at the minute just hit &#8220;n&#8221; for components. Finally hit &#8220;y&#8221; for sessions, and I agreed to the default name for the admin section, &#8220;admin&#8221;, although you may wish to change this.  Hit &#8220;y&#8221; for the confirmation, and then &#8220;n&#8221; for the testing question again. Repeat this for the other controllers. Finally we have to make some views, so here we go again, although this step is a lot quicker. Choose &#8220;[V]iew&#8221; from the main menu, and I&#8217;m starting off with Friends again. The first question it asks is seemly about the scaffolding again:</p>
+
+<pre><code>Would you like to create some scaffolded views (index, add, view, edit) for this controller?
+NOTE: Before doing so, you'll need to create your controller and model classes (including associated models). (y/n)
+[n] &gt; y
+</code></pre>
+
+<p>Before we wanted nothing to do with scaffolding, but here we hit &#8220;y&#8221;: this generates the views for the basic class methods we agreed to in the controller generation. We&#8217;re then asked about admin routing views, and we press &#8220;y&#8221; again, and the script tells us it&#8217;s generated the files we need. Repeat this process for the other views, and then we&#8217;re done with baking.</p>
+
+<h1>Let&#8217;s see what we&#8217;ve done so far&#8230;</h1>
+
+<p><a href="http://actionshrimp.github.com/images/screenshot.png"><img class="alignleft size-medium wp-image-143" src="http://actionshrimp.github.com/images/screenshot-300x187.png" width="300" height="187" /></a> Now what exactly has all that baking achieved? If you go to the index page of your app directory in the web browser, you&#8217;ll just be greeted with the same welcome page. But try navigating to your_app_folder/news or your_app_folder/works and a new page comes up. You can give adding a piece of a news a go with the &#8220;New News&#8221; link on the news page. A form pops up letting you fill in the date, title and post body, and you&#8217;ll notice the entry form lets you fill in the date correctly and so on.  We aren&#8217;t prompted to enter an ID because our validation criteria said we wanted this to be blank as it would be generated automatically. Once the post has been added, an entry comes up on the main page, letting us view the individual post, edit it or delete it. In fact, if you&#8217;ve been keeping an eye on the URLs, you&#8217;ll have noticed that they take the form your_app_folder/controller/action. The actions were generated automatically by our baking process, and we&#8217;ll take a look at them in a bit more detail later on. You&#8217;ll notice you can also go to your_app_folder/admin/news to get the same page - this is our admin routing. At the minute there is no difference between the two sections, but we&#8217;ll edit it so that you wont be able to add/edit/delete thing unless you&#8217;re in the admin section, and logged in correctly. As you can see, baking has set up all the basic logic for our various sections, we just need to tweak it and glue it together a bit, and I&#8217;ll deal with that in the <a href="http://www.actionshrimp.com/2009/03/cakephp-tutorial-part-2-authentication/">next part of the tutorial</a>.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Using Lightbox with Apache directory listings as an image gallery]]></title>
+    <link href="http://actionshrimp.github.com/2009/03/using-lightbox-with-apache-directory-listings-as-an-image-gallery/"/>
+    <updated>2009-03-01T22:10:00+00:00</updated>
+    <id>http://actionshrimp.github.com/2009/03/using-lightbox-with-apache-directory-listings-as-an-image-gallery</id>
+    <content type="html"><![CDATA[<p><em>This is a guest post from my friend <a href="http://mattjbray.com">Matt Bray</a></em></p>
+
+<p><img src="http://actionshrimp.github.com/images/lightbox-300x184.jpg" width="300" height="184" /> As you may know, if it can&#8217;t find an <code>index.html</code> the apache web server will show a list of files in the current directory. I was browsing through lists of images on my file server the other day and I thought, wouldn&#8217;t it be nice to have a next button? So I started digging around.</p>
+
+<p>In the end I used a wonderful little script called <a href="http://www.lokeshdhakar.com/projects/lightbox2/">Lightbox 2</a> and a bit of JavaScript <a href="http://prototypejs.org">Prototype</a> magic to produce <a href="http://bf.mattjbray.com/lightbox_images">this</a> (try clicking on the image files). The directory listings are provided by an apache module going by the name of <code>mod_autoindex</code>. This module allows you to insert a custom header and footer through the directives <code>HeaderName</code> and <code>ReadmeName</code>. The plan is to insert some HTML that includes the Lightbox code and tags all the links to images with the <code>rel=lightbox</code> attribute that Lightbox uses to function.</p>
+
+<!--more-->
+
+
+<p>Create a directory called <code>lightbox</code> in your server&#8217;s document root. Download <a href="http://www.lokeshdhakar.com/projects/lightbox2/#download">Lightbox 2</a> and extract it to that directory (go to <code>http://www.yourwebsite.com/lightbox</code> to try it out). To get the Lightbox &#8216;loading&#8217; and &#8216;next&#8217; images to show up, you need to edit a couple of lines in the configuration section of <code>js/lightbox.js</code> that comes with Lightbox. Change the following</p>
+
+<pre><code>LightboxOptions = Object.extend({
+fileLoadingImage:        'images/loading.gif',
+fileBottomNavCloseImage: 'images/closelabel.gif',
+</code></pre>
+
+<p>to look like</p>
+
+<pre><code>LightboxOptions = Object.extend({
+fileLoadingImage:        '/lightbox/images/loading.gif',
+fileBottomNavCloseImage: '/lightbox/images/closelabel.gif',
+</code></pre>
+
+<p>I also adjusted <code>resizeSpeed</code> to 9 to make it feel a little snappier, change this to your taste. Now create a new file called <code>lightbox.html</code> in your <code>/lightbox</code> directory and copy and paste the following:</p>
+
+<pre><code>&lt;script src="http://actionshrimp.github.com/lightbox/js/prototype.js" type="text/javascript"&gt;&lt;/script&gt;
+&lt;script src="http://actionshrimp.github.com/lightbox/js/scriptaculous.js?load=effects,builder" type="text/javascript"&gt;&lt;/script&gt;
+&lt;script src="http://actionshrimp.github.com/lightbox/js/lightbox.js" type="text/javascript"&gt;&lt;/script&gt;
+&lt;script type="text/javascript"&gt;&lt;!--
+    // Insert the lightbox stylesheet into &lt;head&gt;
+    var stylesheet = new Element('link', {  'rel': 'stylesheet',
+                                            'href': '/lightbox/css/lightbox.css',
+                                            'type': 'text/css',
+                                            'media': 'screen'
+                                         });
+    $$('head')[0].appendChild(stylesheet);
+
+    // Check for links preceded by the image icon provided by mod_autoindex.
+    // On my setup the src attribute in the img tag preceding a link to an image
+    // is "/icons/image2.gif". This is used to identify links to images.
+    $$("a").each( function(elmt) {
+            // The default output is tabular, so check the previous cell for the img tag
+            imgelmt = elmt.up().previous().down()
+            // If the FancyIndexes option is set, the output is formatted differently
+            if (imgelmt == undefined) { imgelmt = elmt.previous('img') }
+            if (imgelmt.readAttribute('src') == "/icons/image2.gif")
+            {
+                elmt.setAttribute('rel', 'lightbox[images]');
+
+                // As ps suggested, provide a link to the image in the lightbox description
+                link = "&amp;lt;a href='" + elmt.readAttribute('href') + "'&amp;gt;" + 
+                        elmt.innerHTML.stripScripts().stripTags() + "&amp;lt;/a&amp;gt;";
+                elmt.setAttribute('title', link );
+            }
+        } );
+--&gt;&lt;/script&gt;
+</code></pre>
+
+<p>Now all you have to do is tell apache to include this file in its directory listing page. Simply paste the following two lines into a file named <code>.htaccess</code> and copy it to any directory that you want Lightbox to appear in.</p>
+
+<pre><code>Options Indexes
+ReadmeName /lightbox/lightbox.html
+</code></pre>
+
+<p>Et voila! No php, no databases to maintain. Image galleries don&#8217;t get much simpler than that.</p>
+
+<p>You can download the files mentioned above <a href="http://actionshrimp.github.com/files/lightbox1.zip">here</a>.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Installing awesome Window Manager on Ubuntu Intrepid]]></title>
+    <link href="http://actionshrimp.github.com/2009/02/installing-awesome-window-manager-on-ubuntu-intrepid/"/>
+    <updated>2009-02-02T16:59:00+00:00</updated>
+    <id>http://actionshrimp.github.com/2009/02/installing-awesome-window-manager-on-ubuntu-intrepid</id>
+    <content type="html"><![CDATA[<p><em>Quick Note: This post was originally published on 02/02/2009, so is probably a bit outdated now.</em></p>
+
+<p><img src="http://actionshrimp.github.com/images/awesomescreenmini.png" width="200" height="98" /> Today I had a go at installing <a href="http://awesome.naquadah.org/">awesome window manager</a>. awesome is a great tiling window manager, useful if you have a large monitor and are fed up with having one window taking up all the space when it doesn&#8217;t really need it all. For example, having firefox maximised on a 1920x1200 resolution monitor can mean you end up with very large sentences that spread across the screen, decreasing readability. Unfortunately the version of awesome in the Interpid repos is 2.3.2-1, which is now deprecated, and the current stable release is version 3.1-1.  The website suggests building from source - I attempted this but there are currently a couple of issues with compilation mentioned in the wiki, and even with the fix suggested I couldn&#8217;t quite get it to work - although I didn&#8217;t try too hard it must be said; instead I found another method which I will walk you through now.</p>
+
+<!--more-->
+
+
+<h2>Installing and Trying It Out</h2>
+
+<p>The method I ended up using revolves using binaries from the Debian experimental repository, which seem to work perfectly. First, you can download the awesome 3.1-1 package (N.B. The binaries I&#8217;m linking to here from Debian&#8217;s website are for i386, for others just search for them on the site), and try and install it with:</p>
+
+<pre><code>$ wget http://ftp.uk.debian.org/debian/pool/main/a/awesome/awesome_3.1-1_i386.deb
+$ sudo dpkg -i awesome_3.1-1_i386.deb
+</code></pre>
+
+<p>However, it will spit out a list of dependencies it couldn&#8217;t manage - these are packages that are also outdated in the current Ubuntu repos. So next, fetch the ones you need which are listed below:</p>
+
+<pre><code>$ wget http://ftp.uk.debian.org/debian/pool/main/x/xcb-util/libxcb-atom1_0.3.2-1_i386.deb
+$ wget http://ftp.uk.debian.org/debian/pool/main/x/xcb-util/libxcb-aux0_0.3.2-1_i386.deb
+$ wget http://ftp.uk.debian.org/debian/pool/main/x/xcb-util/libxcb-event1_0.3.2-1_i386.deb
+$ wget http://ftp.uk.debian.org/debian/pool/main/x/xcb-util/libxcb-icccm1_0.3.2-1_i386.deb
+$ wget http://ftp.uk.debian.org/debian/pool/main/x/xcb-util/libxcb-keysyms0_0.3.2-1_i386.deb
+$ wget http://ftp.uk.debian.org/debian/pool/main/x/xcb-util/libxcb-property1_0.3.2-1_i386.deb
+$ wget http://ftp.uk.debian.org/debian/pool/main/x/xcb-util/libxcb-render-util0_0.3.2-1_i386.deb
+</code></pre>
+
+<p>Then try and install them all with dpkg:</p>
+
+<pre><code>$ sudo dpkg -i awesome_3.1-1_i386.deb libxcb-atom1_0.3.2-1_i386.deb libxcb-aux0_0.3.2-1_i386.deb \
+libxcb-event1_0.3.2-1_i386.deb libxcb-icccm1_0.3.2-1_i386.deb libxcb-property1_0.3.2-1_i386.deb \
+libxcb-render-util0_0.3.2-1_i386.deb libxcb-keysyms0_0.3.2-1_i386.deb
+</code></pre>
+
+<p>At this point, it might spit out that it needs some extra packages - these are packages that you should just be able to install normally with synaptic or apt: I had to install <code>menu</code> for example, and you may have to install some others as I had a few other dependencies installed from trying to build from source earlier on. Once you have all the packages, run the above command again to install awesome. Once awesome is installed, you&#8217;ll need a configuration file. A default config file is provided, so go ahead and copy it to your home dir:</p>
+
+<pre><code>$ mkdir ~/.config/awesome
+$ cp /etc/xdg/awesome/rc.lua ~/.config/awesome/rc.lua
+</code></pre>
+
+<p>Now we can see if awesome works - kill your current window manager (in my case compiz), then fire up awesome:</p>
+
+<pre><code>$ killall compiz.real &amp;&amp; awesome&amp;
+</code></pre>
+
+<p>Hopefully everything has gone to plan, and awesome should now be running! Hooray! Have a little play around with it, mess with the config file a bit and see if you like it. Some useful key-bindings are:</p>
+
+<ul>
+<li>Win + Enter - launch a terminal</li>
+<li>Win + F1 - run a command</li>
+<li>Win + J/K - switch windows (à la vim)</li>
+<li>Win + H/L - resize major/minor divide</li>
+<li>Win + Shift + J/K - move windows</li>
+<li>Win + Space - change layout</li>
+<li>Win + Ctrl + r - restart awesome, for example to update if you change the config file</li>
+</ul>
+
+
+<p>There are loads more keybindings that you can find/change in the config file if you wanna know what they all do exactly.</p>
+
+<p>If after using awesome for a while you decide you want to keep it, there are a few loose ends to tie up.</p>
+
+<h2>Setting awesome as the Default Window Manager</h2>
+
+<p>First, fire up gconf-editor:</p>
+
+<pre><code>$ gconf-editor
+</code></pre>
+
+<p>On the list on the left, goto <code>desktop &amp;gt; gnome &amp;gt; session</code>. First of all, we&#8217;ll get rid of the gnome-panels - awesome already has its own. On the right, there is a name/value pair with name <code>required\_components\_list</code>, containing <code>[windowmanager, panel, filemanager]</code>. Remove panel, so it becomes <code>[windowmanager, filemanager]</code>.</p>
+
+<p>Next we actually tell gnome to load in awesome instead of compiz. On the list on the left, choose the folder <code>required_components</code>. Change the windowmanager field from <code>compiz</code> to <code>awesome</code>. Finally, you&#8217;ll probably wan&#8217;t to disable nautilus&#8217;s desktop (where the desktop icons live etc.) as it can do funny things, and with your magical new tiling windows you will probably never see the desktop. To do this, from the list on the left choose <code>apps &amp;gt; nautilus &amp;gt; preferences</code> and when here, uncheck <code>show_desktop</code>. Now you can kiss sweet goodbye to all the remnants of your old desktop - log out of your system and log back in again to see it take effect. WARNING: If something has gone wrong and awesome doesn&#8217;t load (maybe you mispelt it in gconf-editor or something), you should still be able to find a way to edit the gconf preferences, but it took me a while to figure out how to logout when the normal gnome logout button had disappeared. To logout in this situation, use <code>gnome-session-save --kill</code>.</p>
+
+<h2>Customising and Configuring</h2>
+
+<p>Due to the highly keyboard oriented nature of awesome, you may now want to install a launcher. A couple of good ones are Gnome-Do (if you opt for this, you will have to change the binding from Win+Space in the awesome preferences, or reconfigure awesome&#8217;s binding for this combination), an all singing all dancing affair which I used for a while, or dmenu which is quite a lot simpler and I&#8217;ve opted for in this case. To install dmenu:</p>
+
+<pre><code>$ sudo apt-get install dmenu
+</code></pre>
+
+<p>Next we setup a keybinding for it to launch in the awesome config file. Underneath the line:</p>
+
+<pre><code>-- \{\{\{ Keybindings 
+</code></pre>
+
+<p>add (here it is mapped to Win+P - change this if you like):</p>
+
+<pre><code>-- dmenu
+keybinding({ modkey }, "p", function () awful.util.spawn("`dmenu_path | dmenu -b`") end):add()
+</code></pre>
+
+<p>Also, as awesome is aimed at uber geeks the time is displayed by default with&#8230;. unix <code>time_t</code>. Unless you&#8217;re some kind of time_t reading magician, hunt down the section in the config file that looks like this, and comment/uncomment accordingly:</p>
+
+<pre><code>-- For unix time_t lovers
+--mytextbox.text = " " .. os.time() .. " time_t "
+-- Otherwise use:
+mytextbox.text = " " .. os.date() .. " "
+</code></pre>
+
+<p>Finally, I missed my CPU monitor. There is however a set of widgets you can get that adds functionality like this called wicked. Install wicked:</p>
+
+<pre><code>$ git clone git://git.glacicle.com/awesome/wicked.git
+$ sudo cp wicked/wicked.lua /usr/share/awesome/lib/
+$ sudo cp wicked/wicked.7.gz /usr/share/man/man7/
+</code></pre>
+
+<p>in config file, underneath:</p>
+
+<pre><code>-- \{\{\{ Wicked Widgets
+</code></pre>
+
+<p>Add in:</p>
+
+<pre><code>-- \{\{\{ Wicked Widgets
+-- CPU Usage Graph
+cpugraphwidget = widget({
+    type = 'graph',
+    name = 'cpugraphwidget',
+    align = 'left'
+})
+cpugraphwidget.height = 0.85
+cpugraphwidget.width = 45
+cpugraphwidget.bg = '#333333'
+cpugraphwidget.border_color = '#0a0a0a'
+cpugraphwidget.grow = 'right'
+
+cpugraphwidget:plot_properties_set('cpu', {
+    fg = '#AEC6D8',
+    fg_center = '#285577',
+    fg_end = '#285577',
+    vertical_gradient = false
+})
+wicked.register(cpugraphwidget, wicked.widgets.cpu, '$1', 1, 'cpu')
+</code></pre>
+
+<p>Then add in the cpugraphwidget into the mywibox[s].widgets line:</p>
+
+<pre><code>mywibox[s].widgets = { mylauncher,
+    mytaglist[s],
+    mytasklist[s],
+    mypromptbox[s],
+    cpugraphwidget,
+    mytextbox,
+    mylayoutbox[s],
+    ...
+</code></pre>
+
+<p>For full instructions on <a href="http://awesome.naquadah.org/wiki/index.php?title=Wicked">how to use wicked</a>, and configure awesome, check out the <a href="http://awesome.naquadah.org/wiki/index.php?title=Main_Page">awesome wiki</a>. Have fun!</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Logitech QuickCam E2500 on Ubuntu Skype]]></title>
+    <link href="http://actionshrimp.github.com/2008/08/logitech-quickcam-e2500-on-ubuntu-skype/"/>
+    <updated>2008-08-13T00:12:00+01:00</updated>
+    <id>http://actionshrimp.github.com/2008/08/logitech-quickcam-e2500-on-ubuntu-skype</id>
+    <content type="html"><![CDATA[<p>I recently discovered the wonders of skype, and tried to get my new webcam working with it under linux, and of course this proved to be quite tricky. After much fiddling I eventually got it to work, hopefully these steps will work for you too.</p>
+
+<p><strong>Please note, this post was written in 2008, so is probably pretty out of date now.</strong></p>
+
+<!--more-->
+
+
+<p>
+The gspca drivers are available from <a href="http://mxhaard.free.fr/download.html">here</a>, I was using a specific version dated 20071224 to work with a patch file I found - many thanks to <a href="http://forums.quickcamteam.net/showthread.php?tid=310">redeye on the QuickCam team forums</a>. If you use a different version of the drivers, you can just examine the patch file and insert the changes manually. First, download the drivers and the patch:</p>
+
+<pre><code>$ wget http://mxhaard.free.fr/spca50x/Download/gspcav1-20071224.tar.gz
+$ wget http://forums.quickcamteam.net/attachment.php?aid=86 -O patch.tar.gz
+</code></pre>
+
+<p>Then extract and apply the patch: (UPDATE: For Ubuntu 8.10 users, this patch may no longer work. Try downloading the patch <a href="http://actionshrimp.github.com/files/gspcapatch.gz">here</a> instead, and then extract it using <code>gzip -d gspcapatch.gz</code>. Apply the extracted file in the same way as below, just neglect the <code>-p1</code> switch, (so do: <code>patch &lt; gspcapatch</code>), you can just ignore the <code>tar -xvf patch.tar.gz</code> command).</p>
+
+<pre><code>$ tar -xvf gspcav1-20071224.tar.gz
+$ tar -xvf patch.tar.gz
+$ cd gspcav1-20071224
+$ patch -p1 &lt; ../quickcamE2500.diff
+</code></pre>
+
+<p>There&#8217;s a handy build script included with the drivers so just run that (requires root):</p>
+
+<pre><code>$ sudo ./gspca_build
+</code></pre>
+
+<p>This generates the file <code>gspca.ko</code> which we use to replace the old gspca module. Check to see if the old module has loaded. You should see something like:</p>
+
+<pre><code>$ lsmod | grep gspca
+gspca                 680656  0
+videodev               29440  1 gspca
+usbcore               146028  9 gspca,snd_usb_audio,snd_usb_lib,usb_storage,usbhid,libusual,ehci_hcd,ohci_hcd
+</code></pre>
+
+<p>We want to find out where it is, so do the following:</p>
+
+<pre><code>$ sudo rmmod gspca
+$ sudo modprobe -v gspca
+</code></pre>
+
+<p>You should see something like:</p>
+
+<pre><code>insmod /lib/modules/2.6.24-20-generic/ubuntu/media/gspcav1/gspca.ko
+</code></pre>
+
+<p>That is the location of the file we&#8217;re looking for, so, replacing where appropriate with what was output for you above, type:</p>
+
+<pre><code>$ sudo rmmod gspca
+$ sudo rm /lib/modules/2.6.24-20-generic/ubuntu/media/gspcav1/gspca.ko
+$ sudo mv gspca.ko /lib/modules/2.6.24-20-generic/ubuntu/media/gspcav1/
+$ sudo modprobe gspca
+</code></pre>
+
+<p>This should have loaded the new module in place of the old one. See if you have a video device:</p>
+
+<pre><code>$ ls /dev/video*
+/dev/video0
+</code></pre>
+
+<p>You can try and run Skype now, and in fact, if you&#8217;re not using the camera for Skype, this may well be enough. But for the Skype users: see if you get any picture by testing in the video devices option menu (be warned, it can take a little while to show up there after skype loads, and a little while for the picture to show when you press the test button, so be patient). If anything shows up at all that&#8217;s a plus. (UPDATE: If you&#8217;re using Ubuntu 8.10, and have used the alternative patch I posted in the other &#8220;UPDATE:&#8221; bracket above, the webcam may still not work in Skype at this point. There seems to be some issue with permissions in this version of the driver, so you may need to run skype as root if it doesn&#8217;t appear to be working. In a terminal type &#8220;sudo skype&#8221; and hit enter. It&#8217;ll ask for your root password, then launch Skype. See if the webcam works now).</p>
+
+<p>Originally I just got a black image, so I assumed the camera wasn&#8217;t working. But I soon realised that the image was there, just very dark - shining a light on it showed this was the case. I tried fiddling around with gstfakevideo for a while to try and alter the output, but there was a simpler solution. The gspca driver itself can take options, and an autoexposure setting was ruining my lighting. To fix this, edit the file /etc/modprobe.d/options, and add a line at the bottom:</p>
+
+<pre><code>options gspca gamma=1 autoexpo=0
+</code></pre>
+
+<p>The <code>gamma=1</code> may not be necessary, but if it still appears too dark or too light for your taste you can change this parameter as you like. Finally, reload the module:</p>
+
+<pre><code>$ sudo rmmod gspca
+$ sudo modprobe gspca
+</code></pre>
+
+<p>and try out skype again. Hopefully it should work at this point! I ran into quite a lot of other problems while I was trying this out, so if you come across any errors, drop a comment below and I&#8217;ll try and get back to you asap.</p>
+
+<p><em>UPDATE</em>: I found a large problem when using the camera in Skype was that CPU usage would shoot up to 100%, causing things to freeze up and conversations to crash after a while. I had played around with <a href="http://code.google.com/p/gstfakevideo">gstfakevideo</a> a bit when trying to get the camera to work originally, and it seems using this when the camera already &#8216;works&#8217; means it uses up far less CPU. I haven&#8217;t had a chance to test it for a long period yet but it seems like it should do the trick. Here&#8217;s what I did: First, download gstfakevideo using subversion (you may need to install the subversion package, <code>sudo apt-get subversion</code> probably does the trick. Then the command below will make a directory called gstfakevideo in your current location, so make sure it&#8217;s somewhere nice), then compile and install it:</p>
+
+<pre><code>$ svn checkout http://gstfakevideo.googlecode.com/svn/trunk/ gstfakevideo
+$ cd gstfakevideo
+$ make
+$ sudo make install
+</code></pre>
+
+<p>gstfakevideo creates a new video stream using your webcam, which is formatted differently and Skype seems to get along with it better. The only problem is, it outputs its stream to <code>/dev/video0</code> which is where our webcam currently lives. So we have to move the webcam, but this is easy enough:</p>
+
+<pre><code>$ sudo mv /dev/video0 /dev/video1
+</code></pre>
+
+<p>(Actually, gstfakevideo seems to work for me with lower CPU without moving this - but try it moved first anyway). Watch out though, every time you reboot, your webcam will probably go to /dev/video0 by default, assuming you have no other video devices, so you will have to move stuff about to make a space in video0 each time. Now we see if it works:</p>
+
+<pre><code>$ gstfakevideo v4lsrc device=/dev/video1 ! ffmpegcolorspace
+</code></pre>
+
+<p>What this does is runs gstfakevideo, telling it that the source we&#8217;re using is a v4l source, and its from /dev/video1. The ffmpegcolorspace argument seems to be for making the stream YUV instead of RGB for some cameras so may not be necessary. It then launches skype, with hopefully the output below:</p>
+
+<pre><code>$ gstfakevideo v4lsrc device=/dev/video1 ! ffmpegcolorspace
+gst.c create_pipeline (155): pipeline created
+gst.c create_pipeline (159): pipeline linked
+</code></pre>
+
+<p>If you look in the skype video options now there will be no camera listed. You have to wait a while (it can take 30s or so), until you get some output, ending with something like:</p>
+
+<pre><code>gst.c shim_ioctl (201): request=803c7601 nr 1
+gst.c shim_ioctl (208): VIDIOCGCAP
+gst.c shim_ioctl (313): result=0 error=0 Successi
+</code></pre>
+
+<p>Now a camera should show up in the video menu in skype, with a name like GStreamer fake video (/dev/video0). Try it out, and compare your CPU performance to before. Also try exiting Skype, and moving your video source from /dev/video1 back to video0, and running gstfakevideo again, only with device=/dev/video0, and see if it works (and let me know your findings below!). Finally if gstfakevideo works, we can clean it up so the command isn&#8217;t so long to type. The script should be stored in:</p>
+
+<pre><code>/usr/local/bin/gstfakevideo
+</code></pre>
+
+<p>(Can check this using):</p>
+
+<pre><code>$ whereis gstfakevideo
+gstfakevideo: /usr/local/bin/gstfakevideo
+</code></pre>
+
+<p>So we edit this file (requires root):</p>
+
+<pre><code>$ sudo gedit /usr/local/bin/gstfakevideo
+</code></pre>
+
+<p>Now, find the line that looks like this:</p>
+
+<pre><code>export GST_PIPE="videotestsrc is-live=true ! video/x-raw-yuv,width=640,height=480,framerate=10/1 ! videoscale ! ffmpegcolorspace ! vertigotv ! ffmpegcolorspace"
+</code></pre>
+
+<p>and change it to (remember where you put your webcam source - if you moved it back to /dev/video0, change the device parameter accordingly):</p>
+
+<pre><code>export GST_PIPE="v4lsrc device=/dev/video1 ! ffmpegcolorspace"
+</code></pre>
+
+<p>and finally look a bit further down, and delete the line:</p>
+
+<pre><code>export GST_PIPE="$*"
+</code></pre>
+
+<p>Now Skype will launch with your faked video stream, just from the command gstfakevideo. Good luck! Let me know how you get on.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Laptop hard drive clicking in Hardy]]></title>
+    <link href="http://actionshrimp.github.com/2008/05/laptop-hard-drive-clicking-in-hardy/"/>
+    <updated>2008-05-13T19:00:00+01:00</updated>
+    <id>http://actionshrimp.github.com/2008/05/laptop-hard-drive-clicking-in-hardy</id>
+    <content type="html"><![CDATA[<p>Since I installed Hardy a week or so ago, I noticed the hard drive in my laptop was making a strange clicking noise every 5 seconds or so. At first I thought it must be slowly dying, and I was starting to get a bit worried, but then realised it seemed a bit suspicious that it coincided with Hardy so closely, so I searched around.</p>
+
+<!--more-->
+
+
+<p>Turns out I wasn&#8217;t the only one with the problem, and I found a solution <a href="http://ubuntuforums.org/showthread.php?t=531866">here</a>. (Thanks to wieman01 on the Ubuntu forums for this.) What was happening was Ubuntu&#8217;s power management was a bit over zealous and was making the hard drive spin up and down far too often. By changing the power settings this can be fixed, using the command:</p>
+
+<pre><code>$ hdparm -B 254 /dev/xxx 
+</code></pre>
+
+<p>replacing xxx with your drive name, in my case for my SATA drive it was /dev/sda. <code>254</code> here is the lowest level of power management, and <code>255</code> is off completely. You can try playing with higher values if you like some kind of power management. To make this run every time the computer starts, add it to a startup script. For example, save a plain text file containing the above line to:</p>
+
+<pre><code>/etc/init.d/local_settings
+</code></pre>
+
+<p>Then:</p>
+
+<pre><code>$ cd /etc/init.d
+$ sudo chmod +x local_settings
+$ sudo ln -s local_settings /etc/rc2.d/S99local_settings
+</code></pre>
+
+<p>This makes the file executable, and creates a symbolic link to it in the folder which contains the start-up scripts, giving it priority 99. Hopefully your clicking noise will now be gone!</p>
+]]></content>
+  </entry>
   
 </feed>

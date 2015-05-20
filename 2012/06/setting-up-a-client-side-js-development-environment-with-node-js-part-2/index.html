@@ -1,0 +1,294 @@
+
+<!DOCTYPE HTML>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Setting up a client side JS dev environment with node.js - Part 2 - actionshrimp.com</title>
+	<meta name="author" content="Dave Aitken">
+
+	
+	<meta name="description" content="Edit 2015/03/14: This post was written a couple of years ago so is a bit outdated now. Express in particular has changed quite a bit since this was &hellip;">
+	
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+	<link href="/atom.xml" rel="alternate" title="actionshrimp.com" type="application/atom+xml">
+	<link rel="canonical" href="">
+	<link href="/favicon.png" rel="shortcut icon">
+	<link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+	<link href='http://fonts.googleapis.com/css?family=Bree+Serif' rel='stylesheet' type='text/css'>
+	<link href='http://fonts.googleapis.com/css?family=Lobster' rel='stylesheet' type='text/css'>
+	<!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+	<meta name="google-site-verification" content="5jlRIpbX9mpsM44CGBBCaL2E_T5GDkjBYwwhSaZ4f7s" />
+
+</head>
+
+
+<body>
+	<header id="header" class="inner"><div id="letterhead">
+	<img id="logo" src="/images/shrimp.png" alt="actionshrimp"/>
+	<div id="titles">
+		<h1 id="title"><a href="/">actionshrimp.com</a></h1>
+		<div id="subtitle">Coding adventures of Dave Aitken</div>
+	</div>
+</div>
+<nav id="main-nav"><ul class="main">
+	<li><a href="/">Blog</a></li>
+	<li><a href="/archives">Archives</a></li>
+</ul>
+</nav>
+<nav id="mobile-nav">
+	<div class="alignleft menu">
+		<a class="button">Menu</a>
+		<div class="container"><ul class="main">
+	<li><a href="/">Blog</a></li>
+	<li><a href="/archives">Archives</a></li>
+</ul>
+</div>
+	</div>
+	<div class="alignright search">
+		<a class="button"></a>
+		<div class="container">
+			<form action="http://google.com/search" method="get">
+				<input type="text" name="q" results="0">
+				<input type="hidden" name="q" value="site:actionshrimp.github.com">
+			</form>
+		</div>
+	</div>
+</nav>
+<nav id="sub-nav" class="alignright">
+	<div class="social">
+		
+		
+		
+		<a class="twitter" href="http://twitter.com/actionshrimp" title="Twitter">Twitter</a>
+		
+		
+		<a class="github" href="https://github.com/actionshrimp" title="GitHub">GitHub</a>
+		
+    
+		
+		
+		
+		
+		
+		<a class="rss" href="/atom.xml" title="RSS">RSS</a>
+		
+	</div>
+	<form class="search" action="http://google.com/search" method="get">
+		<input class="alignright" type="text" name="q" results="0">
+		<input type="hidden" name="q" value="site:actionshrimp.github.com">
+	</form>
+</nav>
+
+
+</header>
+	<div id="content" class="inner"><article class="post">
+	<h2 class="title">Setting Up a Client Side JS Dev Environment With node.js - Part 2</h2>
+	<div class="entry-content"><p><strong>Edit 2015/03/14</strong>: <em>This post was written a couple of years ago so is a bit outdated now. Express in particular has changed quite a bit since this was written</em></p>
+
+<p>This is another post in my <a href="http://www.actionshrimp.com/blog/categories/puzzli/">puzzli series</a>.</p>
+
+<p>I&#8217;ve already set up node in <a href="http://www.actionshrimp.com/2012/06/setting-up-a-simple-client-side-development-environment-with-node-js-part-1/">part 1</a>, to serve up a simple page to use as a JS development environment. Next I&#8217;ll be setting up <a href="http://pivotal.github.com/jasmine/">jasmine</a> so I can do TDD on the client side code for puzz.li. This commits for this post are from where we left off on the previous post, up to <a href="https://github.com/actionshrimp/puzz.li/commit/5f1783328516cec99febb01b4d0ce41d112019c7">this commit</a>.</p>
+
+<p>First a quick diversion about dependency management. Up until now I&#8217;d just been doing:</p>
+
+<p><code>npm install &lt;modulename&gt;</code></p>
+
+<p>However unless I check all the node_modules I&#8217;ve added into git, as more and more dependencies are added deploying the app elsewhere will become a bit tricky. The solution to this problem is to create a package.json file, where you can define dependencies. This is what mine looks like so far:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+</pre></td><td class='code'><pre><code class='json'><span class='line'><span class="err">##</span> <span class="err">package.json</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>    <span class="nt">&quot;name&quot;</span><span class="p">:</span>         <span class="s2">&quot;puzz.li&quot;</span><span class="p">,</span>
+</span><span class='line'>    <span class="nt">&quot;version&quot;</span><span class="p">:</span>      <span class="s2">&quot;0.0.1&quot;</span><span class="p">,</span>
+</span><span class='line'>    <span class="nt">&quot;description&quot;</span><span class="p">:</span>  <span class="s2">&quot;A puzzle website&quot;</span><span class="p">,</span>
+</span><span class='line'>    <span class="nt">&quot;homepage&quot;</span><span class="p">:</span>     <span class="s2">&quot;http://puzz.li&quot;</span><span class="p">,</span>
+</span><span class='line'>    <span class="nt">&quot;repository&quot;</span><span class="p">:</span>   <span class="p">{</span>
+</span><span class='line'>                        <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;git&quot;</span><span class="p">,</span>
+</span><span class='line'>                        <span class="nt">&quot;url&quot;</span><span class="p">:</span>  <span class="s2">&quot;https://github.com/actionshrimp/puzz.li&quot;</span>
+</span><span class='line'>                    <span class="p">},</span>
+</span><span class='line'>    <span class="nt">&quot;author&quot;</span><span class="p">:</span>       <span class="s2">&quot;Dave Aitken &lt;dave.aitken@gmail.com&gt;&quot;</span><span class="p">,</span>
+</span><span class='line'>    <span class="nt">&quot;licences&quot;</span><span class="p">:</span>     <span class="p">[</span><span class="s2">&quot;MIT&quot;</span><span class="p">],</span>
+</span><span class='line'>    <span class="nt">&quot;dependencies&quot;</span><span class="p">:</span> <span class="p">{</span>
+</span><span class='line'>                        <span class="nt">&quot;express&quot;</span><span class="p">:</span> <span class="s2">&quot;2.5.9&quot;</span><span class="p">,</span>
+</span><span class='line'>                        <span class="nt">&quot;connect-assets&quot;</span><span class="p">:</span> <span class="s2">&quot;2.2.0&quot;</span><span class="p">,</span>
+</span><span class='line'>                        <span class="nt">&quot;jade&quot;</span><span class="p">:</span> <span class="s2">&quot;0.26.0&quot;</span>
+</span><span class='line'>                     <span class="p">}</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>As you can see it gives a bit of info about the package itself, as well as defining the dependencies to get it up and running. Now when checking the app out from the github repo, it just requires a single command:</p>
+
+<p><code>npm install</code></p>
+
+<p>and all the dependencies of the right version will be grabbed automatically as you&#8217;d expect.</p>
+
+<p>Back to setting up jasmine now. We kick off by install jasmine-node, a module that sets up jasmine nicely in a node environment, and supports specs written in coffeescript as well. As we (hopefully) won&#8217;t need jasmine-node to actually deploy the app to production, we can add it into package.json as a devDependency like so:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='json'><span class='line'><span class="p">{</span>
+</span><span class='line'>    <span class="err">...</span>
+</span><span class='line'>    <span class="nt">&quot;devDependencies&quot;</span><span class="p">:</span> <span class="p">{</span>
+</span><span class='line'>        <span class="nt">&quot;jasmine-node&quot;</span><span class="p">:</span> <span class="s2">&quot;&gt;= 1.0.26&quot;</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'>    <span class="err">...</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>and again</p>
+
+<p><code>npm install</code></p>
+
+<p>Finally, we just need to set up a simple link to jasmine&#8217;s script runner so it&#8217;s nice and accessible:</p>
+
+<pre><code>$ ln -s node_modules/jasmine-node/bin/jasmine-node run_specs
+$ chmod u+x run_specs
+</code></pre>
+
+<p>Let&#8217;s see if everything&#8217;s working by trying to get a simple always-true spec running.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='coffeescript'><span class='line'><span class="c1">## spec/jasmine_spec.coffee</span>
+</span><span class='line'>
+</span><span class='line'><span class="nx">describe</span> <span class="s">&#39;Jasmine&#39;</span><span class="p">,</span> <span class="nf">-&gt;</span>
+</span><span class='line'>    <span class="nx">it</span> <span class="s">&#39;should be set up correctly&#39;</span><span class="p">,</span> <span class="nf">-&gt;</span>
+</span><span class='line'>        <span class="nx">expect</span><span class="p">(</span><span class="kc">true</span><span class="p">).</span><span class="nx">toBeTruthy</span><span class="p">()</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>and now we run it with our new command:</p>
+
+<pre><code>$ ./run_specs --coffee spec
+
+.
+
+Finished in 0.008 seconds
+1 test, 1 assertion, 0 failures
+</code></pre>
+
+<p>We&#8217;re finally in a position to get underway with actually building something, and that will be the subject of the next post.</p>
+</div>
+
+
+<div class="meta">
+	<div class="date">
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-06-04T16:14:00+01:00" pubdate data-updated="true">Jun 4<span>th</span>, 2012</time></div>
+	<div class="tags">
+
+
+	<a class='category' href='/blog/categories/tdd/'>TDD</a>, <a class='category' href='/blog/categories/coffeescript/'>coffeescript</a>, <a class='category' href='/blog/categories/express/'>express</a>, <a class='category' href='/blog/categories/jade/'>jade</a>, <a class='category' href='/blog/categories/node-js/'>node.js</a>, <a class='category' href='/blog/categories/puzzli/'>puzzli</a>
+
+
+</div>
+	
+</div></article>
+
+	<div class="share">
+	<div class="addthis_toolbox addthis_default_style ">
+	
+	
+	<a class="addthis_button_tweet"></a>
+	
+	
+	<a class="addthis_counter addthis_pill_style"></a>
+	</div>
+  <script type="text/javascript" src="http://s7.addthis.com/js/250/addthis_widget.js#pubid="></script>
+</div>
+
+
+
+<section id="comment">
+    <h2 class="title">Comments</h2>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+</section>
+</div>
+	<footer id="footer" class="inner">Copyright &copy; 2015
+
+    Dave Aitken
+
+</footer>
+	<script src="/javascripts/slash.js"></script>
+<script src="/javascripts/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+(function($){
+	$('.fancybox').fancybox();
+})(jQuery);
+</script> <!-- Delete or comment this line to disable Fancybox -->
+
+
+<script type="text/javascript">
+      var disqus_shortname = 'actionshrimp';
+      
+        
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://actionshrimp.github.com/2012/06/setting-up-a-client-side-js-development-environment-with-node-js-part-2/';
+        var disqus_url = 'http://actionshrimp.github.com/2012/06/setting-up-a-client-side-js-development-environment-with-node-js-part-2/';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+	<script type="text/javascript">
+		var _gaq = _gaq || [];
+		_gaq.push(['_setAccount', 'UA-37632248-1']);
+		_gaq.push(['_trackPageview']);
+
+		(function() {
+			var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+			ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+			var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+		})();
+	</script>
+
+
+
+</body>
+</html>

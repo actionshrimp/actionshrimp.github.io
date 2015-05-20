@@ -1,0 +1,249 @@
+
+<!DOCTYPE HTML>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Using Lightbox with Apache directory listings as an image gallery - actionshrimp.com</title>
+	<meta name="author" content="Dave Aitken">
+
+	
+	<meta name="description" content="This is a guest post from my friend Matt Bray As you may know, if it can&#8217;t find an index.html the apache web server will show a list of files &hellip;">
+	
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+	<link href="/atom.xml" rel="alternate" title="actionshrimp.com" type="application/atom+xml">
+	<link rel="canonical" href="">
+	<link href="/favicon.png" rel="shortcut icon">
+	<link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+	<link href='http://fonts.googleapis.com/css?family=Bree+Serif' rel='stylesheet' type='text/css'>
+	<link href='http://fonts.googleapis.com/css?family=Lobster' rel='stylesheet' type='text/css'>
+	<!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+	<meta name="google-site-verification" content="5jlRIpbX9mpsM44CGBBCaL2E_T5GDkjBYwwhSaZ4f7s" />
+
+</head>
+
+
+<body>
+	<header id="header" class="inner"><div id="letterhead">
+	<img id="logo" src="/images/shrimp.png" alt="actionshrimp"/>
+	<div id="titles">
+		<h1 id="title"><a href="/">actionshrimp.com</a></h1>
+		<div id="subtitle">Coding adventures of Dave Aitken</div>
+	</div>
+</div>
+<nav id="main-nav"><ul class="main">
+	<li><a href="/">Blog</a></li>
+	<li><a href="/archives">Archives</a></li>
+</ul>
+</nav>
+<nav id="mobile-nav">
+	<div class="alignleft menu">
+		<a class="button">Menu</a>
+		<div class="container"><ul class="main">
+	<li><a href="/">Blog</a></li>
+	<li><a href="/archives">Archives</a></li>
+</ul>
+</div>
+	</div>
+	<div class="alignright search">
+		<a class="button"></a>
+		<div class="container">
+			<form action="http://google.com/search" method="get">
+				<input type="text" name="q" results="0">
+				<input type="hidden" name="q" value="site:actionshrimp.github.com">
+			</form>
+		</div>
+	</div>
+</nav>
+<nav id="sub-nav" class="alignright">
+	<div class="social">
+		
+		
+		
+		<a class="twitter" href="http://twitter.com/actionshrimp" title="Twitter">Twitter</a>
+		
+		
+		<a class="github" href="https://github.com/actionshrimp" title="GitHub">GitHub</a>
+		
+    
+		
+		
+		
+		
+		
+		<a class="rss" href="/atom.xml" title="RSS">RSS</a>
+		
+	</div>
+	<form class="search" action="http://google.com/search" method="get">
+		<input class="alignright" type="text" name="q" results="0">
+		<input type="hidden" name="q" value="site:actionshrimp.github.com">
+	</form>
+</nav>
+
+
+</header>
+	<div id="content" class="inner"><article class="post">
+	<h2 class="title">Using Lightbox With Apache Directory Listings as an Image Gallery</h2>
+	<div class="entry-content"><p><em>This is a guest post from my friend <a href="http://mattjbray.com">Matt Bray</a></em></p>
+
+<p><img src="/images/lightbox-300x184.jpg" width="300" height="184" /> As you may know, if it can&#8217;t find an <code>index.html</code> the apache web server will show a list of files in the current directory. I was browsing through lists of images on my file server the other day and I thought, wouldn&#8217;t it be nice to have a next button? So I started digging around.</p>
+
+<p>In the end I used a wonderful little script called <a href="http://www.lokeshdhakar.com/projects/lightbox2/">Lightbox 2</a> and a bit of JavaScript <a href="http://prototypejs.org">Prototype</a> magic to produce <a href="http://bf.mattjbray.com/lightbox_images">this</a> (try clicking on the image files). The directory listings are provided by an apache module going by the name of <code>mod_autoindex</code>. This module allows you to insert a custom header and footer through the directives <code>HeaderName</code> and <code>ReadmeName</code>. The plan is to insert some HTML that includes the Lightbox code and tags all the links to images with the <code>rel=lightbox</code> attribute that Lightbox uses to function.</p>
+
+<!--more-->
+
+
+<p>Create a directory called <code>lightbox</code> in your server&#8217;s document root. Download <a href="http://www.lokeshdhakar.com/projects/lightbox2/#download">Lightbox 2</a> and extract it to that directory (go to <code>http://www.yourwebsite.com/lightbox</code> to try it out). To get the Lightbox &#8216;loading&#8217; and &#8216;next&#8217; images to show up, you need to edit a couple of lines in the configuration section of <code>js/lightbox.js</code> that comes with Lightbox. Change the following</p>
+
+<pre><code>LightboxOptions = Object.extend({
+fileLoadingImage:        'images/loading.gif',
+fileBottomNavCloseImage: 'images/closelabel.gif',
+</code></pre>
+
+<p>to look like</p>
+
+<pre><code>LightboxOptions = Object.extend({
+fileLoadingImage:        '/lightbox/images/loading.gif',
+fileBottomNavCloseImage: '/lightbox/images/closelabel.gif',
+</code></pre>
+
+<p>I also adjusted <code>resizeSpeed</code> to 9 to make it feel a little snappier, change this to your taste. Now create a new file called <code>lightbox.html</code> in your <code>/lightbox</code> directory and copy and paste the following:</p>
+
+<pre><code>&lt;script src="/lightbox/js/prototype.js" type="text/javascript"&gt;&lt;/script&gt;
+&lt;script src="/lightbox/js/scriptaculous.js?load=effects,builder" type="text/javascript"&gt;&lt;/script&gt;
+&lt;script src="/lightbox/js/lightbox.js" type="text/javascript"&gt;&lt;/script&gt;
+&lt;script type="text/javascript"&gt;&lt;!--
+    // Insert the lightbox stylesheet into &lt;head&gt;
+    var stylesheet = new Element('link', {  'rel': 'stylesheet',
+                                            'href': '/lightbox/css/lightbox.css',
+                                            'type': 'text/css',
+                                            'media': 'screen'
+                                         });
+    $$('head')[0].appendChild(stylesheet);
+
+    // Check for links preceded by the image icon provided by mod_autoindex.
+    // On my setup the src attribute in the img tag preceding a link to an image
+    // is "/icons/image2.gif". This is used to identify links to images.
+    $$("a").each( function(elmt) {
+            // The default output is tabular, so check the previous cell for the img tag
+            imgelmt = elmt.up().previous().down()
+            // If the FancyIndexes option is set, the output is formatted differently
+            if (imgelmt == undefined) { imgelmt = elmt.previous('img') }
+            if (imgelmt.readAttribute('src') == "/icons/image2.gif")
+            {
+                elmt.setAttribute('rel', 'lightbox[images]');
+
+                // As ps suggested, provide a link to the image in the lightbox description
+                link = "&amp;lt;a href='" + elmt.readAttribute('href') + "'&amp;gt;" + 
+                        elmt.innerHTML.stripScripts().stripTags() + "&amp;lt;/a&amp;gt;";
+                elmt.setAttribute('title', link );
+            }
+        } );
+--&gt;&lt;/script&gt;
+</code></pre>
+
+<p>Now all you have to do is tell apache to include this file in its directory listing page. Simply paste the following two lines into a file named <code>.htaccess</code> and copy it to any directory that you want Lightbox to appear in.</p>
+
+<pre><code>Options Indexes
+ReadmeName /lightbox/lightbox.html
+</code></pre>
+
+<p>Et voila! No php, no databases to maintain. Image galleries don&#8217;t get much simpler than that.</p>
+
+<p>You can download the files mentioned above <a href="/files/lightbox1.zip">here</a>.</p>
+</div>
+
+
+<div class="meta">
+	<div class="date">
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2009-03-01T22:10:00+00:00" pubdate data-updated="true">Mar 1<span>st</span>, 2009</time></div>
+	<div class="tags">
+
+
+	<a class='category' href='/blog/categories/apache/'>apache</a>
+
+
+</div>
+	
+</div></article>
+
+	<div class="share">
+	<div class="addthis_toolbox addthis_default_style ">
+	
+	
+	<a class="addthis_button_tweet"></a>
+	
+	
+	<a class="addthis_counter addthis_pill_style"></a>
+	</div>
+  <script type="text/javascript" src="http://s7.addthis.com/js/250/addthis_widget.js#pubid="></script>
+</div>
+
+
+
+<section id="comment">
+    <h2 class="title">Comments</h2>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+</section>
+</div>
+	<footer id="footer" class="inner">Copyright &copy; 2015
+
+    Dave Aitken
+
+</footer>
+	<script src="/javascripts/slash.js"></script>
+<script src="/javascripts/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+(function($){
+	$('.fancybox').fancybox();
+})(jQuery);
+</script> <!-- Delete or comment this line to disable Fancybox -->
+
+
+<script type="text/javascript">
+      var disqus_shortname = 'actionshrimp';
+      
+        
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://actionshrimp.github.com/2009/03/using-lightbox-with-apache-directory-listings-as-an-image-gallery/';
+        var disqus_url = 'http://actionshrimp.github.com/2009/03/using-lightbox-with-apache-directory-listings-as-an-image-gallery/';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+	<script type="text/javascript">
+		var _gaq = _gaq || [];
+		_gaq.push(['_setAccount', 'UA-37632248-1']);
+		_gaq.push(['_trackPageview']);
+
+		(function() {
+			var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+			ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+			var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+		})();
+	</script>
+
+
+
+</body>
+</html>

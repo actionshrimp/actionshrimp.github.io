@@ -1,0 +1,329 @@
+
+<!DOCTYPE HTML>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Installing awesome Window Manager on Ubuntu Intrepid - actionshrimp.com</title>
+	<meta name="author" content="Dave Aitken">
+
+	
+	<meta name="description" content="Quick Note: This post was originally published on 02/02/2009, so is probably a bit outdated now. Today I had a go at installing awesome window &hellip;">
+	
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+	<link href="/atom.xml" rel="alternate" title="actionshrimp.com" type="application/atom+xml">
+	<link rel="canonical" href="">
+	<link href="/favicon.png" rel="shortcut icon">
+	<link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+	<link href='http://fonts.googleapis.com/css?family=Bree+Serif' rel='stylesheet' type='text/css'>
+	<link href='http://fonts.googleapis.com/css?family=Lobster' rel='stylesheet' type='text/css'>
+	<!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+	<meta name="google-site-verification" content="5jlRIpbX9mpsM44CGBBCaL2E_T5GDkjBYwwhSaZ4f7s" />
+
+</head>
+
+
+<body>
+	<header id="header" class="inner"><div id="letterhead">
+	<img id="logo" src="/images/shrimp.png" alt="actionshrimp"/>
+	<div id="titles">
+		<h1 id="title"><a href="/">actionshrimp.com</a></h1>
+		<div id="subtitle">Coding adventures of Dave Aitken</div>
+	</div>
+</div>
+<nav id="main-nav"><ul class="main">
+	<li><a href="/">Blog</a></li>
+	<li><a href="/archives">Archives</a></li>
+</ul>
+</nav>
+<nav id="mobile-nav">
+	<div class="alignleft menu">
+		<a class="button">Menu</a>
+		<div class="container"><ul class="main">
+	<li><a href="/">Blog</a></li>
+	<li><a href="/archives">Archives</a></li>
+</ul>
+</div>
+	</div>
+	<div class="alignright search">
+		<a class="button"></a>
+		<div class="container">
+			<form action="http://google.com/search" method="get">
+				<input type="text" name="q" results="0">
+				<input type="hidden" name="q" value="site:actionshrimp.github.com">
+			</form>
+		</div>
+	</div>
+</nav>
+<nav id="sub-nav" class="alignright">
+	<div class="social">
+		
+		
+		
+		<a class="twitter" href="http://twitter.com/actionshrimp" title="Twitter">Twitter</a>
+		
+		
+		<a class="github" href="https://github.com/actionshrimp" title="GitHub">GitHub</a>
+		
+    
+		
+		
+		
+		
+		
+		<a class="rss" href="/atom.xml" title="RSS">RSS</a>
+		
+	</div>
+	<form class="search" action="http://google.com/search" method="get">
+		<input class="alignright" type="text" name="q" results="0">
+		<input type="hidden" name="q" value="site:actionshrimp.github.com">
+	</form>
+</nav>
+
+
+</header>
+	<div id="content" class="inner"><article class="post">
+	<h2 class="title">Installing Awesome Window Manager on Ubuntu Intrepid</h2>
+	<div class="entry-content"><p><em>Quick Note: This post was originally published on 02/02/2009, so is probably a bit outdated now.</em></p>
+
+<p><img src="/images/awesomescreenmini.png" width="200" height="98" /> Today I had a go at installing <a href="http://awesome.naquadah.org/">awesome window manager</a>. awesome is a great tiling window manager, useful if you have a large monitor and are fed up with having one window taking up all the space when it doesn&#8217;t really need it all. For example, having firefox maximised on a 1920x1200 resolution monitor can mean you end up with very large sentences that spread across the screen, decreasing readability. Unfortunately the version of awesome in the Interpid repos is 2.3.2-1, which is now deprecated, and the current stable release is version 3.1-1.  The website suggests building from source - I attempted this but there are currently a couple of issues with compilation mentioned in the wiki, and even with the fix suggested I couldn&#8217;t quite get it to work - although I didn&#8217;t try too hard it must be said; instead I found another method which I will walk you through now.</p>
+
+<!--more-->
+
+
+<h2>Installing and Trying It Out</h2>
+
+<p>The method I ended up using revolves using binaries from the Debian experimental repository, which seem to work perfectly. First, you can download the awesome 3.1-1 package (N.B. The binaries I&#8217;m linking to here from Debian&#8217;s website are for i386, for others just search for them on the site), and try and install it with:</p>
+
+<pre><code>$ wget http://ftp.uk.debian.org/debian/pool/main/a/awesome/awesome_3.1-1_i386.deb
+$ sudo dpkg -i awesome_3.1-1_i386.deb
+</code></pre>
+
+<p>However, it will spit out a list of dependencies it couldn&#8217;t manage - these are packages that are also outdated in the current Ubuntu repos. So next, fetch the ones you need which are listed below:</p>
+
+<pre><code>$ wget http://ftp.uk.debian.org/debian/pool/main/x/xcb-util/libxcb-atom1_0.3.2-1_i386.deb
+$ wget http://ftp.uk.debian.org/debian/pool/main/x/xcb-util/libxcb-aux0_0.3.2-1_i386.deb
+$ wget http://ftp.uk.debian.org/debian/pool/main/x/xcb-util/libxcb-event1_0.3.2-1_i386.deb
+$ wget http://ftp.uk.debian.org/debian/pool/main/x/xcb-util/libxcb-icccm1_0.3.2-1_i386.deb
+$ wget http://ftp.uk.debian.org/debian/pool/main/x/xcb-util/libxcb-keysyms0_0.3.2-1_i386.deb
+$ wget http://ftp.uk.debian.org/debian/pool/main/x/xcb-util/libxcb-property1_0.3.2-1_i386.deb
+$ wget http://ftp.uk.debian.org/debian/pool/main/x/xcb-util/libxcb-render-util0_0.3.2-1_i386.deb
+</code></pre>
+
+<p>Then try and install them all with dpkg:</p>
+
+<pre><code>$ sudo dpkg -i awesome_3.1-1_i386.deb libxcb-atom1_0.3.2-1_i386.deb libxcb-aux0_0.3.2-1_i386.deb \
+libxcb-event1_0.3.2-1_i386.deb libxcb-icccm1_0.3.2-1_i386.deb libxcb-property1_0.3.2-1_i386.deb \
+libxcb-render-util0_0.3.2-1_i386.deb libxcb-keysyms0_0.3.2-1_i386.deb
+</code></pre>
+
+<p>At this point, it might spit out that it needs some extra packages - these are packages that you should just be able to install normally with synaptic or apt: I had to install <code>menu</code> for example, and you may have to install some others as I had a few other dependencies installed from trying to build from source earlier on. Once you have all the packages, run the above command again to install awesome. Once awesome is installed, you&#8217;ll need a configuration file. A default config file is provided, so go ahead and copy it to your home dir:</p>
+
+<pre><code>$ mkdir ~/.config/awesome
+$ cp /etc/xdg/awesome/rc.lua ~/.config/awesome/rc.lua
+</code></pre>
+
+<p>Now we can see if awesome works - kill your current window manager (in my case compiz), then fire up awesome:</p>
+
+<pre><code>$ killall compiz.real &amp;&amp; awesome&amp;
+</code></pre>
+
+<p>Hopefully everything has gone to plan, and awesome should now be running! Hooray! Have a little play around with it, mess with the config file a bit and see if you like it. Some useful key-bindings are:</p>
+
+<ul>
+<li>Win + Enter - launch a terminal</li>
+<li>Win + F1 - run a command</li>
+<li>Win + J/K - switch windows (à la vim)</li>
+<li>Win + H/L - resize major/minor divide</li>
+<li>Win + Shift + J/K - move windows</li>
+<li>Win + Space - change layout</li>
+<li>Win + Ctrl + r - restart awesome, for example to update if you change the config file</li>
+</ul>
+
+
+<p>There are loads more keybindings that you can find/change in the config file if you wanna know what they all do exactly.</p>
+
+<p>If after using awesome for a while you decide you want to keep it, there are a few loose ends to tie up.</p>
+
+<h2>Setting awesome as the Default Window Manager</h2>
+
+<p>First, fire up gconf-editor:</p>
+
+<pre><code>$ gconf-editor
+</code></pre>
+
+<p>On the list on the left, goto <code>desktop &amp;gt; gnome &amp;gt; session</code>. First of all, we&#8217;ll get rid of the gnome-panels - awesome already has its own. On the right, there is a name/value pair with name <code>required\_components\_list</code>, containing <code>[windowmanager, panel, filemanager]</code>. Remove panel, so it becomes <code>[windowmanager, filemanager]</code>.</p>
+
+<p>Next we actually tell gnome to load in awesome instead of compiz. On the list on the left, choose the folder <code>required_components</code>. Change the windowmanager field from <code>compiz</code> to <code>awesome</code>. Finally, you&#8217;ll probably wan&#8217;t to disable nautilus&#8217;s desktop (where the desktop icons live etc.) as it can do funny things, and with your magical new tiling windows you will probably never see the desktop. To do this, from the list on the left choose <code>apps &amp;gt; nautilus &amp;gt; preferences</code> and when here, uncheck <code>show_desktop</code>. Now you can kiss sweet goodbye to all the remnants of your old desktop - log out of your system and log back in again to see it take effect. WARNING: If something has gone wrong and awesome doesn&#8217;t load (maybe you mispelt it in gconf-editor or something), you should still be able to find a way to edit the gconf preferences, but it took me a while to figure out how to logout when the normal gnome logout button had disappeared. To logout in this situation, use <code>gnome-session-save --kill</code>.</p>
+
+<h2>Customising and Configuring</h2>
+
+<p>Due to the highly keyboard oriented nature of awesome, you may now want to install a launcher. A couple of good ones are Gnome-Do (if you opt for this, you will have to change the binding from Win+Space in the awesome preferences, or reconfigure awesome&#8217;s binding for this combination), an all singing all dancing affair which I used for a while, or dmenu which is quite a lot simpler and I&#8217;ve opted for in this case. To install dmenu:</p>
+
+<pre><code>$ sudo apt-get install dmenu
+</code></pre>
+
+<p>Next we setup a keybinding for it to launch in the awesome config file. Underneath the line:</p>
+
+<pre><code>-- \{\{\{ Keybindings 
+</code></pre>
+
+<p>add (here it is mapped to Win+P - change this if you like):</p>
+
+<pre><code>-- dmenu
+keybinding({ modkey }, "p", function () awful.util.spawn("`dmenu_path | dmenu -b`") end):add()
+</code></pre>
+
+<p>Also, as awesome is aimed at uber geeks the time is displayed by default with&#8230;. unix <code>time_t</code>. Unless you&#8217;re some kind of time_t reading magician, hunt down the section in the config file that looks like this, and comment/uncomment accordingly:</p>
+
+<pre><code>-- For unix time_t lovers
+--mytextbox.text = " " .. os.time() .. " time_t "
+-- Otherwise use:
+mytextbox.text = " " .. os.date() .. " "
+</code></pre>
+
+<p>Finally, I missed my CPU monitor. There is however a set of widgets you can get that adds functionality like this called wicked. Install wicked:</p>
+
+<pre><code>$ git clone git://git.glacicle.com/awesome/wicked.git
+$ sudo cp wicked/wicked.lua /usr/share/awesome/lib/
+$ sudo cp wicked/wicked.7.gz /usr/share/man/man7/
+</code></pre>
+
+<p>in config file, underneath:</p>
+
+<pre><code>-- \{\{\{ Wicked Widgets
+</code></pre>
+
+<p>Add in:</p>
+
+<pre><code>-- \{\{\{ Wicked Widgets
+-- CPU Usage Graph
+cpugraphwidget = widget({
+    type = 'graph',
+    name = 'cpugraphwidget',
+    align = 'left'
+})
+cpugraphwidget.height = 0.85
+cpugraphwidget.width = 45
+cpugraphwidget.bg = '#333333'
+cpugraphwidget.border_color = '#0a0a0a'
+cpugraphwidget.grow = 'right'
+
+cpugraphwidget:plot_properties_set('cpu', {
+    fg = '#AEC6D8',
+    fg_center = '#285577',
+    fg_end = '#285577',
+    vertical_gradient = false
+})
+wicked.register(cpugraphwidget, wicked.widgets.cpu, '$1', 1, 'cpu')
+</code></pre>
+
+<p>Then add in the cpugraphwidget into the mywibox[s].widgets line:</p>
+
+<pre><code>mywibox[s].widgets = { mylauncher,
+    mytaglist[s],
+    mytasklist[s],
+    mypromptbox[s],
+    cpugraphwidget,
+    mytextbox,
+    mylayoutbox[s],
+    ...
+</code></pre>
+
+<p>For full instructions on <a href="http://awesome.naquadah.org/wiki/index.php?title=Wicked">how to use wicked</a>, and configure awesome, check out the <a href="http://awesome.naquadah.org/wiki/index.php?title=Main_Page">awesome wiki</a>. Have fun!</p>
+</div>
+
+
+<div class="meta">
+	<div class="date">
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2009-02-02T16:59:00+00:00" pubdate data-updated="true">Feb 2<span>nd</span>, 2009</time></div>
+	<div class="tags">
+
+
+	<a class='category' href='/blog/categories/ubuntu/'>ubuntu</a>
+
+
+</div>
+	
+</div></article>
+
+	<div class="share">
+	<div class="addthis_toolbox addthis_default_style ">
+	
+	
+	<a class="addthis_button_tweet"></a>
+	
+	
+	<a class="addthis_counter addthis_pill_style"></a>
+	</div>
+  <script type="text/javascript" src="http://s7.addthis.com/js/250/addthis_widget.js#pubid="></script>
+</div>
+
+
+
+<section id="comment">
+    <h2 class="title">Comments</h2>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+</section>
+</div>
+	<footer id="footer" class="inner">Copyright &copy; 2015
+
+    Dave Aitken
+
+</footer>
+	<script src="/javascripts/slash.js"></script>
+<script src="/javascripts/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+(function($){
+	$('.fancybox').fancybox();
+})(jQuery);
+</script> <!-- Delete or comment this line to disable Fancybox -->
+
+
+<script type="text/javascript">
+      var disqus_shortname = 'actionshrimp';
+      
+        
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://actionshrimp.github.com/2009/02/installing-awesome-window-manager-on-ubuntu-intrepid/';
+        var disqus_url = 'http://actionshrimp.github.com/2009/02/installing-awesome-window-manager-on-ubuntu-intrepid/';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+	<script type="text/javascript">
+		var _gaq = _gaq || [];
+		_gaq.push(['_setAccount', 'UA-37632248-1']);
+		_gaq.push(['_trackPageview']);
+
+		(function() {
+			var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+			ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+			var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+		})();
+	</script>
+
+
+
+</body>
+</html>

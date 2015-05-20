@@ -1,0 +1,321 @@
+
+<!DOCTYPE HTML>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Logitech QuickCam E2500 on Ubuntu Skype - actionshrimp.com</title>
+	<meta name="author" content="Dave Aitken">
+
+	
+	<meta name="description" content="I recently discovered the wonders of skype, and tried to get my new webcam working with it under linux, and of course this proved to be quite tricky &hellip;">
+	
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+	<link href="/atom.xml" rel="alternate" title="actionshrimp.com" type="application/atom+xml">
+	<link rel="canonical" href="">
+	<link href="/favicon.png" rel="shortcut icon">
+	<link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+	<link href='http://fonts.googleapis.com/css?family=Bree+Serif' rel='stylesheet' type='text/css'>
+	<link href='http://fonts.googleapis.com/css?family=Lobster' rel='stylesheet' type='text/css'>
+	<!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+	<meta name="google-site-verification" content="5jlRIpbX9mpsM44CGBBCaL2E_T5GDkjBYwwhSaZ4f7s" />
+
+</head>
+
+
+<body>
+	<header id="header" class="inner"><div id="letterhead">
+	<img id="logo" src="/images/shrimp.png" alt="actionshrimp"/>
+	<div id="titles">
+		<h1 id="title"><a href="/">actionshrimp.com</a></h1>
+		<div id="subtitle">Coding adventures of Dave Aitken</div>
+	</div>
+</div>
+<nav id="main-nav"><ul class="main">
+	<li><a href="/">Blog</a></li>
+	<li><a href="/archives">Archives</a></li>
+</ul>
+</nav>
+<nav id="mobile-nav">
+	<div class="alignleft menu">
+		<a class="button">Menu</a>
+		<div class="container"><ul class="main">
+	<li><a href="/">Blog</a></li>
+	<li><a href="/archives">Archives</a></li>
+</ul>
+</div>
+	</div>
+	<div class="alignright search">
+		<a class="button"></a>
+		<div class="container">
+			<form action="http://google.com/search" method="get">
+				<input type="text" name="q" results="0">
+				<input type="hidden" name="q" value="site:actionshrimp.github.com">
+			</form>
+		</div>
+	</div>
+</nav>
+<nav id="sub-nav" class="alignright">
+	<div class="social">
+		
+		
+		
+		<a class="twitter" href="http://twitter.com/actionshrimp" title="Twitter">Twitter</a>
+		
+		
+		<a class="github" href="https://github.com/actionshrimp" title="GitHub">GitHub</a>
+		
+    
+		
+		
+		
+		
+		
+		<a class="rss" href="/atom.xml" title="RSS">RSS</a>
+		
+	</div>
+	<form class="search" action="http://google.com/search" method="get">
+		<input class="alignright" type="text" name="q" results="0">
+		<input type="hidden" name="q" value="site:actionshrimp.github.com">
+	</form>
+</nav>
+
+
+</header>
+	<div id="content" class="inner"><article class="post">
+	<h2 class="title">Logitech QuickCam E2500 on Ubuntu Skype</h2>
+	<div class="entry-content"><p>I recently discovered the wonders of skype, and tried to get my new webcam working with it under linux, and of course this proved to be quite tricky. After much fiddling I eventually got it to work, hopefully these steps will work for you too.</p>
+
+<p><strong>Please note, this post was written in 2008, so is probably pretty out of date now.</strong></p>
+
+<!--more-->
+
+
+<p>
+The gspca drivers are available from <a href="http://mxhaard.free.fr/download.html">here</a>, I was using a specific version dated 20071224 to work with a patch file I found - many thanks to <a href="http://forums.quickcamteam.net/showthread.php?tid=310">redeye on the QuickCam team forums</a>. If you use a different version of the drivers, you can just examine the patch file and insert the changes manually. First, download the drivers and the patch:</p>
+
+<pre><code>$ wget http://mxhaard.free.fr/spca50x/Download/gspcav1-20071224.tar.gz
+$ wget http://forums.quickcamteam.net/attachment.php?aid=86 -O patch.tar.gz
+</code></pre>
+
+<p>Then extract and apply the patch: (UPDATE: For Ubuntu 8.10 users, this patch may no longer work. Try downloading the patch <a href="/files/gspcapatch.gz">here</a> instead, and then extract it using <code>gzip -d gspcapatch.gz</code>. Apply the extracted file in the same way as below, just neglect the <code>-p1</code> switch, (so do: <code>patch &lt; gspcapatch</code>), you can just ignore the <code>tar -xvf patch.tar.gz</code> command).</p>
+
+<pre><code>$ tar -xvf gspcav1-20071224.tar.gz
+$ tar -xvf patch.tar.gz
+$ cd gspcav1-20071224
+$ patch -p1 &lt; ../quickcamE2500.diff
+</code></pre>
+
+<p>There&#8217;s a handy build script included with the drivers so just run that (requires root):</p>
+
+<pre><code>$ sudo ./gspca_build
+</code></pre>
+
+<p>This generates the file <code>gspca.ko</code> which we use to replace the old gspca module. Check to see if the old module has loaded. You should see something like:</p>
+
+<pre><code>$ lsmod | grep gspca
+gspca                 680656  0
+videodev               29440  1 gspca
+usbcore               146028  9 gspca,snd_usb_audio,snd_usb_lib,usb_storage,usbhid,libusual,ehci_hcd,ohci_hcd
+</code></pre>
+
+<p>We want to find out where it is, so do the following:</p>
+
+<pre><code>$ sudo rmmod gspca
+$ sudo modprobe -v gspca
+</code></pre>
+
+<p>You should see something like:</p>
+
+<pre><code>insmod /lib/modules/2.6.24-20-generic/ubuntu/media/gspcav1/gspca.ko
+</code></pre>
+
+<p>That is the location of the file we&#8217;re looking for, so, replacing where appropriate with what was output for you above, type:</p>
+
+<pre><code>$ sudo rmmod gspca
+$ sudo rm /lib/modules/2.6.24-20-generic/ubuntu/media/gspcav1/gspca.ko
+$ sudo mv gspca.ko /lib/modules/2.6.24-20-generic/ubuntu/media/gspcav1/
+$ sudo modprobe gspca
+</code></pre>
+
+<p>This should have loaded the new module in place of the old one. See if you have a video device:</p>
+
+<pre><code>$ ls /dev/video*
+/dev/video0
+</code></pre>
+
+<p>You can try and run Skype now, and in fact, if you&#8217;re not using the camera for Skype, this may well be enough. But for the Skype users: see if you get any picture by testing in the video devices option menu (be warned, it can take a little while to show up there after skype loads, and a little while for the picture to show when you press the test button, so be patient). If anything shows up at all that&#8217;s a plus. (UPDATE: If you&#8217;re using Ubuntu 8.10, and have used the alternative patch I posted in the other &#8220;UPDATE:&#8221; bracket above, the webcam may still not work in Skype at this point. There seems to be some issue with permissions in this version of the driver, so you may need to run skype as root if it doesn&#8217;t appear to be working. In a terminal type &#8220;sudo skype&#8221; and hit enter. It&#8217;ll ask for your root password, then launch Skype. See if the webcam works now).</p>
+
+<p>Originally I just got a black image, so I assumed the camera wasn&#8217;t working. But I soon realised that the image was there, just very dark - shining a light on it showed this was the case. I tried fiddling around with gstfakevideo for a while to try and alter the output, but there was a simpler solution. The gspca driver itself can take options, and an autoexposure setting was ruining my lighting. To fix this, edit the file /etc/modprobe.d/options, and add a line at the bottom:</p>
+
+<pre><code>options gspca gamma=1 autoexpo=0
+</code></pre>
+
+<p>The <code>gamma=1</code> may not be necessary, but if it still appears too dark or too light for your taste you can change this parameter as you like. Finally, reload the module:</p>
+
+<pre><code>$ sudo rmmod gspca
+$ sudo modprobe gspca
+</code></pre>
+
+<p>and try out skype again. Hopefully it should work at this point! I ran into quite a lot of other problems while I was trying this out, so if you come across any errors, drop a comment below and I&#8217;ll try and get back to you asap.</p>
+
+<p><em>UPDATE</em>: I found a large problem when using the camera in Skype was that CPU usage would shoot up to 100%, causing things to freeze up and conversations to crash after a while. I had played around with <a href="http://code.google.com/p/gstfakevideo">gstfakevideo</a> a bit when trying to get the camera to work originally, and it seems using this when the camera already &#8216;works&#8217; means it uses up far less CPU. I haven&#8217;t had a chance to test it for a long period yet but it seems like it should do the trick. Here&#8217;s what I did: First, download gstfakevideo using subversion (you may need to install the subversion package, <code>sudo apt-get subversion</code> probably does the trick. Then the command below will make a directory called gstfakevideo in your current location, so make sure it&#8217;s somewhere nice), then compile and install it:</p>
+
+<pre><code>$ svn checkout http://gstfakevideo.googlecode.com/svn/trunk/ gstfakevideo
+$ cd gstfakevideo
+$ make
+$ sudo make install
+</code></pre>
+
+<p>gstfakevideo creates a new video stream using your webcam, which is formatted differently and Skype seems to get along with it better. The only problem is, it outputs its stream to <code>/dev/video0</code> which is where our webcam currently lives. So we have to move the webcam, but this is easy enough:</p>
+
+<pre><code>$ sudo mv /dev/video0 /dev/video1
+</code></pre>
+
+<p>(Actually, gstfakevideo seems to work for me with lower CPU without moving this - but try it moved first anyway). Watch out though, every time you reboot, your webcam will probably go to /dev/video0 by default, assuming you have no other video devices, so you will have to move stuff about to make a space in video0 each time. Now we see if it works:</p>
+
+<pre><code>$ gstfakevideo v4lsrc device=/dev/video1 ! ffmpegcolorspace
+</code></pre>
+
+<p>What this does is runs gstfakevideo, telling it that the source we&#8217;re using is a v4l source, and its from /dev/video1. The ffmpegcolorspace argument seems to be for making the stream YUV instead of RGB for some cameras so may not be necessary. It then launches skype, with hopefully the output below:</p>
+
+<pre><code>$ gstfakevideo v4lsrc device=/dev/video1 ! ffmpegcolorspace
+gst.c create_pipeline (155): pipeline created
+gst.c create_pipeline (159): pipeline linked
+</code></pre>
+
+<p>If you look in the skype video options now there will be no camera listed. You have to wait a while (it can take 30s or so), until you get some output, ending with something like:</p>
+
+<pre><code>gst.c shim_ioctl (201): request=803c7601 nr 1
+gst.c shim_ioctl (208): VIDIOCGCAP
+gst.c shim_ioctl (313): result=0 error=0 Successi
+</code></pre>
+
+<p>Now a camera should show up in the video menu in skype, with a name like GStreamer fake video (/dev/video0). Try it out, and compare your CPU performance to before. Also try exiting Skype, and moving your video source from /dev/video1 back to video0, and running gstfakevideo again, only with device=/dev/video0, and see if it works (and let me know your findings below!). Finally if gstfakevideo works, we can clean it up so the command isn&#8217;t so long to type. The script should be stored in:</p>
+
+<pre><code>/usr/local/bin/gstfakevideo
+</code></pre>
+
+<p>(Can check this using):</p>
+
+<pre><code>$ whereis gstfakevideo
+gstfakevideo: /usr/local/bin/gstfakevideo
+</code></pre>
+
+<p>So we edit this file (requires root):</p>
+
+<pre><code>$ sudo gedit /usr/local/bin/gstfakevideo
+</code></pre>
+
+<p>Now, find the line that looks like this:</p>
+
+<pre><code>export GST_PIPE="videotestsrc is-live=true ! video/x-raw-yuv,width=640,height=480,framerate=10/1 ! videoscale ! ffmpegcolorspace ! vertigotv ! ffmpegcolorspace"
+</code></pre>
+
+<p>and change it to (remember where you put your webcam source - if you moved it back to /dev/video0, change the device parameter accordingly):</p>
+
+<pre><code>export GST_PIPE="v4lsrc device=/dev/video1 ! ffmpegcolorspace"
+</code></pre>
+
+<p>and finally look a bit further down, and delete the line:</p>
+
+<pre><code>export GST_PIPE="$*"
+</code></pre>
+
+<p>Now Skype will launch with your faked video stream, just from the command gstfakevideo. Good luck! Let me know how you get on.</p>
+</div>
+
+
+<div class="meta">
+	<div class="date">
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-08-13T00:12:00+01:00" pubdate data-updated="true">Aug 13<span>th</span>, 2008</time></div>
+	<div class="tags">
+
+
+	<a class='category' href='/blog/categories/hardware/'>hardware</a>
+
+
+</div>
+	
+</div></article>
+
+	<div class="share">
+	<div class="addthis_toolbox addthis_default_style ">
+	
+	
+	<a class="addthis_button_tweet"></a>
+	
+	
+	<a class="addthis_counter addthis_pill_style"></a>
+	</div>
+  <script type="text/javascript" src="http://s7.addthis.com/js/250/addthis_widget.js#pubid="></script>
+</div>
+
+
+
+<section id="comment">
+    <h2 class="title">Comments</h2>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+</section>
+</div>
+	<footer id="footer" class="inner">Copyright &copy; 2015
+
+    Dave Aitken
+
+</footer>
+	<script src="/javascripts/slash.js"></script>
+<script src="/javascripts/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+(function($){
+	$('.fancybox').fancybox();
+})(jQuery);
+</script> <!-- Delete or comment this line to disable Fancybox -->
+
+
+<script type="text/javascript">
+      var disqus_shortname = 'actionshrimp';
+      
+        
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://actionshrimp.github.com/2008/08/logitech-quickcam-e2500-on-ubuntu-skype/';
+        var disqus_url = 'http://actionshrimp.github.com/2008/08/logitech-quickcam-e2500-on-ubuntu-skype/';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+	<script type="text/javascript">
+		var _gaq = _gaq || [];
+		_gaq.push(['_setAccount', 'UA-37632248-1']);
+		_gaq.push(['_trackPageview']);
+
+		(function() {
+			var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+			ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+			var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+		})();
+	</script>
+
+
+
+</body>
+</html>

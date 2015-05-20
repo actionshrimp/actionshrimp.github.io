@@ -1,0 +1,261 @@
+
+<!DOCTYPE HTML>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Shortest Knight Moves from a to b in Haskell - actionshrimp.com</title>
+	<meta name="author" content="Dave Aitken">
+
+	
+	<meta name="description" content="I&#8217;ve got back onto the excellent &#8217;Learn you a Haskell for Great Good&#8217; recently, which I would highly recommend. Near the end of &hellip;">
+	
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+	<link href="/atom.xml" rel="alternate" title="actionshrimp.com" type="application/atom+xml">
+	<link rel="canonical" href="">
+	<link href="/favicon.png" rel="shortcut icon">
+	<link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+	<link href='http://fonts.googleapis.com/css?family=Bree+Serif' rel='stylesheet' type='text/css'>
+	<link href='http://fonts.googleapis.com/css?family=Lobster' rel='stylesheet' type='text/css'>
+	<!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+	<meta name="google-site-verification" content="5jlRIpbX9mpsM44CGBBCaL2E_T5GDkjBYwwhSaZ4f7s" />
+
+</head>
+
+
+<body>
+	<header id="header" class="inner"><div id="letterhead">
+	<img id="logo" src="/images/shrimp.png" alt="actionshrimp"/>
+	<div id="titles">
+		<h1 id="title"><a href="/">actionshrimp.com</a></h1>
+		<div id="subtitle">Coding adventures of Dave Aitken</div>
+	</div>
+</div>
+<nav id="main-nav"><ul class="main">
+	<li><a href="/">Blog</a></li>
+	<li><a href="/archives">Archives</a></li>
+</ul>
+</nav>
+<nav id="mobile-nav">
+	<div class="alignleft menu">
+		<a class="button">Menu</a>
+		<div class="container"><ul class="main">
+	<li><a href="/">Blog</a></li>
+	<li><a href="/archives">Archives</a></li>
+</ul>
+</div>
+	</div>
+	<div class="alignright search">
+		<a class="button"></a>
+		<div class="container">
+			<form action="http://google.com/search" method="get">
+				<input type="text" name="q" results="0">
+				<input type="hidden" name="q" value="site:actionshrimp.github.com">
+			</form>
+		</div>
+	</div>
+</nav>
+<nav id="sub-nav" class="alignright">
+	<div class="social">
+		
+		
+		
+		<a class="twitter" href="http://twitter.com/actionshrimp" title="Twitter">Twitter</a>
+		
+		
+		<a class="github" href="https://github.com/actionshrimp" title="GitHub">GitHub</a>
+		
+    
+		
+		
+		
+		
+		
+		<a class="rss" href="/atom.xml" title="RSS">RSS</a>
+		
+	</div>
+	<form class="search" action="http://google.com/search" method="get">
+		<input class="alignright" type="text" name="q" results="0">
+		<input type="hidden" name="q" value="site:actionshrimp.github.com">
+	</form>
+</nav>
+
+
+</header>
+	<div id="content" class="inner"><article class="post">
+	<h2 class="title">Shortest Knight Moves From a to B in Haskell</h2>
+	<div class="entry-content"><p>I&#8217;ve got back onto the excellent &#8217;<a href="http://learnyouahaskell.com/">Learn you a Haskell for Great Good</a>&#8217; recently, which I would highly recommend.</p>
+
+<p>Near the end of chapter 12 (about Monads), there is a section on <a href="http://learnyouahaskell.com/a-fistful-of-monads#the-list-monad">the list monad</a>, which has an example &#8216;a knight&#8217;s quest&#8217; at the end. Modification of the example code to print out possible routes from one position to another is left as an exercise to the reader. I decided to give it a go in attempt to solidify my knowledge about monads a bit, and below is the result.</p>
+
+<p>I&#8217;m sure there are far more efficient ways of doing this, and potentially more monad-y ways of implementing shortestMovesFor, so if any other beginners come across this, I&#8217;d be interested to see what you came up with!</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+</pre></td><td class='code'><pre><code class='haskell'><span class='line'><span class="kr">import</span> <span class="k">qualified</span> <span class="nn">Control.Monad</span> <span class="k">as</span> <span class="n">M</span>
+</span><span class='line'><span class="kr">import</span> <span class="nn">Data.List</span>
+</span><span class='line'>
+</span><span class='line'><span class="kr">type</span> <span class="kt">KnightPos</span> <span class="ow">=</span> <span class="p">(</span><span class="kt">Int</span><span class="p">,</span> <span class="kt">Int</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">--As given in learn you a haskell</span>
+</span><span class='line'><span class="nf">moveKnight</span> <span class="ow">::</span> <span class="kt">KnightPos</span> <span class="ow">-&gt;</span> <span class="p">[</span><span class="kt">KnightPos</span><span class="p">]</span>
+</span><span class='line'><span class="nf">moveKnight</span> <span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span> <span class="ow">=</span> <span class="kr">do</span>
+</span><span class='line'>    <span class="p">(</span><span class="n">c&#39;</span><span class="p">,</span> <span class="n">r&#39;</span><span class="p">)</span> <span class="ow">&lt;-</span> <span class="p">[(</span><span class="n">c</span><span class="o">+</span><span class="mi">2</span><span class="p">,</span> <span class="n">r</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="n">c</span><span class="o">+</span><span class="mi">2</span><span class="p">,</span> <span class="n">r</span><span class="o">+</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="n">c</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="n">r</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="n">c</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="n">r</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+</span><span class='line'>                <span class="p">,(</span><span class="n">c</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">r</span><span class="o">-</span><span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="n">c</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">r</span><span class="o">+</span><span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="n">c</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">r</span><span class="o">-</span><span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="n">c</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">r</span><span class="o">+</span><span class="mi">2</span><span class="p">)</span>
+</span><span class='line'>                <span class="p">]</span>
+</span><span class='line'>    <span class="kt">M</span><span class="o">.</span><span class="n">guard</span> <span class="p">(</span><span class="n">c&#39;</span> <span class="p">`</span><span class="n">elem</span><span class="p">`</span> <span class="p">[</span><span class="mi">1</span><span class="o">..</span><span class="mi">8</span><span class="p">]</span> <span class="o">&amp;&amp;</span> <span class="n">r&#39;</span> <span class="p">`</span><span class="n">elem</span><span class="p">`</span> <span class="p">[</span><span class="mi">1</span><span class="o">..</span><span class="mi">8</span><span class="p">])</span>
+</span><span class='line'>    <span class="n">return</span> <span class="p">(</span><span class="n">c&#39;</span><span class="p">,</span> <span class="n">r&#39;</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">--moveKnight, but modified to apply move n times</span>
+</span><span class='line'><span class="nf">moveNWithHistory</span> <span class="ow">::</span> <span class="kt">Int</span> <span class="ow">-&gt;</span> <span class="p">[</span><span class="kt">KnightPos</span><span class="p">]</span> <span class="ow">-&gt;</span> <span class="p">[[</span><span class="kt">KnightPos</span><span class="p">]]</span>
+</span><span class='line'><span class="nf">moveNWithHistory</span> <span class="n">n</span> <span class="p">(</span><span class="n">current</span><span class="kt">:</span><span class="n">history</span><span class="p">)</span> <span class="ow">=</span> <span class="kr">do</span>
+</span><span class='line'>    <span class="kr">if</span> <span class="p">(</span><span class="n">n</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="kr">then</span> <span class="kr">do</span>
+</span><span class='line'>        <span class="n">nextMove</span> <span class="ow">&lt;-</span> <span class="p">(</span><span class="n">return</span> <span class="n">current</span><span class="p">)</span> <span class="o">&gt;&gt;=</span> <span class="n">moveKnight</span>
+</span><span class='line'>        <span class="n">moveNWithHistory</span> <span class="p">(</span><span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">=&lt;&lt;</span> <span class="n">return</span> <span class="p">(</span><span class="n">nextMove</span> <span class="kt">:</span> <span class="n">current</span> <span class="kt">:</span> <span class="n">history</span><span class="p">)</span>
+</span><span class='line'>    <span class="kr">else</span> <span class="n">return</span> <span class="p">(</span><span class="n">current</span><span class="kt">:</span><span class="n">history</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'><span class="nf">shortestMovesFor</span> <span class="ow">::</span> <span class="kt">KnightPos</span> <span class="ow">-&gt;</span> <span class="kt">KnightPos</span> <span class="ow">-&gt;</span> <span class="p">[[</span><span class="kt">KnightPos</span><span class="p">]]</span>
+</span><span class='line'><span class="nf">shortestMovesFor</span> <span class="n">start</span> <span class="n">end</span> <span class="ow">=</span> <span class="n">map</span> <span class="n">reverse</span> <span class="p">(</span><span class="n">filter</span> <span class="p">(</span><span class="n">endsOn</span> <span class="n">end</span><span class="p">)</span> <span class="n">historiesForMinN</span><span class="p">)</span> <span class="kr">where</span>
+</span><span class='line'>    <span class="n">endsOn</span> <span class="n">target</span> <span class="p">(</span><span class="n">current</span><span class="kt">:</span><span class="n">history</span><span class="p">)</span> <span class="ow">=</span> <span class="p">(</span><span class="n">target</span> <span class="o">==</span> <span class="n">current</span><span class="p">)</span>
+</span><span class='line'>    <span class="kt">Just</span> <span class="n">historiesForMinN</span> <span class="ow">=</span> <span class="n">find</span> <span class="p">(</span><span class="n">any</span> <span class="p">(</span><span class="n">endsOn</span> <span class="n">end</span><span class="p">))</span> <span class="p">(</span><span class="n">map</span> <span class="p">(</span><span class="nf">\</span><span class="n">n</span> <span class="ow">-&gt;</span> <span class="n">moveNWithHistory</span> <span class="n">n</span> <span class="p">[</span><span class="n">start</span><span class="p">])</span> <span class="p">[</span><span class="mi">0</span><span class="o">..</span><span class="p">])</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>And here&#8217;s some example output:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='haskell'><span class='line'><span class="o">*</span><span class="kt">Main</span><span class="o">&gt;</span> <span class="n">shortestMovesFor</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">)</span>
+</span><span class='line'><span class="p">[[(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">),(</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="p">),(</span><span class="mi">5</span><span class="p">,</span><span class="mi">3</span><span class="p">),(</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">)],[(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">),(</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="p">),(</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">),(</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">)],[(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">),(</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">),(</span><span class="mi">4</span><span class="p">,</span><span class="mi">2</span><span class="p">),(</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">)],[(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">),(</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">),(</span><span class="mi">1</span><span class="p">,</span><span class="mi">5</span><span class="p">),(</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">)]]</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>As you can see it returns a list of the shortest chains of moves from the start square to the target square.</p>
+
+<p>Changes I made to the code from the book:</p>
+
+<ul>
+<li><p>moveNWithHistory is a new function to apply moveKnight n times. It also generates a list of chains of moves for a given n, rather than just the final positions (by passing <code>nextMove : current : history</code> to the next iteration, rather than just the next move).</p></li>
+<li><p>shortestMovesFor is not monadic, and returns the final list of moves. We first generate all move chains from our starting position for increasing n, until we find the smallest n which creates a set of chains that contains a chain ending on the target square. We then filter down the set we found to return only chains that do end on the target square. Finally we map reverse over the chains to make them more readable.</p></li>
+</ul>
+
+</div>
+
+
+<div class="meta">
+	<div class="date">
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-11-19T16:41:00+00:00" pubdate data-updated="true">Nov 19<span>th</span>, 2012</time></div>
+	<div class="tags">
+
+
+	<a class='category' href='/blog/categories/haskell/'>haskell</a>, <a class='category' href='/blog/categories/newbie/'>newbie</a>
+
+
+</div>
+	
+</div></article>
+
+	<div class="share">
+	<div class="addthis_toolbox addthis_default_style ">
+	
+	
+	<a class="addthis_button_tweet"></a>
+	
+	
+	<a class="addthis_counter addthis_pill_style"></a>
+	</div>
+  <script type="text/javascript" src="http://s7.addthis.com/js/250/addthis_widget.js#pubid="></script>
+</div>
+
+
+
+<section id="comment">
+    <h2 class="title">Comments</h2>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+</section>
+</div>
+	<footer id="footer" class="inner">Copyright &copy; 2015
+
+    Dave Aitken
+
+</footer>
+	<script src="/javascripts/slash.js"></script>
+<script src="/javascripts/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+(function($){
+	$('.fancybox').fancybox();
+})(jQuery);
+</script> <!-- Delete or comment this line to disable Fancybox -->
+
+
+<script type="text/javascript">
+      var disqus_shortname = 'actionshrimp';
+      
+        
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://actionshrimp.github.com/2012/11/knight-moves/';
+        var disqus_url = 'http://actionshrimp.github.com/2012/11/knight-moves/';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+	<script type="text/javascript">
+		var _gaq = _gaq || [];
+		_gaq.push(['_setAccount', 'UA-37632248-1']);
+		_gaq.push(['_trackPageview']);
+
+		(function() {
+			var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+			ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+			var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+		})();
+	</script>
+
+
+
+</body>
+</html>

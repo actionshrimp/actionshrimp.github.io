@@ -1,0 +1,406 @@
+
+<!DOCTYPE HTML>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>CakePHP Tutorial Part 2: Authentication and Tweaking - actionshrimp.com</title>
+	<meta name="author" content="Dave Aitken">
+
+	
+	<meta name="description" content="In the first part of my CakePHP tutorial, I showed you how to use Cake&#8217;s Bake utility to set up the basic back end of an online illustration &hellip;">
+	
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+	<link href="/atom.xml" rel="alternate" title="actionshrimp.com" type="application/atom+xml">
+	<link rel="canonical" href="">
+	<link href="/favicon.png" rel="shortcut icon">
+	<link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+	<link href='http://fonts.googleapis.com/css?family=Bree+Serif' rel='stylesheet' type='text/css'>
+	<link href='http://fonts.googleapis.com/css?family=Lobster' rel='stylesheet' type='text/css'>
+	<!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+	<meta name="google-site-verification" content="5jlRIpbX9mpsM44CGBBCaL2E_T5GDkjBYwwhSaZ4f7s" />
+
+</head>
+
+
+<body>
+	<header id="header" class="inner"><div id="letterhead">
+	<img id="logo" src="/images/shrimp.png" alt="actionshrimp"/>
+	<div id="titles">
+		<h1 id="title"><a href="/">actionshrimp.com</a></h1>
+		<div id="subtitle">Coding adventures of Dave Aitken</div>
+	</div>
+</div>
+<nav id="main-nav"><ul class="main">
+	<li><a href="/">Blog</a></li>
+	<li><a href="/archives">Archives</a></li>
+</ul>
+</nav>
+<nav id="mobile-nav">
+	<div class="alignleft menu">
+		<a class="button">Menu</a>
+		<div class="container"><ul class="main">
+	<li><a href="/">Blog</a></li>
+	<li><a href="/archives">Archives</a></li>
+</ul>
+</div>
+	</div>
+	<div class="alignright search">
+		<a class="button"></a>
+		<div class="container">
+			<form action="http://google.com/search" method="get">
+				<input type="text" name="q" results="0">
+				<input type="hidden" name="q" value="site:actionshrimp.github.com">
+			</form>
+		</div>
+	</div>
+</nav>
+<nav id="sub-nav" class="alignright">
+	<div class="social">
+		
+		
+		
+		<a class="twitter" href="http://twitter.com/actionshrimp" title="Twitter">Twitter</a>
+		
+		
+		<a class="github" href="https://github.com/actionshrimp" title="GitHub">GitHub</a>
+		
+    
+		
+		
+		
+		
+		
+		<a class="rss" href="/atom.xml" title="RSS">RSS</a>
+		
+	</div>
+	<form class="search" action="http://google.com/search" method="get">
+		<input class="alignright" type="text" name="q" results="0">
+		<input type="hidden" name="q" value="site:actionshrimp.github.com">
+	</form>
+</nav>
+
+
+</header>
+	<div id="content" class="inner"><article class="post">
+	<h2 class="title">CakePHP Tutorial Part 2: Authentication and Tweaking</h2>
+	<div class="entry-content"><p><img class="alignleft size-full wp-image-252" src="/images/cake-logo1.png" width="180" height="180" /> In the <a href="http://www.actionshrimp.com/2009/03/cakephp-tutorial-part-1-bake-utility/">first part of my CakePHP tutorial</a>, I showed you how to use Cake&#8217;s Bake utility to set up the basic back end of an online illustration portfolio. In this part, I&#8217;ll tweak the automatically generated code into useable website and admin section and show you how to use some of Cake&#8217;s features along the way, including the Authentication component.</p>
+
+<p>If you followed the first part of the tutorial, we currently have a few sections that we&#8217;ve generated models, controllers and views for. By navigating to your_app/controllername/action in your browser, you can access the different functions of the application. But unless your users know this in advance, they have no way of accessing them.</p>
+
+<!--more-->
+
+
+<h1>Joining the sections together</h1>
+
+<p>The easiest way of implementing navigation common to all pages is to use Cake&#8217;s built in templating system, the page &#8220;layout&#8221;. Cake uses its built-in layout if it finds no user defined layout default available. To add one, create the file your_app_dir/app/views/layouts/default.ctp, and put in your basic page layout. Mine looked like this:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+</pre></td><td class='code'><pre><code class='html'><span class='line'><span class="nt">&lt;html</span> <span class="na">xmlns=</span><span class="s">&quot;http://www.w3.org/1999/xhtml&quot;</span><span class="nt">&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;head&gt;</span>
+</span><span class='line'>        <span class="nt">&lt;meta</span> <span class="na">http-equiv=</span><span class="s">&quot;Content-Type&quot;</span> <span class="na">content=</span><span class="s">&quot;text/html; charset=utf-8&quot;</span> <span class="nt">/&gt;</span>
+</span><span class='line'>        <span class="nt">&lt;title&gt;</span><span class="cp">&lt;?php echo $title_for_layout ?&gt;</span><span class="nt">&lt;/title&gt;</span>
+</span><span class='line'>        <span class="nt">&lt;link</span> <span class="na">href=</span><span class="s">&quot;favicon.ico&quot;</span> <span class="na">type=</span><span class="s">&quot;image/x-icon&quot;</span> <span class="na">rel=</span><span class="s">&quot;shortcut icon&quot;</span> <span class="nt">/&gt;</span>
+</span><span class='line'>        <span class="cp">&lt;?php echo $html-&gt;css(&#39;default&#39;) ?&gt;</span>
+</span><span class='line'>        <span class="cp">&lt;?php echo $scripts_for_layout ?&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;/head&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;body&gt;</span>
+</span><span class='line'>        <span class="nt">&lt;div</span> <span class="na">id=</span><span class="s">&quot;container&quot;</span><span class="nt">&gt;</span>
+</span><span class='line'>            <span class="nt">&lt;div</span> <span class="na">id=</span><span class="s">&quot;header&quot;</span><span class="nt">&gt;</span>
+</span><span class='line'>                 <span class="nt">&lt;h1&gt;</span>King-Jon Illustration<span class="nt">&lt;/h1&gt;</span>
+</span><span class='line'>            <span class="nt">&lt;/div&gt;</span>
+</span><span class='line'>            <span class="nt">&lt;div</span> <span class="na">id=</span><span class="s">&quot;navigation&quot;</span><span class="nt">&gt;</span>
+</span><span class='line'>                <span class="nt">&lt;ul&gt;</span>
+</span><span class='line'>                    <span class="nt">&lt;li&gt;</span><span class="cp">&lt;?php echo $html-&gt;link(&#39;News&#39;, array(&#39;controller&#39;=&gt;&#39;News&#39;))?&gt;</span><span class="nt">&lt;/li&gt;</span>
+</span><span class='line'>                    <span class="nt">&lt;li&gt;</span><span class="cp">&lt;?php echo $html-&gt;link(&#39;Works&#39;, array(&#39;controller&#39;=&gt;&#39;Works&#39;))?&gt;</span><span class="nt">&lt;/li&gt;</span>
+</span><span class='line'>                    <span class="nt">&lt;li&gt;</span><span class="cp">&lt;?php echo $html-&gt;link(&#39;Sketches&#39;, array(&#39;controller&#39;=&gt;&#39;Sketches&#39;))?&gt;</span><span class="nt">&lt;/li&gt;</span>
+</span><span class='line'>                    <span class="nt">&lt;li&gt;</span><span class="cp">&lt;?php echo $html-&gt;link(&#39;Friends&#39;, array(&#39;controller&#39;=&gt;&#39;Friends&#39;))?&gt;</span><span class="nt">&lt;/li&gt;</span>
+</span><span class='line'>                <span class="nt">&lt;/ul&gt;</span>
+</span><span class='line'>            <span class="nt">&lt;/div&gt;</span>
+</span><span class='line'>            <span class="nt">&lt;div</span> <span class="na">id=</span><span class="s">&quot;content&quot;</span><span class="nt">&gt;</span>
+</span><span class='line'>                <span class="cp">&lt;?php echo $content_for_layout ?&gt;</span>
+</span><span class='line'>            <span class="nt">&lt;/div&gt;</span>
+</span><span class='line'>            <span class="nt">&lt;div</span> <span class="na">id=</span><span class="s">&quot;footer&quot;</span><span class="nt">&gt;</span>
+</span><span class='line'>            <span class="nt">&lt;/div&gt;</span>
+</span><span class='line'>        <span class="nt">&lt;/div&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;/body&gt;</span>
+</span><span class='line'><span class="nt">&lt;/html&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>You&#8217;ll notice this looks like a pretty normal basic page skeleton, with a few extra bits of PHP inserted. The $title_for_layout, $scripts_for_layout and $content_for_layout variables are filled in by Cake automatically depending on what the current page request is and the title and content are fairly self-explanitory.  The scripts variable lets you specify scripts on a per-page basis but still include them in the <code>&lt;head&gt;</code> section. The <code>$html-&gt;xxx</code> code snippets are part of the <a href="http://book.cakephp.org/view/206/Inserting-Well-Formatted-elements">Cake HtmlHelper</a>. This allows you to insert well formatted elements easily - the <code>$html-&gt;css('default')</code> includes the stylesheet &#8220;css/default.css&#8221; (this is stored in the your_app_dir/app/webroot/css directory), and the <code>$html-&gt;link</code> lines let you point to different parts of your app easily. You could just add normal links, such as <code>&lt;a href="/news/"&gt;</code>, but pointing to the controller allows a bit of flexibility if you want to change anything further down the line.</p>
+
+<h1>Adding a splash page</h1>
+
+<p>As it was an art portfolio website, the owner decided a splash page would be useful, to give a good first impact when entering the site and the ability to show off a bit of artwork right away. Cake uses its built-in pages controller to handle static pages, and the different pages are stored in the folder your_app_dir/app/views/pages. To view a page, you navigate to the URL your_app/pages/pagename. Here, the pages controller doesn&#8217;t take an action, so the additional directory level on the URL is an argument passed to the controller, in this case the name of the page to display. Cake also automatically serves up a default page, called &#8220;home&#8221;, when a user requests the root of your_app. The name of this page is set by Cake&#8217;s router, and if we look in your_app_dir/app/config/routes.php, we see at the bottom, the lines:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+</pre></td><td class='code'><pre><code class='php'><span class='line'><span class="cp">&lt;?</span>
+</span><span class='line'><span class="sd">/**</span>
+</span><span class='line'><span class="sd">* Here, we are connecting &#39;/&#39; (base path) to controller called &#39;Pages&#39;,</span>
+</span><span class='line'><span class="sd">* its action called &#39;display&#39;, and we pass a param to select the view file</span>
+</span><span class='line'><span class="sd">* to use (in this case, /app/views/pages/home.ctp)...</span>
+</span><span class='line'><span class="sd">*/</span>
+</span><span class='line'><span class="nx">Router</span><span class="o">::</span><span class="na">connect</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">,</span> <span class="k">array</span><span class="p">(</span><span class="s1">&#39;controller&#39;</span> <span class="o">=&gt;</span> <span class="s1">&#39;pages&#39;</span><span class="p">,</span> <span class="s1">&#39;action&#39;</span> <span class="o">=&gt;</span> <span class="s1">&#39;display&#39;</span><span class="p">,</span> <span class="s1">&#39;home&#39;</span><span class="p">));</span>
+</span><span class='line'><span class="sd">/**</span>
+</span><span class='line'><span class="sd">* ...and connect the rest of &#39;Pages&#39; controller&#39;s urls.</span>
+</span><span class='line'><span class="sd">*/</span>
+</span><span class='line'><span class="nx">Router</span><span class="o">::</span><span class="na">connect</span><span class="p">(</span><span class="s1">&#39;/pages/*&#39;</span><span class="p">,</span> <span class="k">array</span><span class="p">(</span><span class="s1">&#39;controller&#39;</span> <span class="o">=&gt;</span> <span class="s1">&#39;pages&#39;</span><span class="p">,</span> <span class="s1">&#39;action&#39;</span> <span class="o">=&gt;</span> <span class="s1">&#39;display&#39;</span><span class="p">));</span>
+</span><span class='line'><span class="cp">?&gt;</span><span class="x"></span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>The comments tell us what&#8217;s going on - this is what maps the pages to the locations I have talked about. You can add your own mappings here too if you like.  For our splash screen however, we can just make use of the already defined &#8220;home&#8221; page, so edit this to make it look how you want, you&#8217;ll find it in your_app_dir/app/views/pages/home.ctp. Mine looked like this:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='php'><span class='line'><span class="cp">&lt;?php</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">layout</span> <span class="o">=</span> <span class="s2">&quot;splash&quot;</span> <span class="cp">?&gt;</span><span class="x"></span>
+</span><span class='line'><span class="x">&lt;div id=&quot;splash&quot;&gt;</span>
+</span><span class='line'><span class="x">    </span><span class="cp">&lt;?php</span> <span class="k">echo</span> <span class="nv">$html</span><span class="o">-&gt;</span><span class="na">image</span><span class="p">(</span><span class="s2">&quot;splash.png&quot;</span><span class="p">,</span>
+</span><span class='line'>        <span class="k">array</span><span class="p">(</span><span class="s2">&quot;alt&quot;</span> <span class="o">=&gt;</span> <span class="s2">&quot;King Jon Illustration&quot;</span><span class="p">,</span>
+</span><span class='line'>        <span class="s2">&quot;url&quot;</span> <span class="o">=&gt;</span> <span class="k">array</span><span class="p">(</span><span class="s2">&quot;controller&quot;</span> <span class="o">=&gt;</span> <span class="s2">&quot;news&quot;</span><span class="p">)));</span>
+</span><span class='line'>    <span class="cp">?&gt;</span><span class="x"></span>
+</span><span class='line'><span class="x">&lt;/div&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>A couple of things to note here. The first line <code>$this-&gt;layout = "splash"</code>, tells Cake not to use the &#8220;default&#8221; layout we created earlier, but to instead use one called &#8220;splash&#8221;. I sneakily created a splash layout without telling you here, but it is in fact just an exact copy of the default layout with the navigation div removed, to give the page a more &#8220;splashy&#8221; feel. Next, I used the image HtmlHelper to include an image called &#8220;splash.png&#8221; - this is located in my_app_dir/app/webroot/img, the location the image helper looks in. The second argument is an array of additional attributes, &#8220;alt&#8221; being the alt text, and &#8220;url&#8221; puts an <a> element around the image, creating a link to the specified address.</p>
+
+<h1>Admin section authentication</h1>
+
+<p><a href="/images/authentic-screen.png"><img class="alignleft size-medium wp-image-251" src="/images/authentic-screen-300x187.png" width="300" height="187" /></a> At the minute, all our sections are wide open for anyone to just stroll in and start adding news, posting works, and generally delete or edit existing pieces of data. This clearly isn&#8217;t ideal, so next on the agenda is sorting this out. We&#8217;ll use the <a href="http://book.cakephp.org/view/172/Authentication">authentication component</a> for this. First of all, we want all add/edit capabilities to be kept within the admin section, so the first step is to remove the non-admin versions of these. Go through all five of the your_app_dir/app/controllers/*_controller.php, and delete the functions &#8220;add&#8221; and &#8220;edit&#8221; that were automatically generated.</p>
+
+<p>Next, clean up the views associated with these functions - delete the two files your_app_dir/app/views/*/add.ctp and edit.ctp in all five of the view directories. This means now we can only add and edit our data by navigating to your_app/<strong>admin</strong>/controller/add etc. We&#8217;re going to want to use authentication for all our controllers, as all of them have an admin section that we need to login for. Instead of telling each controller to use this component individually, we can tell the whole controller superclass that we want to use it, to save repetition. Open the file your_app_dir/app/app_controller.php and add the line in the class definition like so:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='php'><span class='line'><span class="cp">&lt;?</span>
+</span><span class='line'><span class="k">class</span> <span class="nc">AppController</span> <span class="k">extends</span> <span class="nx">Controller</span> <span class="p">{</span>
+</span><span class='line'>    <span class="k">var</span> <span class="nv">$components</span> <span class="o">=</span> <span class="k">array</span><span class="p">(</span><span class="s1">&#39;Auth&#39;</span><span class="p">);</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'><span class="cp">?&gt;</span><span class="x"></span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Now if you try and visit an admin page in your_app, you&#8217;ll be greeted with an error messages telling you there&#8217;s no login action in the Users controller, which is where the Auth component looks by default, so we&#8217;d better add this in. Edit the file your_app_dir/app/controllers/users_controller.php, and right at the bottom of the class definition, add these two functions:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='php'><span class='line'><span class="cp">&lt;?</span>
+</span><span class='line'><span class="k">function</span> <span class="nf">admin_login</span><span class="p">()</span> <span class="p">{</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'><span class="k">function</span> <span class="nf">admin_logout</span><span class="p">()</span> <span class="p">{</span>
+</span><span class='line'>    <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">Redirect</span><span class="p">(</span><span class="nv">$this</span><span class="o">-&gt;</span><span class="na">Auth</span><span class="o">-&gt;</span><span class="na">logout</span><span class="p">());</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'><span class="cp">?&gt;</span><span class="x"></span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Now try and navigate to an admin section again. You&#8217;re told that there&#8217;s a missing view this time! Better do what Cake says and add one in. Create the new file your_app_dir/app/views/users/admin_login.ctp, and fill it with the following skeleton login form:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='php'><span class='line'><span class="cp">&lt;?php</span>
+</span><span class='line'>    <span class="k">if</span><span class="err"> </span> <span class="p">(</span><span class="nv">$session</span><span class="o">-&gt;</span><span class="na">check</span><span class="p">(</span><span class="s1">&#39;Message.auth&#39;</span><span class="p">))</span> <span class="nv">$session</span><span class="o">-&gt;</span><span class="na">flash</span><span class="p">(</span><span class="s1">&#39;auth&#39;</span><span class="p">);</span>
+</span><span class='line'>    <span class="k">echo</span> <span class="nv">$form</span><span class="o">-&gt;</span><span class="na">create</span><span class="p">(</span><span class="s1">&#39;User&#39;</span><span class="p">,</span> <span class="k">array</span><span class="p">(</span><span class="s1">&#39;action&#39;</span> <span class="o">=&gt;</span> <span class="s1">&#39;admin_login&#39;</span><span class="p">));</span>
+</span><span class='line'>    <span class="k">echo</span> <span class="nv">$form</span><span class="o">-&gt;</span><span class="na">input</span><span class="p">(</span><span class="s1">&#39;username&#39;</span><span class="p">);</span>
+</span><span class='line'>    <span class="k">echo</span> <span class="nv">$form</span><span class="o">-&gt;</span><span class="na">input</span><span class="p">(</span><span class="s1">&#39;password&#39;</span><span class="p">);</span>
+</span><span class='line'>    <span class="k">echo</span> <span class="nv">$form</span><span class="o">-&gt;</span><span class="na">end</span><span class="p">(</span><span class="s1">&#39;Login&#39;</span><span class="p">);</span>
+</span><span class='line'><span class="cp">?&gt;</span><span class="x"></span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Now there are two problems: we&#8217;re greeted with a login for all the admin sections - a slight problem as we don&#8217;t have credentials&#8230; we&#8217;ve locked ourselves out of the whole website! There are also some error messages when we try and view the non-admin sections of the site, which seem to want us to login but can&#8217;t find a login() action (remember we only created admin_login, and didnt bother with login). Fortunately, we can get around these problems by adding exceptions to the authentication. Open up the users controller, your_app_dir/app/controllers/users_controller.php, and then add in the following <a href="http://book.cakephp.org/view/60/Callbacks">controller callback function</a> (I added it in near the top):</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='php'><span class='line'><span class="cp">&lt;?</span>
+</span><span class='line'><span class="k">function</span> <span class="nf">beforeFilter</span><span class="p">()</span> <span class="p">{</span>
+</span><span class='line'>    <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">Auth</span><span class="o">-&gt;</span><span class="na">allow</span><span class="p">(</span><span class="s1">&#39;admin_add&#39;</span><span class="p">,</span> <span class="s1">&#39;admin_index&#39;</span><span class="p">);</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'><span class="cp">?&gt;</span><span class="x"></span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>This gives access to the admin add and index (which lists all users) actions of the users controller. So now, navigate to your_app/admin/users/add, and create a login for yourself! You&#8217;ll probably want to remove the allow line once you&#8217;ve added yourself to prevent anyone else creating a login for themselves when you&#8217;re not looking. We&#8217;re still however stuck with the problem that none of the non-admin sections work, so we need to add an Auth exception to all non-admin sections. The best way to do this is by adding the following into the your_app_dir/app/app_controller.php AppController class definition, underneath where we told it to load the Auth component earlier:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+</pre></td><td class='code'><pre><code class='php'><span class='line'><span class="cp">&lt;?</span>
+</span><span class='line'><span class="k">function</span> <span class="nf">beforeFilter</span><span class="p">()</span> <span class="p">{</span>
+</span><span class='line'>    <span class="nv">$admin</span> <span class="o">=</span> <span class="nx">Configure</span><span class="o">::</span><span class="na">read</span><span class="p">(</span><span class="s1">&#39;Routing.admin&#39;</span><span class="p">);</span>
+</span><span class='line'>    <span class="k">if</span> <span class="p">(</span><span class="nb">isset</span><span class="p">(</span><span class="nv">$this</span><span class="o">-&gt;</span><span class="na">params</span><span class="p">[</span><span class="nv">$admin</span><span class="p">])</span> <span class="k">and</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">params</span><span class="p">[</span><span class="nv">$admin</span><span class="p">]){</span>
+</span><span class='line'>        <span class="c1">//$this-&gt;layout = &#39;admin&#39;;</span>
+</span><span class='line'>    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span><span class='line'>        <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">Auth</span><span class="o">-&gt;</span><span class="na">allow</span><span class="p">();</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'><span class="cp">?&gt;</span><span class="x"></span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Now we should be able to navigate the site without any problems. The commented out line above allows the future addition of an admin.ctp layout file that will automatically be loaded when viewing admin sections - I haven&#8217;t done this yet though. The next phase of the project is to go through and edit all the views, layouts &amp; CSS and get them looking how you want, and this is largely an exercise in usual web development - you can take a look at the default views to see how to include data provided by Cake fairly easily. If I come across anything else I think might be of help while I&#8217;m building the rest of the site, I&#8217;ll make small posts for those too. Hopefully you&#8217;ve been able to follow this introduction to Cake so far, but if not drop me a line in the comments below and I&#8217;ll try and give you a hand where I can. Good luck!</p>
+</div>
+
+
+<div class="meta">
+	<div class="date">
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2009-03-31T08:02:00+01:00" pubdate data-updated="true">Mar 31<span>st</span>, 2009</time></div>
+	<div class="tags">
+
+
+	<a class='category' href='/blog/categories/cakephp/'>CakePHP</a>
+
+
+</div>
+	
+</div></article>
+
+	<div class="share">
+	<div class="addthis_toolbox addthis_default_style ">
+	
+	
+	<a class="addthis_button_tweet"></a>
+	
+	
+	<a class="addthis_counter addthis_pill_style"></a>
+	</div>
+  <script type="text/javascript" src="http://s7.addthis.com/js/250/addthis_widget.js#pubid="></script>
+</div>
+
+
+
+<section id="comment">
+    <h2 class="title">Comments</h2>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+</section>
+</div>
+	<footer id="footer" class="inner">Copyright &copy; 2015
+
+    Dave Aitken
+
+</footer>
+	<script src="/javascripts/slash.js"></script>
+<script src="/javascripts/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+(function($){
+	$('.fancybox').fancybox();
+})(jQuery);
+</script> <!-- Delete or comment this line to disable Fancybox -->
+
+
+<script type="text/javascript">
+      var disqus_shortname = 'actionshrimp';
+      
+        
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://actionshrimp.github.com/2009/03/cakephp-tutorial-part-2-authentication/';
+        var disqus_url = 'http://actionshrimp.github.com/2009/03/cakephp-tutorial-part-2-authentication/';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+	<script type="text/javascript">
+		var _gaq = _gaq || [];
+		_gaq.push(['_setAccount', 'UA-37632248-1']);
+		_gaq.push(['_trackPageview']);
+
+		(function() {
+			var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+			ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+			var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+		})();
+	</script>
+
+
+
+</body>
+</html>

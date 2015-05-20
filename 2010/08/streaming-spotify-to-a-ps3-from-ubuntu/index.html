@@ -1,0 +1,229 @@
+
+<!DOCTYPE HTML>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Streaming Spotify to a PS3 from Ubuntu - actionshrimp.com</title>
+	<meta name="author" content="Dave Aitken">
+
+	
+	<meta name="description" content="A post came up a couple of days ago on the Spotify &#8220;What&#8217;s new&#8221; feed: how to stream spotify wirelessly to your stereo, which got &hellip;">
+	
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+	<link href="/atom.xml" rel="alternate" title="actionshrimp.com" type="application/atom+xml">
+	<link rel="canonical" href="">
+	<link href="/favicon.png" rel="shortcut icon">
+	<link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+	<link href='http://fonts.googleapis.com/css?family=Bree+Serif' rel='stylesheet' type='text/css'>
+	<link href='http://fonts.googleapis.com/css?family=Lobster' rel='stylesheet' type='text/css'>
+	<!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+	<meta name="google-site-verification" content="5jlRIpbX9mpsM44CGBBCaL2E_T5GDkjBYwwhSaZ4f7s" />
+
+</head>
+
+
+<body>
+	<header id="header" class="inner"><div id="letterhead">
+	<img id="logo" src="/images/shrimp.png" alt="actionshrimp"/>
+	<div id="titles">
+		<h1 id="title"><a href="/">actionshrimp.com</a></h1>
+		<div id="subtitle">Coding adventures of Dave Aitken</div>
+	</div>
+</div>
+<nav id="main-nav"><ul class="main">
+	<li><a href="/">Blog</a></li>
+	<li><a href="/archives">Archives</a></li>
+</ul>
+</nav>
+<nav id="mobile-nav">
+	<div class="alignleft menu">
+		<a class="button">Menu</a>
+		<div class="container"><ul class="main">
+	<li><a href="/">Blog</a></li>
+	<li><a href="/archives">Archives</a></li>
+</ul>
+</div>
+	</div>
+	<div class="alignright search">
+		<a class="button"></a>
+		<div class="container">
+			<form action="http://google.com/search" method="get">
+				<input type="text" name="q" results="0">
+				<input type="hidden" name="q" value="site:actionshrimp.github.com">
+			</form>
+		</div>
+	</div>
+</nav>
+<nav id="sub-nav" class="alignright">
+	<div class="social">
+		
+		
+		
+		<a class="twitter" href="http://twitter.com/actionshrimp" title="Twitter">Twitter</a>
+		
+		
+		<a class="github" href="https://github.com/actionshrimp" title="GitHub">GitHub</a>
+		
+    
+		
+		
+		
+		
+		
+		<a class="rss" href="/atom.xml" title="RSS">RSS</a>
+		
+	</div>
+	<form class="search" action="http://google.com/search" method="get">
+		<input class="alignright" type="text" name="q" results="0">
+		<input type="hidden" name="q" value="site:actionshrimp.github.com">
+	</form>
+</nav>
+
+
+</header>
+	<div id="content" class="inner"><article class="post">
+	<h2 class="title">Streaming Spotify to a PS3 From Ubuntu</h2>
+	<div class="entry-content"><p><img class="alignleft" src="/images/spotify-logo.png" width="76" height="76" /> A post came up a couple of days ago on the Spotify &#8220;What&#8217;s new&#8221; feed: <a href="http://www.simpleeditions.com/8001/how-to-stream-spotify-wirelessly-to-your-stereo">how to stream spotify wirelessly to your stereo</a>, which got me thinking about something I&#8217;ve been after for a while - the ability to stream spotify audio to PS3. This is mentioned in the link, but the main method they talk about is for Windows, and a solution for mac is touched upon. I figured I&#8217;d have a go at doing this on Ubuntu. Before you have a go at this, I should mention a slight drawback - there&#8217;s a fair delay on the audio steam that reaches the PS3, around 20 or 30 seconds. This makes it good for playing a playlist as background music, but if you&#8217;re wanting to be able to flick around loads of different songs then you might get a bit frustrated. Read on if you&#8217;re still keen&#8230;</p>
+
+<!--more-->
+
+
+<p>The general approach we&#8217;re going for is to convert the computer that&#8217;s playing spotify&#8217;s audio feed into a web radio station, which can then be played through a UPnP server that can be read by the ps3. Sounds a bit long winded? Well it is really! I&#8217;m sure there are better ways - I tried to pipe the spotify feed to a file and then play the file through the UPnP server instead, but this didn&#8217;t work with the way the PS3 buffers. Let me know if you find a better way though. Here&#8217;s how I did it anyway:</p>
+
+<h1>1. Install ps3mediaserver</h1>
+
+<p>You may have come across <a href="http://http://ps3mediaserver.blogspot.com/">ps3mediaserver</a> before if you&#8217;re a PS3 owner - it&#8217;s a great UPnP server that requires little setup. Head over to the <a href="http://code.google.com/p/ps3mediaserver/downloads/list">downloads page</a>. I grabbed <code>pms-generic-linux-unix-1.20.409-BETA.tgz</code>, although I&#8217;m pretty sure this will work fine with the stable version too. Extract the archive somewhere and fire up ps3mediaserver to try it out. With any luck it should locate your ps3. Add a share with some mp3s/videos in, restart it and give them a spin to check it all works. Try and make sure this is all working fine before carrying on, otherwise the later steps are unlikely to work.</p>
+
+<h1>2. Grab pmsencoder</h1>
+
+<p>The next thing we need is a plugin for ps3mediaserver called <a href="http://github.com/chocolateboy/pmsencoder">pmsencoder</a>. This is pretty handy in itself - it allows you to stream podcasts from a feed URL, shoutcast radio stations and various web video streams. Head over to the pmsencoder page, and look in the installation instructions on how to install the plugin. You pretty much just need to download the plugin .jar file to your ps3mediaserver /plugins folder, and then add the pmsencoder engine to the engines line in the PMS.conf configuration file (if the PMS.conf configuration doesn&#8217;t exist, open up ps3media server, fiddle with some settings (like adding a share or changing transcoding options, then hit &#8216;save&#8217;. This will create the file). When that&#8217;s all done, restart ps3mediaserver and have a look on your PS3 again. With any luck, there should be a folder called &#8216;Web&#8217;, with some default web sources available to have a look at (Endgadget Podcast, various Youtube feeds). Again, try these out and see if they work, as if they don&#8217;t then you&#8217;ll probably want to get this working before proceeding. In particular, make sure the &#8216;Radio&#8217; sources are working, as we&#8217;re gonna be pushing our Spotify feed through as a radio station.</p>
+
+<h1>3. Grab icecast2</h1>
+
+<p>Once ps3mediaserver and pmsencoder are working, we need to set up an icecast server to broadcast our soon-to-be-made stream to pmsencoder. If you&#8217;re on ubuntu, you can just do <code>sudo apt-get install icecast2</code> to grab the icecast2 server. Once this is done, edit <code>/etc/icecast2/icecast.xml</code> and change the source and admin password to prevent random hijacking of your radio station. When the passwords have been changed, you&#8217;ll want to edit <code>/etc/default/icecast2</code> and change the line at the bottom <code>ENABLE=false</code> to <code>ENABLE=true</code>. Now you can launch the icecast server: <code>sudo /etc/init.d/icecast2 start</code> Try and visit http://localhost:8000/ and see if anything displays. If all has gone well, you should get the icecast2 status page.</p>
+
+<h1>4. Add a spotify radio source to pmsencoder</h1>
+
+<p>Now our icecast server is running, we need to let pmsencoder and ps3mediaserver know about it. Open up the file WEB.conf in the directory where you&#8217;ve been running ps3mediaserver from. Under the #shoutcasts section, add a new source:</p>
+
+<pre><code>audiostream.Web,Radios=Spotify,http://localhost:8000/spotify.ogg
+</code></pre>
+
+<p>then restart ps3mediaserver.</p>
+
+<h1>5. Send the computer&#8217;s audio to icecast2</h1>
+
+<p>Next, we grab the computer&#8217;s audio and use gstreamer to send it to icecast2. Type the following <code>pacmd list-sources | less</code> to get a list of pulseaudio sources. You should get a bunch of output back, but it should hopefully only list one device. You&#8217;re looking for the part beginning like this:</p>
+
+<pre><code>...
+&lt;div id="_mcePaste"&gt;index: 0&lt;/div&gt;
+&lt;div id="_mcePaste"&gt;name: &lt;alsa_output.pci-0000_00_08.0.analog-stereo.monitor&gt;&lt;/div&gt;
+&lt;div id="_mcePaste"&gt;driver: &lt;module-alsa-card.c&gt;&lt;/div&gt;
+&lt;div id="_mcePaste"&gt;flags: DECIBEL_VOLUME LATENCY DYNAMIC_LATENCY&lt;/div&gt;
+&lt;div id="_mcePaste"&gt;state: IDLE&lt;/div&gt;
+... 
+</code></pre>
+
+<p>in particular the name, which in my case is alsa_output.pci-0000_00_08.0.analog-stereo.monitor. Make a note of yours. Next we just run a command to convert this pulse source into an ogg file, which is then sent to the icecast2 server. Run the following, replacing the device with your own, and the password at the end with the icecast2 source password you set earlier:</p>
+
+<pre><code>gst-launch-0.10 pulsesrc device=alsa_output.pci-0000_00_08.0.analog-stereo.monitor ! audioconvert ! vorbisenc ! oggmux ! shout2send ip=localhost port=8000 password=hackme mount=spotify.ogg
+</code></pre>
+
+<p>Now all sound that comes through your computer&#8217;s speakers is being sent to your icecast2 server. All that remains is to fire up Spotify. Start playing a track, and then on your ps3 navigate to the Web folder > Radio > Spotify. With any luck, after 20 or 30 seconds you should hear the track starting on your ps3 as well! Let me know if you have any problems with the last few steps, although any problems with ps3mediaserver or pmsencoder are probably best tackled through the ps3mediaserver forums as I&#8217;m no expert on these two. Hopefully someone out there will have found this useful - again, let me know if you do :-)</p>
+</div>
+
+
+<div class="meta">
+	<div class="date">
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2010-08-15T08:59:00+01:00" pubdate data-updated="true">Aug 15<span>th</span>, 2010</time></div>
+	<div class="tags">
+
+
+	<a class='category' href='/blog/categories/ps3/'>PS3</a>, <a class='category' href='/blog/categories/spotify/'>Spotify</a>, <a class='category' href='/blog/categories/ubuntu/'>Ubuntu</a>
+
+
+</div>
+	
+</div></article>
+
+	<div class="share">
+	<div class="addthis_toolbox addthis_default_style ">
+	
+	
+	<a class="addthis_button_tweet"></a>
+	
+	
+	<a class="addthis_counter addthis_pill_style"></a>
+	</div>
+  <script type="text/javascript" src="http://s7.addthis.com/js/250/addthis_widget.js#pubid="></script>
+</div>
+
+
+
+<section id="comment">
+    <h2 class="title">Comments</h2>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+</section>
+</div>
+	<footer id="footer" class="inner">Copyright &copy; 2015
+
+    Dave Aitken
+
+</footer>
+	<script src="/javascripts/slash.js"></script>
+<script src="/javascripts/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+(function($){
+	$('.fancybox').fancybox();
+})(jQuery);
+</script> <!-- Delete or comment this line to disable Fancybox -->
+
+
+<script type="text/javascript">
+      var disqus_shortname = 'actionshrimp';
+      
+        
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://actionshrimp.github.com/2010/08/streaming-spotify-to-a-ps3-from-ubuntu/';
+        var disqus_url = 'http://actionshrimp.github.com/2010/08/streaming-spotify-to-a-ps3-from-ubuntu/';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+	<script type="text/javascript">
+		var _gaq = _gaq || [];
+		_gaq.push(['_setAccount', 'UA-37632248-1']);
+		_gaq.push(['_trackPageview']);
+
+		(function() {
+			var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+			ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+			var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+		})();
+	</script>
+
+
+
+</body>
+</html>

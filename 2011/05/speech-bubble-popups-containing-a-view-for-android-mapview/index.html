@@ -1,0 +1,329 @@
+
+<!DOCTYPE HTML>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Speech Bubble Popups containing a View for Android MapView - actionshrimp.com</title>
+	<meta name="author" content="Dave Aitken">
+
+	
+	<meta name="description" content="Update May 2012: There have been lots of requests in the comments for the source. Sorry for the delay on this one - I finally put the whole app that &hellip;">
+	
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+	<link href="/atom.xml" rel="alternate" title="actionshrimp.com" type="application/atom+xml">
+	<link rel="canonical" href="">
+	<link href="/favicon.png" rel="shortcut icon">
+	<link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+	<link href='http://fonts.googleapis.com/css?family=Bree+Serif' rel='stylesheet' type='text/css'>
+	<link href='http://fonts.googleapis.com/css?family=Lobster' rel='stylesheet' type='text/css'>
+	<!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+	<meta name="google-site-verification" content="5jlRIpbX9mpsM44CGBBCaL2E_T5GDkjBYwwhSaZ4f7s" />
+
+</head>
+
+
+<body>
+	<header id="header" class="inner"><div id="letterhead">
+	<img id="logo" src="/images/shrimp.png" alt="actionshrimp"/>
+	<div id="titles">
+		<h1 id="title"><a href="/">actionshrimp.com</a></h1>
+		<div id="subtitle">Coding adventures of Dave Aitken</div>
+	</div>
+</div>
+<nav id="main-nav"><ul class="main">
+	<li><a href="/">Blog</a></li>
+	<li><a href="/archives">Archives</a></li>
+</ul>
+</nav>
+<nav id="mobile-nav">
+	<div class="alignleft menu">
+		<a class="button">Menu</a>
+		<div class="container"><ul class="main">
+	<li><a href="/">Blog</a></li>
+	<li><a href="/archives">Archives</a></li>
+</ul>
+</div>
+	</div>
+	<div class="alignright search">
+		<a class="button"></a>
+		<div class="container">
+			<form action="http://google.com/search" method="get">
+				<input type="text" name="q" results="0">
+				<input type="hidden" name="q" value="site:actionshrimp.github.com">
+			</form>
+		</div>
+	</div>
+</nav>
+<nav id="sub-nav" class="alignright">
+	<div class="social">
+		
+		
+		
+		<a class="twitter" href="http://twitter.com/actionshrimp" title="Twitter">Twitter</a>
+		
+		
+		<a class="github" href="https://github.com/actionshrimp" title="GitHub">GitHub</a>
+		
+    
+		
+		
+		
+		
+		
+		<a class="rss" href="/atom.xml" title="RSS">RSS</a>
+		
+	</div>
+	<form class="search" action="http://google.com/search" method="get">
+		<input class="alignright" type="text" name="q" results="0">
+		<input type="hidden" name="q" value="site:actionshrimp.github.com">
+	</form>
+</nav>
+
+
+</header>
+	<div id="content" class="inner"><article class="post">
+	<h2 class="title">Speech Bubble Popups Containing a View for Android MapView</h2>
+	<div class="entry-content"><p><em>Update May 2012</em>: There have been lots of requests in the comments for the source. Sorry for the delay on this one - I finally put the whole app that I&#8217;d been working on up on github. <a href="https://github.com/actionshrimp/lastorders/blob/master/lastorders-android/src/com/actionshrimp/android/lastorders/SearchMapResultsDisplayer.java">The part from this tutorial specifically is here if you want to take a look</a>.</p>
+
+<p><a href="/images/bubble-screen-cropped.png"><img class="alignleft size-medium wp-image-362" title="bubble-screen-cropped" src="/images/bubble-screen-cropped-293x300.png" alt="" width="293" height="300" /></a> I&#8217;ve recently been playing around with Android, and have been building a small app that uses MapView to display various locations on the map. I succeeded in drawing markers on the MapView using <a href="http://code.google.com/android/add-ons/google-apis/reference/com/google/android/maps/ItemizedOverlay.html">ItemizedOverlay</a>, but was having a fair bit of difficulty drawing little bubble popups that appeared when you tapped on the OverlayItems (which unfortunately isn&#8217;t available in the API as a &#8216;standard&#8217; feature).</p>
+
+<p>My main problem was I wanted to be able to draw a full View on top of the map at the right location. I had a good old search on Google for a while, and couldn&#8217;t seem to find any easy way to do this, so I thought I&#8217;d write up how I ended up with the bubble in the screenshot. (Now I know how it&#8217;s done however, the Google results seem a lot more knowledgeable on the subject - I was probably searching for the wrong things :-( ).</p>
+
+<p>My first approach was to build a subclass of Overlay and override its draw() method, where I converted the View to a Drawable to draw it directly onto the MapView canvas (passed to draw() ). This worked, but naturally events would no longer work properly in the View if it contained things like buttons, so it was back to the drawing board.</p>
+
+<p>Next, I tried subclassing <a href="http://developer.android.com/reference/android/app/Dialog.html">Dialog</a>, and used a custom Dialog theme with my bubble background. The View I wanted was just injected into the Dialog through its <a href="http://developer.android.com/reference/android/app/Dialog.html#setContentView(int)">setContentView</a> method. This worked again, but I found myself fighting with the Dialog class a fair bit, and positioning it turned out to be a bit fiddly - there had to be a better way.</p>
+
+<p>Finally I noticed that MapView inherits from the Android <a href="http://developer.android.com/reference/android/view/ViewGroup.html">ViewGroup</a>, which means it can contain other Views. After a bit more probing, and a peek at the implementation of <a href="https://github.com/jgilfelt/android-mapviewballoons">android-mapviewballoons</a> (which is excellent, but didn&#8217;t quite fit my purposes due to lack of custom balloon layouts) found a way to do it which should probably have been obvious from the outset!</p>
+
+<p>The general approach is to add a new child View to the MapView, and then use the <a href="http://code.google.com/android/add-ons/google-apis/reference/com/google/android/maps/MapView.LayoutParams.html">MapView.LayoutParams</a> to position it. Here&#8217;s a quick outline example if you&#8217;re unfamiliar (the View I&#8217;m displaying has a <a href="http://developer.android.com/reference/android/graphics/NinePatch.html">NinePatch</a> as the background attribute of a top level LinearLayout, which makes the bubble wrap the content):</p>
+
+<p>This is in the initial activity setup - my balloon is re-used for all OverlayItems drawn on my map:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="c1">//Reference to our MapView </span>
+</span><span class='line'><span class="n">MapView</span> <span class="n">mapView</span> <span class="o">=</span> <span class="o">(</span><span class="n">MapView</span><span class="o">)</span> <span class="n">activity</span><span class="o">.</span><span class="na">findViewById</span><span class="o">(</span><span class="n">R</span><span class="o">.</span><span class="na">id</span><span class="o">.</span><span class="na">mapview</span><span class="o">);</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">//Get a LayoutInflater and load up the view we want to display. </span>
+</span><span class='line'><span class="c1">//The false in inflater.inflate prevents the bubble View being added to the MapView straight away </span>
+</span><span class='line'><span class="n">LayoutInflater</span> <span class="n">inflater</span> <span class="o">=</span> <span class="n">activity</span><span class="o">.</span><span class="na">getLayoutInflater</span><span class="o">();</span>
+</span><span class='line'><span class="n">LinearLayout</span> <span class="n">bubble</span> <span class="o">=</span> <span class="o">(</span><span class="n">LinearLayout</span><span class="o">)</span> <span class="n">inflater</span><span class="o">.</span><span class="na">inflate</span><span class="o">(</span><span class="n">R</span><span class="o">.</span><span class="na">layout</span><span class="o">.</span><span class="na">bubble</span><span class="o">,</span> <span class="n">mapView</span><span class="o">,</span> <span class="kc">false</span><span class="o">);</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">//Set up the bubble&#39;s close button </span>
+</span><span class='line'><span class="n">ImageButton</span> <span class="n">bubbleClose</span> <span class="o">=</span> <span class="o">(</span><span class="n">ImageButton</span><span class="o">)</span> <span class="n">bubble</span><span class="o">.</span><span class="na">findViewById</span><span class="o">(</span><span class="n">R</span><span class="o">.</span><span class="na">id</span><span class="o">.</span><span class="na">bubbleclose</span><span class="o">);</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">bubbleClose</span><span class="o">.</span><span class="na">setOnClickListener</span><span class="o">(</span><span class="k">new</span> <span class="n">View</span><span class="o">.</span><span class="na">OnClickListener</span><span class="o">()</span> <span class="o">{</span>
+</span><span class='line'>    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">onClick</span><span class="o">(</span><span class="n">View</span> <span class="n">v</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>        <span class="n">Animation</span> <span class="n">fadeOut</span> <span class="o">=</span> <span class="n">AnimationUtils</span><span class="o">.</span><span class="na">loadAnimation</span><span class="o">(</span><span class="n">ResultsMapResultsDisplayer</span><span class="o">.</span><span class="na">this</span><span class="o">.</span><span class="na">activity</span><span class="o">,</span> <span class="n">R</span><span class="o">.</span><span class="na">anim</span><span class="o">.</span><span class="na">fadeout</span><span class="o">);</span>
+</span><span class='line'>        <span class="n">bubble</span><span class="o">.</span><span class="na">startAnimation</span><span class="o">(</span><span class="n">fadeOut</span><span class="o">);</span>
+</span><span class='line'>        <span class="n">bubble</span><span class="o">.</span><span class="na">setVisibility</span><span class="o">(</span><span class="n">View</span><span class="o">.</span><span class="na">GONE</span><span class="o">);</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'><span class="o">});</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>This next part is the important bit, and actually positions the bubble on the MapView using MapView.LayoutParams. It&#8217;s called by the onTap method of the ItemizedOverlay that contains my map markers:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">private</span> <span class="kt">void</span> <span class="nf">displaySearchResultBubble</span><span class="o">(</span><span class="kd">final</span> <span class="n">SearchResult</span> <span class="n">result</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">map</span><span class="o">.</span><span class="na">removeView</span><span class="o">(</span><span class="n">bubble</span><span class="o">);</span>
+</span><span class='line'>    <span class="n">bubble</span><span class="o">.</span><span class="na">setVisibility</span><span class="o">(</span><span class="n">View</span><span class="o">.</span><span class="na">GONE</span><span class="o">);</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">TextView</span> <span class="n">venueName</span> <span class="o">=</span> <span class="o">(</span><span class="n">TextView</span><span class="o">)</span> <span class="n">bubble</span><span class="o">.</span><span class="na">findViewById</span><span class="o">(</span><span class="n">R</span><span class="o">.</span><span class="na">id</span><span class="o">.</span><span class="na">venuename</span><span class="o">);</span>
+</span><span class='line'>    <span class="n">venueName</span><span class="o">.</span><span class="na">setText</span><span class="o">(</span><span class="n">result</span><span class="o">.</span><span class="na">getName</span><span class="o">());</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">TextView</span> <span class="n">venueTime</span> <span class="o">=</span> <span class="o">(</span><span class="n">TextView</span><span class="o">)</span> <span class="n">bubble</span><span class="o">.</span><span class="na">findViewById</span><span class="o">(</span><span class="n">R</span><span class="o">.</span><span class="na">id</span><span class="o">.</span><span class="na">venueopenfor</span><span class="o">);</span>
+</span><span class='line'>    <span class="n">venueTime</span><span class="o">.</span><span class="na">setText</span><span class="o">(</span><span class="s">&quot;Open for &quot;</span> <span class="o">+</span> <span class="n">result</span><span class="o">.</span><span class="na">getOpenFor</span><span class="o">()</span> <span class="o">+</span> <span class="s">&quot;h&quot;</span><span class="o">);</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">TextView</span> <span class="n">venueFee</span> <span class="o">=</span> <span class="o">(</span><span class="n">TextView</span><span class="o">)</span> <span class="n">bubble</span><span class="o">.</span><span class="na">findViewById</span><span class="o">(</span><span class="n">R</span><span class="o">.</span><span class="na">id</span><span class="o">.</span><span class="na">venuefee</span><span class="o">);</span>
+</span><span class='line'>    <span class="n">venueFee</span><span class="o">.</span><span class="na">setText</span><span class="o">(</span><span class="s">&quot;Entry fee &quot;</span> <span class="o">+</span> <span class="n">result</span><span class="o">.</span><span class="na">getPrice</span><span class="o">());</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">MapView</span><span class="o">.</span><span class="na">LayoutParams</span> <span class="n">params</span> <span class="o">=</span> <span class="k">new</span> <span class="n">MapView</span><span class="o">.</span><span class="na">LayoutParams</span><span class="o">(</span>
+</span><span class='line'>            <span class="n">LayoutParams</span><span class="o">.</span><span class="na">WRAP_CONTENT</span><span class="o">,</span> <span class="n">LayoutParams</span><span class="o">.</span><span class="na">WRAP_CONTENT</span><span class="o">,</span>
+</span><span class='line'>            <span class="n">result</span><span class="o">.</span><span class="na">getPoint</span><span class="o">(),</span> <span class="n">MapView</span><span class="o">.</span><span class="na">LayoutParams</span><span class="o">.</span><span class="na">BOTTOM_CENTER</span><span class="o">);</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">bubble</span><span class="o">.</span><span class="na">setLayoutParams</span><span class="o">(</span><span class="n">params</span><span class="o">);</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">map</span><span class="o">.</span><span class="na">addView</span><span class="o">(</span><span class="n">bubble</span><span class="o">);</span>
+</span><span class='line'>    <span class="n">map</span><span class="o">.</span><span class="na">measure</span><span class="o">(</span><span class="n">MeasureSpec</span><span class="o">.</span><span class="na">makeMeasureSpec</span><span class="o">(</span><span class="mi">0</span><span class="o">,</span> <span class="n">MeasureSpec</span><span class="o">.</span><span class="na">UNSPECIFIED</span><span class="o">),</span> <span class="n">MeasureSpec</span><span class="o">.</span><span class="na">makeMeasureSpec</span><span class="o">(</span><span class="mi">0</span><span class="o">,</span> <span class="n">MeasureSpec</span><span class="o">.</span><span class="na">UNSPECIFIED</span><span class="o">));</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">Runnable</span> <span class="n">r</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Runnable</span><span class="o">()</span> <span class="o">{</span>
+</span><span class='line'>        <span class="kd">public</span> <span class="kt">void</span> <span class="nf">run</span><span class="o">()</span> <span class="o">{</span>
+</span><span class='line'>            <span class="n">Animation</span> <span class="n">fadeIn</span> <span class="o">=</span> <span class="n">AnimationUtils</span><span class="o">.</span><span class="na">loadAnimation</span><span class="o">(</span><span class="n">activity</span><span class="o">,</span> <span class="n">R</span><span class="o">.</span><span class="na">anim</span><span class="o">.</span><span class="na">fadein</span><span class="o">);</span>
+</span><span class='line'>            <span class="n">bubble</span><span class="o">.</span><span class="na">setVisibility</span><span class="o">(</span><span class="n">View</span><span class="o">.</span><span class="na">VISIBLE</span><span class="o">);</span>
+</span><span class='line'>            <span class="n">bubble</span><span class="o">.</span><span class="na">startAnimation</span><span class="o">(</span><span class="n">fadeIn</span><span class="o">);</span>
+</span><span class='line'>        <span class="o">}</span>
+</span><span class='line'>    <span class="o">};</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">Projection</span> <span class="n">projection</span> <span class="o">=</span> <span class="n">map</span><span class="o">.</span><span class="na">getProjection</span><span class="o">();</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">Point</span> <span class="n">p</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Point</span><span class="o">();</span>
+</span><span class='line'>    <span class="n">projection</span><span class="o">.</span><span class="na">toPixels</span><span class="o">(</span><span class="n">result</span><span class="o">.</span><span class="na">getPoint</span><span class="o">(),</span> <span class="n">p</span><span class="o">);</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">p</span><span class="o">.</span><span class="na">offset</span><span class="o">(</span><span class="mi">0</span><span class="o">,</span> <span class="o">-(</span><span class="n">bubble</span><span class="o">.</span><span class="na">getMeasuredHeight</span><span class="o">()</span> <span class="o">/</span> <span class="mi">2</span><span class="o">));</span>
+</span><span class='line'>    <span class="n">GeoPoint</span> <span class="n">target</span> <span class="o">=</span> <span class="n">projection</span><span class="o">.</span><span class="na">fromPixels</span><span class="o">(</span><span class="n">p</span><span class="o">.</span><span class="na">x</span><span class="o">,</span> <span class="n">p</span><span class="o">.</span><span class="na">y</span><span class="o">);</span>
+</span><span class='line'>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">mapController</span><span class="o">.</span><span class="na">animateTo</span><span class="o">(</span><span class="n">target</span><span class="o">,</span> <span class="n">r</span><span class="o">);</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>That&#8217;s it! It&#8217;s a fairly quick example but feel free to let me know in the comments if you want any more detail.</p>
+</div>
+
+
+<div class="meta">
+	<div class="date">
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2011-05-12T11:40:00+01:00" pubdate data-updated="true">May 12<span>th</span>, 2011</time></div>
+	<div class="tags">
+
+
+	<a class='category' href='/blog/categories/mapview/'>MapView</a>, <a class='category' href='/blog/categories/android/'>android</a>, <a class='category' href='/blog/categories/java/'>java</a>
+
+
+</div>
+	
+</div></article>
+
+	<div class="share">
+	<div class="addthis_toolbox addthis_default_style ">
+	
+	
+	<a class="addthis_button_tweet"></a>
+	
+	
+	<a class="addthis_counter addthis_pill_style"></a>
+	</div>
+  <script type="text/javascript" src="http://s7.addthis.com/js/250/addthis_widget.js#pubid="></script>
+</div>
+
+
+
+<section id="comment">
+    <h2 class="title">Comments</h2>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+</section>
+</div>
+	<footer id="footer" class="inner">Copyright &copy; 2015
+
+    Dave Aitken
+
+</footer>
+	<script src="/javascripts/slash.js"></script>
+<script src="/javascripts/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+(function($){
+	$('.fancybox').fancybox();
+})(jQuery);
+</script> <!-- Delete or comment this line to disable Fancybox -->
+
+
+<script type="text/javascript">
+      var disqus_shortname = 'actionshrimp';
+      
+        
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://actionshrimp.github.com/2011/05/speech-bubble-popups-containing-a-view-for-android-mapview/';
+        var disqus_url = 'http://actionshrimp.github.com/2011/05/speech-bubble-popups-containing-a-view-for-android-mapview/';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+	<script type="text/javascript">
+		var _gaq = _gaq || [];
+		_gaq.push(['_setAccount', 'UA-37632248-1']);
+		_gaq.push(['_trackPageview']);
+
+		(function() {
+			var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+			ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+			var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+		})();
+	</script>
+
+
+
+</body>
+</html>

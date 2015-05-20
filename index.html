@@ -7,7 +7,7 @@
 	<meta name="author" content="Dave Aitken">
 
 	
-	<meta name="description" content=" Blog Archives ">
+	<meta name="description" content="I&#8217;ve got back onto the excellent &#8217;Learn you a Haskell for Great Good&#8217; recently, which I would highly recommend. Near the end of &hellip;">
 	
 	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
@@ -16,10 +16,11 @@
 	<link href="/favicon.png" rel="shortcut icon">
 	<link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
 	<link href='http://fonts.googleapis.com/css?family=Bree+Serif' rel='stylesheet' type='text/css'>
-	<link href='http://fonts.googleapis.com/css?family=Pacifico' rel='stylesheet' type='text/css'>
+	<link href='http://fonts.googleapis.com/css?family=Lobster' rel='stylesheet' type='text/css'>
 	<!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
 	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
-	
+	<meta name="google-site-verification" content="5jlRIpbX9mpsM44CGBBCaL2E_T5GDkjBYwwhSaZ4f7s" />
+
 </head>
 
 
@@ -28,7 +29,7 @@
 	<img id="logo" src="/images/shrimp.png" alt="actionshrimp"/>
 	<div id="titles">
 		<h1 id="title"><a href="/">actionshrimp.com</a></h1>
-		<h2 id="subtitle">Coding adventures of Dave Aitken</h2>
+		<div id="subtitle">Coding adventures of Dave Aitken</div>
 	</div>
 </div>
 <nav id="main-nav"><ul class="main">
@@ -84,13 +85,574 @@
 </header>
 	<div id="content" class="inner">
 
+
+    <article class="post">
+	<h2 class="title">
+		
+		<a href="/2012/11/knight-moves/">
+		
+			Shortest Knight Moves From a to B in Haskell</a>
+	</h2>
+	<div class="entry-content">
+		<p>I&#8217;ve got back onto the excellent &#8217;<a href="http://learnyouahaskell.com/">Learn you a Haskell for Great Good</a>&#8217; recently, which I would highly recommend.</p>
+
+<p>Near the end of chapter 12 (about Monads), there is a section on <a href="http://learnyouahaskell.com/a-fistful-of-monads#the-list-monad">the list monad</a>, which has an example &#8216;a knight&#8217;s quest&#8217; at the end. Modification of the example code to print out possible routes from one position to another is left as an exercise to the reader. I decided to give it a go in attempt to solidify my knowledge about monads a bit, and below is the result.</p>
+
+<p>I&#8217;m sure there are far more efficient ways of doing this, and potentially more monad-y ways of implementing shortestMovesFor, so if any other beginners come across this, I&#8217;d be interested to see what you came up with!</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+</pre></td><td class='code'><pre><code class='haskell'><span class='line'><span class="kr">import</span> <span class="k">qualified</span> <span class="nn">Control.Monad</span> <span class="k">as</span> <span class="n">M</span>
+</span><span class='line'><span class="kr">import</span> <span class="nn">Data.List</span>
+</span><span class='line'>
+</span><span class='line'><span class="kr">type</span> <span class="kt">KnightPos</span> <span class="ow">=</span> <span class="p">(</span><span class="kt">Int</span><span class="p">,</span> <span class="kt">Int</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">--As given in learn you a haskell</span>
+</span><span class='line'><span class="nf">moveKnight</span> <span class="ow">::</span> <span class="kt">KnightPos</span> <span class="ow">-&gt;</span> <span class="p">[</span><span class="kt">KnightPos</span><span class="p">]</span>
+</span><span class='line'><span class="nf">moveKnight</span> <span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span> <span class="ow">=</span> <span class="kr">do</span>
+</span><span class='line'>    <span class="p">(</span><span class="n">c&#39;</span><span class="p">,</span> <span class="n">r&#39;</span><span class="p">)</span> <span class="ow">&lt;-</span> <span class="p">[(</span><span class="n">c</span><span class="o">+</span><span class="mi">2</span><span class="p">,</span> <span class="n">r</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="n">c</span><span class="o">+</span><span class="mi">2</span><span class="p">,</span> <span class="n">r</span><span class="o">+</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="n">c</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="n">r</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="n">c</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="n">r</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+</span><span class='line'>                <span class="p">,(</span><span class="n">c</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">r</span><span class="o">-</span><span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="n">c</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">r</span><span class="o">+</span><span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="n">c</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">r</span><span class="o">-</span><span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="n">c</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">r</span><span class="o">+</span><span class="mi">2</span><span class="p">)</span>
+</span><span class='line'>                <span class="p">]</span>
+</span><span class='line'>    <span class="kt">M</span><span class="o">.</span><span class="n">guard</span> <span class="p">(</span><span class="n">c&#39;</span> <span class="p">`</span><span class="n">elem</span><span class="p">`</span> <span class="p">[</span><span class="mi">1</span><span class="o">..</span><span class="mi">8</span><span class="p">]</span> <span class="o">&amp;&amp;</span> <span class="n">r&#39;</span> <span class="p">`</span><span class="n">elem</span><span class="p">`</span> <span class="p">[</span><span class="mi">1</span><span class="o">..</span><span class="mi">8</span><span class="p">])</span>
+</span><span class='line'>    <span class="n">return</span> <span class="p">(</span><span class="n">c&#39;</span><span class="p">,</span> <span class="n">r&#39;</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">--moveKnight, but modified to apply move n times</span>
+</span><span class='line'><span class="nf">moveNWithHistory</span> <span class="ow">::</span> <span class="kt">Int</span> <span class="ow">-&gt;</span> <span class="p">[</span><span class="kt">KnightPos</span><span class="p">]</span> <span class="ow">-&gt;</span> <span class="p">[[</span><span class="kt">KnightPos</span><span class="p">]]</span>
+</span><span class='line'><span class="nf">moveNWithHistory</span> <span class="n">n</span> <span class="p">(</span><span class="n">current</span><span class="kt">:</span><span class="n">history</span><span class="p">)</span> <span class="ow">=</span> <span class="kr">do</span>
+</span><span class='line'>    <span class="kr">if</span> <span class="p">(</span><span class="n">n</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="kr">then</span> <span class="kr">do</span>
+</span><span class='line'>        <span class="n">nextMove</span> <span class="ow">&lt;-</span> <span class="p">(</span><span class="n">return</span> <span class="n">current</span><span class="p">)</span> <span class="o">&gt;&gt;=</span> <span class="n">moveKnight</span>
+</span><span class='line'>        <span class="n">moveNWithHistory</span> <span class="p">(</span><span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">=&lt;&lt;</span> <span class="n">return</span> <span class="p">(</span><span class="n">nextMove</span> <span class="kt">:</span> <span class="n">current</span> <span class="kt">:</span> <span class="n">history</span><span class="p">)</span>
+</span><span class='line'>    <span class="kr">else</span> <span class="n">return</span> <span class="p">(</span><span class="n">current</span><span class="kt">:</span><span class="n">history</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'><span class="nf">shortestMovesFor</span> <span class="ow">::</span> <span class="kt">KnightPos</span> <span class="ow">-&gt;</span> <span class="kt">KnightPos</span> <span class="ow">-&gt;</span> <span class="p">[[</span><span class="kt">KnightPos</span><span class="p">]]</span>
+</span><span class='line'><span class="nf">shortestMovesFor</span> <span class="n">start</span> <span class="n">end</span> <span class="ow">=</span> <span class="n">map</span> <span class="n">reverse</span> <span class="p">(</span><span class="n">filter</span> <span class="p">(</span><span class="n">endsOn</span> <span class="n">end</span><span class="p">)</span> <span class="n">historiesForMinN</span><span class="p">)</span> <span class="kr">where</span>
+</span><span class='line'>    <span class="n">endsOn</span> <span class="n">target</span> <span class="p">(</span><span class="n">current</span><span class="kt">:</span><span class="n">history</span><span class="p">)</span> <span class="ow">=</span> <span class="p">(</span><span class="n">target</span> <span class="o">==</span> <span class="n">current</span><span class="p">)</span>
+</span><span class='line'>    <span class="kt">Just</span> <span class="n">historiesForMinN</span> <span class="ow">=</span> <span class="n">find</span> <span class="p">(</span><span class="n">any</span> <span class="p">(</span><span class="n">endsOn</span> <span class="n">end</span><span class="p">))</span> <span class="p">(</span><span class="n">map</span> <span class="p">(</span><span class="nf">\</span><span class="n">n</span> <span class="ow">-&gt;</span> <span class="n">moveNWithHistory</span> <span class="n">n</span> <span class="p">[</span><span class="n">start</span><span class="p">])</span> <span class="p">[</span><span class="mi">0</span><span class="o">..</span><span class="p">])</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>And here&#8217;s some example output:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='haskell'><span class='line'><span class="o">*</span><span class="kt">Main</span><span class="o">&gt;</span> <span class="n">shortestMovesFor</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">)</span>
+</span><span class='line'><span class="p">[[(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">),(</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="p">),(</span><span class="mi">5</span><span class="p">,</span><span class="mi">3</span><span class="p">),(</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">)],[(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">),(</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="p">),(</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">),(</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">)],[(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">),(</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">),(</span><span class="mi">4</span><span class="p">,</span><span class="mi">2</span><span class="p">),(</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">)],[(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">),(</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">),(</span><span class="mi">1</span><span class="p">,</span><span class="mi">5</span><span class="p">),(</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">)]]</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>As you can see it returns a list of the shortest chains of moves from the start square to the target square.</p>
+
+<p>Changes I made to the code from the book:</p>
+
+<ul>
+<li><p>moveNWithHistory is a new function to apply moveKnight n times. It also generates a list of chains of moves for a given n, rather than just the final positions (by passing <code>nextMove : current : history</code> to the next iteration, rather than just the next move).</p></li>
+<li><p>shortestMovesFor is not monadic, and returns the final list of moves. We first generate all move chains from our starting position for increasing n, until we find the smallest n which creates a set of chains that contains a chain ending on the target square. We then filter down the set we found to return only chains that do end on the target square. Finally we map reverse over the chains to make them more readable.</p></li>
+</ul>
+
+
+		
+		
+	</div>
+
+
+<div class="meta">
+	<div class="date">
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-11-19T16:41:00+00:00" pubdate data-updated="true">Nov 19<span>th</span>, 2012</time></div>
+	<div class="tags">
+
+
+	<a class='category' href='/blog/categories/haskell/'>haskell</a>, <a class='category' href='/blog/categories/newbie/'>newbie</a>
+
+
+</div>
+	
+</div></article>
+
+
+    <article class="post">
+	<h2 class="title">
+		
+		<a href="/2012/06/jasmine-node-autotest-with-vim-on-osx/">
+		
+			Jasmine-node &#8211;autotest With Vim on OSX</a>
+	</h2>
+	<div class="entry-content">
+		<p>My <a href="http://www.actionshrimp.com/2012/06/setting-up-a-client-side-js-development-environment-with-node-js-part-2/">last post</a> was about setting up <code>jasmine-node</code>. I had this all in place, and was getting ready to dive into some development, hoping to use the <code>--autotest</code> feature to help with TDD. I fired up jasmine-node with</p>
+
+<pre><code>jasmine-node --autotest --coffee spec
+</code></pre>
+
+<p>At first glance it looked like everything was working correctly. All specs ran the first time, and when I made a change to a file the specs in just that single file were run. However, any subsequent changes to the file then no longer caused the test runner to trigger automatically.</p>
+
+<p>At first I assumed this was an issue with node.js&#8217; implementation of <code>fs.watch</code>, which at the time of writing appears to have <a href="https://github.com/joyent/node/issues/search?q=fs.watch">quite a few issues open against it</a>. After looking at the changelog for some recent node releases, it looked like there were some <code>fs.watch</code> fixes, so I updated to the latest version at the time (v0.6.19). Still no joy - I was having the same problem.</p>
+
+<p>Next I decided to have a poke around in the jasmine-node code itself and see if I could find any problems. The area of code in question is the file jasmine-node/lib/jasmine-node/autotest.js. There is the call to <code>fs.watch</code>, which takes a callback that takes the event as its first parameter:</p>
+
+<pre><code>var watcher = fs.watch(file, function(ev) {
+    ...
+</code></pre>
+
+<p>According to the <a href="http://nodejs.org/docs/latest/api/fs.html#fs_fs_watch_filename_options_listener">node documentation for fs.watch</a>:</p>
+
+<blockquote><p>The listener callback gets two arguments (event, filename). event is either &#8216;rename&#8217; or &#8216;change&#8217;, and filename is the name of the file which triggered the event.</p></blockquote>
+
+<p>I found that when saving a file in vim, the &#8216;rename&#8217; event was being triggered, rather than the &#8216;change&#8217; event, which gave me a clue to what was happening. I then tracked down <a href="http://stackoverflow.com/questions/7591527/writing-a-file-with-vim-doesnt-fire-a-file-change-event-on-os-x">this post on stackoverflow</a> which seems to describe a similar problem, only with the python library watchdog. Watchdog uses kqueue to implement FS monitoring on OSX - the same implementation as node.</p>
+
+<p>What&#8217;s happening is vim&#8217;s use of .swp files is triggering rename. I assume after swapping, kqueue continues to monitor the swapped file rather than the actual filename we&#8217;re interested in. The workaround that watchdog suggests is to set <code>noswapfile</code> in your .vimrc, which is a solution that some people might be happy with. However as much as I love vim it does occasionally crash on me, and losing changes that would be stored in a swp file during a crash isn&#8217;t too appealing.</p>
+
+<p>I fiddled around with the autotest.js file to try and get kqueue to set up a new watch on the swapped file briefly, without much success (often the file being swapped in hadn&#8217;t been moved yet, so node would throw errors saying the file wasn&#8217;t found). My solution was to instead change the call to fs.watch to use fs.watchFile instead, which slots in exactly in place with the same arguments:</p>
+
+<pre><code>var watcher = fs.watchFile(file, function(ev) {
+    ...
+</code></pre>
+
+<p>The <a href="http://nodejs.org/docs/latest/api/fs.html#fs_fs_watchfile_filename_options_listener">documentation</a> recommends using <code>fs.watch</code> instead of <code>fs.watchFile</code> where possible, but in this case it doesn&#8217;t look like it cuts the mustard. <code>fs.watchFile</code> is a little less snappy that <code>fs.watch</code> (it polls the file&#8217;s last modified date to see if there are changes, rather than using an event driven system like kqueue), but it definitely does the trick for now and allows a nice TDD workflow. As it&#8217;s for testing and won&#8217;t be in live code I can&#8217;t see it causing too much harm.</p>
+
+<p>If anyone knows of a better way of getting this working then please let me know below in the comments! I&#8217;ll update if I find a nicer workaround too.</p>
+
+		
+		
+	</div>
+
+
+<div class="meta">
+	<div class="date">
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-06-17T16:39:00+01:00" pubdate data-updated="true">Jun 17<span>th</span>, 2012</time></div>
+	<div class="tags">
+
+
+	<a class='category' href='/blog/categories/tdd/'>TDD</a>, <a class='category' href='/blog/categories/autotest/'>autotest</a>, <a class='category' href='/blog/categories/jasmine/'>jasmine</a>, <a class='category' href='/blog/categories/node-js/'>node.js</a>, <a class='category' href='/blog/categories/vim/'>vim</a>
+
+
+</div>
+	
+</div></article>
+
+
+    <article class="post">
+	<h2 class="title">
+		
+		<a href="/2012/06/setting-up-a-client-side-js-development-environment-with-node-js-part-2/">
+		
+			Setting Up a Client Side JS Dev Environment With node.js - Part 2</a>
+	</h2>
+	<div class="entry-content">
+		<p><strong>Edit 2015/03/14</strong>: <em>This post was written a couple of years ago so is a bit outdated now. Express in particular has changed quite a bit since this was written</em></p>
+
+<p>This is another post in my <a href="http://www.actionshrimp.com/blog/categories/puzzli/">puzzli series</a>.</p>
+
+<p>I&#8217;ve already set up node in <a href="http://www.actionshrimp.com/2012/06/setting-up-a-simple-client-side-development-environment-with-node-js-part-1/">part 1</a>, to serve up a simple page to use as a JS development environment. Next I&#8217;ll be setting up <a href="http://pivotal.github.com/jasmine/">jasmine</a> so I can do TDD on the client side code for puzz.li. This commits for this post are from where we left off on the previous post, up to <a href="https://github.com/actionshrimp/puzz.li/commit/5f1783328516cec99febb01b4d0ce41d112019c7">this commit</a>.</p>
+
+<p>First a quick diversion about dependency management. Up until now I&#8217;d just been doing:</p>
+
+<p><code>npm install &lt;modulename&gt;</code></p>
+
+<p>However unless I check all the node_modules I&#8217;ve added into git, as more and more dependencies are added deploying the app elsewhere will become a bit tricky. The solution to this problem is to create a package.json file, where you can define dependencies. This is what mine looks like so far:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+</pre></td><td class='code'><pre><code class='json'><span class='line'><span class="err">##</span> <span class="err">package.json</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>    <span class="nt">&quot;name&quot;</span><span class="p">:</span>         <span class="s2">&quot;puzz.li&quot;</span><span class="p">,</span>
+</span><span class='line'>    <span class="nt">&quot;version&quot;</span><span class="p">:</span>      <span class="s2">&quot;0.0.1&quot;</span><span class="p">,</span>
+</span><span class='line'>    <span class="nt">&quot;description&quot;</span><span class="p">:</span>  <span class="s2">&quot;A puzzle website&quot;</span><span class="p">,</span>
+</span><span class='line'>    <span class="nt">&quot;homepage&quot;</span><span class="p">:</span>     <span class="s2">&quot;http://puzz.li&quot;</span><span class="p">,</span>
+</span><span class='line'>    <span class="nt">&quot;repository&quot;</span><span class="p">:</span>   <span class="p">{</span>
+</span><span class='line'>                        <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;git&quot;</span><span class="p">,</span>
+</span><span class='line'>                        <span class="nt">&quot;url&quot;</span><span class="p">:</span>  <span class="s2">&quot;https://github.com/actionshrimp/puzz.li&quot;</span>
+</span><span class='line'>                    <span class="p">},</span>
+</span><span class='line'>    <span class="nt">&quot;author&quot;</span><span class="p">:</span>       <span class="s2">&quot;Dave Aitken &lt;dave.aitken@gmail.com&gt;&quot;</span><span class="p">,</span>
+</span><span class='line'>    <span class="nt">&quot;licences&quot;</span><span class="p">:</span>     <span class="p">[</span><span class="s2">&quot;MIT&quot;</span><span class="p">],</span>
+</span><span class='line'>    <span class="nt">&quot;dependencies&quot;</span><span class="p">:</span> <span class="p">{</span>
+</span><span class='line'>                        <span class="nt">&quot;express&quot;</span><span class="p">:</span> <span class="s2">&quot;2.5.9&quot;</span><span class="p">,</span>
+</span><span class='line'>                        <span class="nt">&quot;connect-assets&quot;</span><span class="p">:</span> <span class="s2">&quot;2.2.0&quot;</span><span class="p">,</span>
+</span><span class='line'>                        <span class="nt">&quot;jade&quot;</span><span class="p">:</span> <span class="s2">&quot;0.26.0&quot;</span>
+</span><span class='line'>                     <span class="p">}</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>As you can see it gives a bit of info about the package itself, as well as defining the dependencies to get it up and running. Now when checking the app out from the github repo, it just requires a single command:</p>
+
+<p><code>npm install</code></p>
+
+<p>and all the dependencies of the right version will be grabbed automatically as you&#8217;d expect.</p>
+
+<p>Back to setting up jasmine now. We kick off by install jasmine-node, a module that sets up jasmine nicely in a node environment, and supports specs written in coffeescript as well. As we (hopefully) won&#8217;t need jasmine-node to actually deploy the app to production, we can add it into package.json as a devDependency like so:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='json'><span class='line'><span class="p">{</span>
+</span><span class='line'>    <span class="err">...</span>
+</span><span class='line'>    <span class="nt">&quot;devDependencies&quot;</span><span class="p">:</span> <span class="p">{</span>
+</span><span class='line'>        <span class="nt">&quot;jasmine-node&quot;</span><span class="p">:</span> <span class="s2">&quot;&gt;= 1.0.26&quot;</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'>    <span class="err">...</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>and again</p>
+
+<p><code>npm install</code></p>
+
+<p>Finally, we just need to set up a simple link to jasmine&#8217;s script runner so it&#8217;s nice and accessible:</p>
+
+<pre><code>$ ln -s node_modules/jasmine-node/bin/jasmine-node run_specs
+$ chmod u+x run_specs
+</code></pre>
+
+<p>Let&#8217;s see if everything&#8217;s working by trying to get a simple always-true spec running.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='coffeescript'><span class='line'><span class="c1">## spec/jasmine_spec.coffee</span>
+</span><span class='line'>
+</span><span class='line'><span class="nx">describe</span> <span class="s">&#39;Jasmine&#39;</span><span class="p">,</span> <span class="nf">-&gt;</span>
+</span><span class='line'>    <span class="nx">it</span> <span class="s">&#39;should be set up correctly&#39;</span><span class="p">,</span> <span class="nf">-&gt;</span>
+</span><span class='line'>        <span class="nx">expect</span><span class="p">(</span><span class="kc">true</span><span class="p">).</span><span class="nx">toBeTruthy</span><span class="p">()</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>and now we run it with our new command:</p>
+
+<pre><code>$ ./run_specs --coffee spec
+
+.
+
+Finished in 0.008 seconds
+1 test, 1 assertion, 0 failures
+</code></pre>
+
+<p>We&#8217;re finally in a position to get underway with actually building something, and that will be the subject of the next post.</p>
+
+		
+		
+	</div>
+
+
+<div class="meta">
+	<div class="date">
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-06-04T16:14:00+01:00" pubdate data-updated="true">Jun 4<span>th</span>, 2012</time></div>
+	<div class="tags">
+
+
+	<a class='category' href='/blog/categories/tdd/'>TDD</a>, <a class='category' href='/blog/categories/coffeescript/'>coffeescript</a>, <a class='category' href='/blog/categories/express/'>express</a>, <a class='category' href='/blog/categories/jade/'>jade</a>, <a class='category' href='/blog/categories/node-js/'>node.js</a>, <a class='category' href='/blog/categories/puzzli/'>puzzli</a>
+
+
+</div>
+	
+</div></article>
+
+
+    <article class="post">
+	<h2 class="title">
+		
+		<a href="/2012/06/setting-up-a-simple-client-side-development-environment-with-node-js-part-1/">
+		
+			Setting Up a Client Side JS Dev Environment With node.js - Part 1</a>
+	</h2>
+	<div class="entry-content">
+		<p><strong>Edit 2015/03/14</strong>: <em>This post was written a couple of years ago so is a bit outdated now. Express in particular has changed quite a bit since this was written</em></p>
+
+<p>This is another post in my <a href="http://www.actionshrimp.com/bloc/categories/puzzli/">puzzli series</a>. This post documents getting node set up to create a simple environment to work on the client side JS code in. I could potentially just use a static web page to begin with and start the basics of the client side in there, but I may as well set up a simple server side so I can stub in any server side endpoints as they arise. I&#8217;ll also get good ease of install and use of coffeescript and other JS ecosystem stuff. If you want to see the final code, this post runs from the start of my puzz.li repo up until <a href="https://github.com/actionshrimp/puzz.li/commit/2d44c2c6d8d1a52f724fa5099e2e3741149681bc">this commit</a>.</p>
+
+<p>I already had node installed through the download from the node website - the installer is a cinch on OSX. I&#8217;m going to use the <a href="http://expressjs.com">express</a> web framework for node:</p>
+
+<p><code>npm install express</code></p>
+
+<p>I&#8217;ll also use the rails-style asset pipeline middleware for the node connect layer (which express uses), connect-assets:</p>
+
+<p><code>npm install connect-assets</code></p>
+
+<p>This should take care of auto-compiling my CoffeeScript when it gets sent down to the client side. Finally I&#8217;ll be starting off with the jade template engine which seems to have good support by default with express, although I may well swap this out for something else down the line:</p>
+
+<p><code>npm install jade</code></p>
+
+<p>Next, getting underway with a bit of boilerplate (always happy to know if any of my code looks a bit off or there is a better way of doing anything, please let me know :-)):</p>
+
+<h2>boot.js</h2>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='javascript'><span class='line'><span class="err">#</span><span class="o">!</span><span class="err">/usr/bin/env node </span>
+</span><span class='line'>
+</span><span class='line'><span class="kd">var</span> <span class="nx">server</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;./&#39;</span><span class="p">);</span>
+</span><span class='line'><span class="nx">server</span><span class="p">.</span><span class="nx">listen</span><span class="p">(</span><span class="mi">3000</span><span class="p">);</span>
+</span><span class='line'><span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">&quot;Express server listening on port %d in %s mode&quot;</span><span class="p">,</span> <span class="nx">server</span><span class="p">.</span><span class="nx">address</span><span class="p">().</span><span class="nx">port</span><span class="p">,</span> <span class="nx">server</span><span class="p">.</span><span class="nx">settings</span><span class="p">.</span><span class="nx">env</span><span class="p">);</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>index.js</h2>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+</pre></td><td class='code'><pre><code class='javascript'><span class='line'><span class="kd">var</span> <span class="nx">express</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;express&#39;</span><span class="p">);</span>
+</span><span class='line'><span class="kd">var</span> <span class="nx">assets</span><span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;connect-assets&#39;</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'><span class="kd">var</span> <span class="nx">app</span> <span class="o">=</span> <span class="nx">module</span><span class="p">.</span><span class="nx">exports</span> <span class="o">=</span> <span class="nx">express</span><span class="p">.</span><span class="nx">createServer</span><span class="p">();</span>
+</span><span class='line'>
+</span><span class='line'><span class="nx">app</span><span class="p">.</span><span class="nx">configure</span><span class="p">(</span><span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+</span><span class='line'>    <span class="nx">app</span><span class="p">.</span><span class="nx">set</span><span class="p">(</span><span class="s1">&#39;views&#39;</span><span class="p">,</span> <span class="nx">__dirname</span> <span class="o">+</span> <span class="s1">&#39;/views&#39;</span><span class="p">);</span>
+</span><span class='line'>    <span class="nx">app</span><span class="p">.</span><span class="nx">set</span><span class="p">(</span><span class="s1">&#39;view engine&#39;</span><span class="p">,</span> <span class="s1">&#39;jade&#39;</span><span class="p">);</span>
+</span><span class='line'>    <span class="nx">app</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="nx">express</span><span class="p">.</span><span class="nx">bodyParser</span><span class="p">());</span>
+</span><span class='line'>    <span class="nx">app</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="nx">express</span><span class="p">.</span><span class="nx">methodOverride</span><span class="p">());</span>
+</span><span class='line'>    <span class="nx">app</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="nx">app</span><span class="p">.</span><span class="nx">router</span><span class="p">);</span>
+</span><span class='line'>    <span class="nx">app</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="nx">assets</span><span class="p">());</span>
+</span><span class='line'>    <span class="nx">app</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="nx">express</span><span class="p">.</span><span class="kr">static</span><span class="p">(</span><span class="nx">__dirname</span> <span class="o">+</span> <span class="s1">&#39;/public&#39;</span><span class="p">));</span>
+</span><span class='line'><span class="p">});</span>
+</span><span class='line'>
+</span><span class='line'><span class="nx">app</span><span class="p">.</span><span class="nx">configure</span><span class="p">(</span><span class="s1">&#39;development&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(){</span>
+</span><span class='line'>    <span class="nx">app</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="nx">express</span><span class="p">.</span><span class="nx">errorHandler</span><span class="p">({</span> <span class="nx">dumpExceptions</span><span class="o">:</span> <span class="kc">true</span><span class="p">,</span> <span class="nx">showStack</span><span class="o">:</span> <span class="kc">true</span> <span class="p">}));</span>
+</span><span class='line'><span class="p">});</span>
+</span><span class='line'>
+</span><span class='line'><span class="nx">app</span><span class="p">.</span><span class="nx">configure</span><span class="p">(</span><span class="s1">&#39;production&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(){</span>
+</span><span class='line'>    <span class="nx">app</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="nx">express</span><span class="p">.</span><span class="nx">errorHandler</span><span class="p">());</span>
+</span><span class='line'><span class="p">});</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">//Set up basic routing</span>
+</span><span class='line'><span class="nx">require</span><span class="p">(</span><span class="s1">&#39;./routes.js&#39;</span><span class="p">)(</span><span class="nx">app</span><span class="p">);</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>routes.js</h2>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='javascript'><span class='line'><span class="nx">module</span><span class="p">.</span><span class="nx">exports</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">app</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="nx">app</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">req</span><span class="p">,</span> <span class="nx">res</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>        <span class="nx">res</span><span class="p">.</span><span class="nx">render</span><span class="p">(</span><span class="s1">&#39;index&#39;</span><span class="p">,</span> <span class="p">{</span><span class="nx">title</span><span class="o">:</span> <span class="s1">&#39;Puzzli&#39;</span><span class="p">});</span>
+</span><span class='line'>    <span class="p">});</span>
+</span><span class='line'>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>This should be enough to get a server up and running, and serve up the first couple of pages:</p>
+
+<h2>layout.jade</h2>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='jade'><span class='line'><span class="nn">!!!</span>
+</span><span class='line'><span class="nt">html</span>
+</span><span class='line'>  <span class="nt">head</span>
+</span><span class='line'>    <span class="nt">title</span><span class="p">=</span> <span class="n">title</span>
+</span><span class='line'>    <span class="err">!= </span><span class="nt">css</span>(<span class="err">&#39;</span><span class="na">master</span><span class="err">&#39;</span>)
+</span><span class='line'>  <span class="nt">body</span><span class="p">!=</span> <span class="n">body</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>index.jade</h2>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='jade'><span class='line'><span class="nt">h1</span><span class="p">=</span> <span class="n">title</span>
+</span><span class='line'><span class="nt">p</span> Welcome to <span class="si">#{</span><span class="n">title</span><span class="si">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Looks like it&#8217;s working so far. Up next I&#8217;ll be setting up jasmine for TDD on the client side, and then getting underway with building something.</p>
+
+		
+		
+	</div>
+
+
+<div class="meta">
+	<div class="date">
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-06-03T16:14:00+01:00" pubdate data-updated="true">Jun 3<span>rd</span>, 2012</time></div>
+	<div class="tags">
+
+
+	<a class='category' href='/blog/categories/coffeescript/'>coffeescript</a>, <a class='category' href='/blog/categories/express/'>express</a>, <a class='category' href='/blog/categories/jade/'>jade</a>, <a class='category' href='/blog/categories/node-js/'>node.js</a>, <a class='category' href='/blog/categories/puzzli/'>puzzli</a>
+
+
+</div>
+	
+</div></article>
+
+
+    <article class="post">
+	<h2 class="title">
+		
+		<a href="/2012/05/getting-underway/">
+		
+			Getting Underway</a>
+	</h2>
+	<div class="entry-content">
+		<p>I need to write more code. I also need to write more blog posts. As a result, I&#8217;m combining my efforts for my latest mini-project.</p>
+
+<p><em>The idea:</em> a small website with a few standard puzzle &#8220;templates&#8221;. People who tackle daily newspaper puzzles (codewords, sudoku, crosswords) can fire it up, quickly enter that days puzzle for their own personal use, then solve it more easily than with a pencil and paper using auto-complete, easy undo, and possibly some kind of hint system. I admit the idea is perhaps slightly flawed due to lack of overlap between daily newspaper puzzle tacklers and the kind of people who&#8217;d use a website to make daily puzzle solving more efficient. It should be fun to make anyway.</p>
+
+<p>I want the interface to be nice and slick and efficient which will involve a lot of javascript (I have some experience with backbone.js, which I intend to use again). I&#8217;ve also scratched the surface of server-side javascript with node.js in the past, and would like to delve into it properly. To start with I think the server will just be used mostly to serve up some static content, which I&#8217;ve heard is not really node&#8217;s strongest point, but it has nice support for javascript tech in general (in particular coffeescript), and should be a nice easy way to get something up and running quickly. If it then expands out into something slightly more complicated, then having all the components in JS should save quite a few integration headaches. I doubt the backend will ever be particularly wild though, but if goes that way I&#8217;ll worry about that problem and potentially switching when the need arises. The posts will all be added under the <a href="http://www.actionshrimp.com/blog/categories/puzzli/">&#8216;Puzzli&#8217; category</a>.</p>
+
+		
+		
+	</div>
+
+
+<div class="meta">
+	<div class="date">
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-05-19T16:13:00+01:00" pubdate data-updated="true">May 19<span>th</span>, 2012</time></div>
+	<div class="tags">
+
+
+	<a class='category' href='/blog/categories/puzzli/'>puzzli</a>
+
+
+</div>
+	
+</div></article>
+
 <nav id="pagenavi">
     
+    
+        <a href="/blog/page/2/" class="next">Next</a>
     
     <div class="center"><a href="/archives">Blog Archives</a></div>
 </nav>
 </div>
-	<footer id="footer" class="inner">Copyright &copy; 2013
+	<footer id="footer" class="inner">Copyright &copy; 2015
 
     Dave Aitken
 
