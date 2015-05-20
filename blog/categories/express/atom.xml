@@ -4,7 +4,7 @@
   <title><![CDATA[Category: express | actionshrimp.com]]></title>
   <link href="http://actionshrimp.github.com/blog/categories/express/atom.xml" rel="self"/>
   <link href="http://actionshrimp.github.com/"/>
-  <updated>2015-05-20T19:08:48+01:00</updated>
+  <updated>2015-05-20T19:10:26+01:00</updated>
   <id>http://actionshrimp.github.com/</id>
   <author>
     <name><![CDATA[Dave Aitken]]></name>
@@ -18,7 +18,9 @@
     <link href="http://actionshrimp.github.com/2012/06/setting-up-a-client-side-js-development-environment-with-node-js-part-2/"/>
     <updated>2012-06-04T16:14:00+01:00</updated>
     <id>http://actionshrimp.github.com/2012/06/setting-up-a-client-side-js-development-environment-with-node-js-part-2</id>
-    <content type="html"><![CDATA[<p>This is another post in my <a href="http://www.actionshrimp.com/category/puzzli/">puzzli series</a>.</p>
+    <content type="html"><![CDATA[<p><strong>Edit 2015/03/14</strong>: <em>This post was written a couple of years ago so is a bit outdated now. Express in particular has changed quite a bit since this was written</em></p>
+
+<p>This is another post in my <a href="http://www.actionshrimp.com/blog/categories/puzzli/">puzzli series</a>.</p>
 
 <p>I've already set up node in <a href="http://www.actionshrimp.com/2012/06/setting-up-a-simple-client-side-development-environment-with-node-js-part-1/">part 1</a>, to serve up a simple page to use as a JS development environment. Next I'll be setting up <a href="http://pivotal.github.com/jasmine/">jasmine</a> so I can do TDD on the client side code for puzz.li. This commits for this post are from where we left off on the previous post, up to <a href="https://github.com/actionshrimp/puzz.li/commit/5f1783328516cec99febb01b4d0ce41d112019c7">this commit</a>.</p>
 
@@ -118,7 +120,9 @@ Finished in 0.008 seconds
     <link href="http://actionshrimp.github.com/2012/06/setting-up-a-simple-client-side-development-environment-with-node-js-part-1/"/>
     <updated>2012-06-03T16:14:00+01:00</updated>
     <id>http://actionshrimp.github.com/2012/06/setting-up-a-simple-client-side-development-environment-with-node-js-part-1</id>
-    <content type="html"><![CDATA[<p>This is another post in my <a href="http://www.actionshrimp.com/category/puzzli/">puzzli series</a>. This post documents getting node set up to create a simple environment to work on the client side JS code in. I could potentially just use a static web page to begin with and start the basics of the client side in there, but I may as well set up a simple server side so I can stub in any server side endpoints as they arise. I'll also get good ease of install and use of coffeescript and other JS ecosystem stuff. If you want to see the final code, this post runs from the start of my puzz.li repo up until <a href="https://github.com/actionshrimp/puzz.li/commit/2d44c2c6d8d1a52f724fa5099e2e3741149681bc">this commit</a>.</p>
+    <content type="html"><![CDATA[<p><strong>Edit 2015/03/14</strong>: <em>This post was written a couple of years ago so is a bit outdated now. Express in particular has changed quite a bit since this was written</em></p>
+
+<p>This is another post in my <a href="http://www.actionshrimp.com/bloc/categories/puzzli/">puzzli series</a>. This post documents getting node set up to create a simple environment to work on the client side JS code in. I could potentially just use a static web page to begin with and start the basics of the client side in there, but I may as well set up a simple server side so I can stub in any server side endpoints as they arise. I'll also get good ease of install and use of coffeescript and other JS ecosystem stuff. If you want to see the final code, this post runs from the start of my puzz.li repo up until <a href="https://github.com/actionshrimp/puzz.li/commit/2d44c2c6d8d1a52f724fa5099e2e3741149681bc">this commit</a>.</p>
 
 <p>I already had node installed through the download from the node website - the installer is a cinch on OSX. I'm going to use the <a href="http://expressjs.com">express</a> web framework for node:</p>
 
