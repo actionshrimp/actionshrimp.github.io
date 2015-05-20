@@ -1,0 +1,241 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: puzzli | actionshrimp.com]]></title>
+  <link href="http://actionshrimp.github.com/blog/categories/puzzli/atom.xml" rel="self"/>
+  <link href="http://actionshrimp.github.com/"/>
+  <updated>2015-05-20T19:08:48+01:00</updated>
+  <id>http://actionshrimp.github.com/</id>
+  <author>
+    <name><![CDATA[Dave Aitken]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Setting up a client side JS dev environment with node.js - Part 2]]></title>
+    <link href="http://actionshrimp.github.com/2012/06/setting-up-a-client-side-js-development-environment-with-node-js-part-2/"/>
+    <updated>2012-06-04T16:14:00+01:00</updated>
+    <id>http://actionshrimp.github.com/2012/06/setting-up-a-client-side-js-development-environment-with-node-js-part-2</id>
+    <content type="html"><![CDATA[<p>This is another post in my <a href="http://www.actionshrimp.com/category/puzzli/">puzzli series</a>.</p>
+
+<p>I've already set up node in <a href="http://www.actionshrimp.com/2012/06/setting-up-a-simple-client-side-development-environment-with-node-js-part-1/">part 1</a>, to serve up a simple page to use as a JS development environment. Next I'll be setting up <a href="http://pivotal.github.com/jasmine/">jasmine</a> so I can do TDD on the client side code for puzz.li. This commits for this post are from where we left off on the previous post, up to <a href="https://github.com/actionshrimp/puzz.li/commit/5f1783328516cec99febb01b4d0ce41d112019c7">this commit</a>.</p>
+
+<p>First a quick diversion about dependency management. Up until now I'd just been doing:</p>
+
+<p><code>npm install &lt;modulename&gt;</code></p>
+
+<p>However unless I check all the node_modules I've added into git, as more and more dependencies are added deploying the app elsewhere will become a bit tricky. The solution to this problem is to create a package.json file, where you can define dependencies. This is what mine looks like so far:</p>
+
+<p>``` json</p>
+
+<h2>package.json</h2>
+
+<p>{</p>
+
+<pre><code>"name":         "puzz.li",
+"version":      "0.0.1",
+"description":  "A puzzle website",
+"homepage":     "http://puzz.li",
+"repository":   {
+                    "type": "git",
+                    "url":  "https://github.com/actionshrimp/puzz.li"
+                },
+"author":       "Dave Aitken &lt;dave.aitken@gmail.com&gt;",
+"licences":     ["MIT"],
+"dependencies": {
+                    "express": "2.5.9",
+                    "connect-assets": "2.2.0",
+                    "jade": "0.26.0"
+                 }
+</code></pre>
+
+<p>}
+```</p>
+
+<p>As you can see it gives a bit of info about the package itself, as well as defining the dependencies to get it up and running. Now when checking the app out from the github repo, it just requires a single command:</p>
+
+<p><code>npm install</code></p>
+
+<p>and all the dependencies of the right version will be grabbed automatically as you'd expect.</p>
+
+<p>Back to setting up jasmine now. We kick off by install jasmine-node, a module that sets up jasmine nicely in a node environment, and supports specs written in coffeescript as well. As we (hopefully) won't need jasmine-node to actually deploy the app to production, we can add it into package.json as a devDependency like so:</p>
+
+<p>``` json
+{</p>
+
+<pre><code>... 
+"devDependencies": { 
+    "jasmine-node": "&gt;= 1.0.26"
+}
+...
+</code></pre>
+
+<p>}
+```</p>
+
+<p>and again</p>
+
+<p><code>npm install</code></p>
+
+<p>Finally, we just need to set up a simple link to jasmine's script runner so it's nice and accessible:</p>
+
+<pre><code>$ ln -s node_modules/jasmine-node/bin/jasmine-node run_specs
+$ chmod u+x run_specs
+</code></pre>
+
+<p>Let's see if everything's working by trying to get a simple always-true spec running.</p>
+
+<p>``` coffeescript</p>
+
+<h2>spec/jasmine_spec.coffee</h2>
+
+<p>describe 'Jasmine', -></p>
+
+<pre><code>it 'should be set up correctly', -&gt; 
+    expect(true).toBeTruthy()
+</code></pre>
+
+<p>```</p>
+
+<p>and now we run it with our new command:</p>
+
+<pre><code>$ ./run_specs --coffee spec
+
+.
+
+Finished in 0.008 seconds
+1 test, 1 assertion, 0 failures
+</code></pre>
+
+<p>We're finally in a position to get underway with actually building something, and that will be the subject of the next post.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Setting up a client side JS dev environment with node.js - Part 1]]></title>
+    <link href="http://actionshrimp.github.com/2012/06/setting-up-a-simple-client-side-development-environment-with-node-js-part-1/"/>
+    <updated>2012-06-03T16:14:00+01:00</updated>
+    <id>http://actionshrimp.github.com/2012/06/setting-up-a-simple-client-side-development-environment-with-node-js-part-1</id>
+    <content type="html"><![CDATA[<p>This is another post in my <a href="http://www.actionshrimp.com/category/puzzli/">puzzli series</a>. This post documents getting node set up to create a simple environment to work on the client side JS code in. I could potentially just use a static web page to begin with and start the basics of the client side in there, but I may as well set up a simple server side so I can stub in any server side endpoints as they arise. I'll also get good ease of install and use of coffeescript and other JS ecosystem stuff. If you want to see the final code, this post runs from the start of my puzz.li repo up until <a href="https://github.com/actionshrimp/puzz.li/commit/2d44c2c6d8d1a52f724fa5099e2e3741149681bc">this commit</a>.</p>
+
+<p>I already had node installed through the download from the node website - the installer is a cinch on OSX. I'm going to use the <a href="http://expressjs.com">express</a> web framework for node:</p>
+
+<p><code>npm install express</code></p>
+
+<p>I'll also use the rails-style asset pipeline middleware for the node connect layer (which express uses), connect-assets:</p>
+
+<p><code>npm install connect-assets</code></p>
+
+<p>This should take care of auto-compiling my CoffeeScript when it gets sent down to the client side. Finally I'll be starting off with the jade template engine which seems to have good support by default with express, although I may well swap this out for something else down the line:</p>
+
+<p><code>npm install jade</code></p>
+
+<p>Next, getting underway with a bit of boilerplate (always happy to know if any of my code looks a bit off or there is a better way of doing anything, please let me know :-)):</p>
+
+<h2>boot.js</h2>
+
+<p>``` javascript</p>
+
+<pre><code>#!/usr/bin/env node 
+
+var server = require('./'); 
+server.listen(3000); 
+console.log("Express server listening on port %d in %s mode", server.address().port, server.settings.env);
+</code></pre>
+
+<p>```</p>
+
+<h2>index.js</h2>
+
+<p>``` javascript</p>
+
+<pre><code>var express = require('express');
+var assets= require('connect-assets');
+
+var app = module.exports = express.createServer();
+
+app.configure(function() {
+    app.set('views', __dirname + '/views');
+    app.set('view engine', 'jade');
+    app.use(express.bodyParser());
+    app.use(express.methodOverride());
+    app.use(app.router);
+    app.use(assets());
+    app.use(express.static(__dirname + '/public'));
+});
+
+app.configure('development', function(){
+    app.use(express.errorHandler({ dumpExceptions: true, showStack: true })); 
+});
+
+app.configure('production', function(){
+    app.use(express.errorHandler()); 
+});
+
+//Set up basic routing
+require('./routes.js')(app);
+</code></pre>
+
+<p>```</p>
+
+<h2>routes.js</h2>
+
+<p>```</p>
+
+<pre><code>module.exports = function(app) {
+
+    app.get('/', function(req, res) {
+        res.render('index', {title: 'Puzzli'});
+    });
+
+}
+</code></pre>
+
+<p>```</p>
+
+<p>This should be enough to get a server up and running, and serve up the first couple of pages:</p>
+
+<h2>layout.jade</h2>
+
+<p>``` jade</p>
+
+<pre><code>!!!
+html
+  head
+    title= title
+    != css('master')
+  body!= body
+</code></pre>
+
+<p>```</p>
+
+<h2>index.jade</h2>
+
+<p>``` jade</p>
+
+<pre><code>h1= title
+p Welcome to #{title}
+</code></pre>
+
+<p>```</p>
+
+<p>Looks like it's working so far. Up next I'll be setting up jasmine for TDD on the client side, and then getting underway with building something.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Getting underway]]></title>
+    <link href="http://actionshrimp.github.com/2012/05/getting-underway/"/>
+    <updated>2012-05-19T16:13:00+01:00</updated>
+    <id>http://actionshrimp.github.com/2012/05/getting-underway</id>
+    <content type="html"><![CDATA[<p>I need to write more code. I also need to write more blog posts. As a result, I'm combining my efforts for my latest mini-project.</p>
+
+<p><em>The idea:</em> a small website with a few standard puzzle "templates". People who tackle daily newspaper puzzles (codewords, sudoku, crosswords) can fire it up, quickly enter that days puzzle for their own personal use, then solve it more easily than with a pencil and paper using auto-complete, easy undo, and possibly some kind of hint system. I admit the idea is perhaps slightly flawed due to lack of overlap between daily newspaper puzzle tacklers and the kind of people who'd use a website to make daily puzzle solving more efficient. It should be fun to make anyway.</p>
+
+<p>I want the interface to be nice and slick and efficient which will involve a lot of javascript (I have some experience with backbone.js, which I intend to use again). I've also scratched the surface of server-side javascript with node.js in the past, and would like to delve into it properly. To start with I think the server will just be used mostly to serve up some static content, which I've heard is not really node's strongest point, but it has nice support for javascript tech in general (in particular coffeescript), and should be a nice easy way to get something up and running quickly. If it then expands out into something slightly more complicated, then having all the components in JS should save quite a few integration headaches. I doubt the backend will ever be particularly wild though, but if goes that way I'll worry about that problem and potentially switching when the need arises. The posts will all be added under the <a href="http://www.actionshrimp.com/category/puzzli/">'Puzzli' category</a>.</p>
+]]></content>
+  </entry>
+  
+</feed>

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: own-projects | actionshrimp.com]]></title>
+  <link href="http://actionshrimp.github.com/blog/categories/own-projects/atom.xml" rel="self"/>
+  <link href="http://actionshrimp.github.com/"/>
+  <updated>2015-05-20T19:08:48+01:00</updated>
+  <id>http://actionshrimp.github.com/</id>
+  <author>
+    <name><![CDATA[Dave Aitken]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Vim XPath Plugin]]></title>
+    <link href="http://actionshrimp.github.com/2011/04/vim-xpath-plugin/"/>
+    <updated>2011-04-03T22:21:00+01:00</updated>
+    <id>http://actionshrimp.github.com/2011/04/vim-xpath-plugin</id>
+    <content type="html"><![CDATA[<p>I've built a plugin that adds XPath search functionality to Vim. Check out the demo video below.</p>
+
+<p>This video and blurb is actually about the old version of the plugin. It has since been rewritten, although it is functionally very similar to the video below. There is no XPath auto-completion anymore though, and results instead appear in the vim location list.</p>
+
+<iframe src="http://player.vimeo.com/video/21857707" width="500" height="431" frameborder="0" webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe>
+
+
+<p style="font-style: italic"><a href="http://vimeo.com/21857707">Vim XPath Plugin Demo</a> from <a href="http://vimeo.com/actionshrimp">Dave Aitken</a> on <a href="https://vimeo.com">Vimeo</a>.</p>
+
+
+<p>Features:
+  *   Results shown in a pop-up results window. Jump to the line of a matching result easily</p>
+
+<p>Requirements:
+  *   Python support enabled in Vim
+  *   lxml library installed for Python. For more info, and to grab the plugin visit <a href="https://github.com/actionshrimp/vim-xpath">my github</a>. Let me know what you think / any improvement suggestions in the comments below.</p>
+]]></content>
+  </entry>
+  
+</feed>

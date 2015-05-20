@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: haskell | actionshrimp.com]]></title>
+  <link href="http://actionshrimp.github.com/blog/categories/haskell/atom.xml" rel="self"/>
+  <link href="http://actionshrimp.github.com/"/>
+  <updated>2015-05-20T19:08:48+01:00</updated>
+  <id>http://actionshrimp.github.com/</id>
+  <author>
+    <name><![CDATA[Dave Aitken]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Shortest Knight Moves from a to b in Haskell]]></title>
+    <link href="http://actionshrimp.github.com/2012/11/knight-moves/"/>
+    <updated>2012-11-19T16:41:00+00:00</updated>
+    <id>http://actionshrimp.github.com/2012/11/knight-moves</id>
+    <content type="html"><![CDATA[<p>I've got back onto the excellent '<a href="http://learnyouahaskell.com/">Learn you a Haskell for Great Good</a>' recently, which I would highly recommend.</p>
+
+<p>Near the end of chapter 12 (about Monads), there is a section on <a href="http://learnyouahaskell.com/a-fistful-of-monads#the-list-monad">the list monad</a>, which has an example 'a knight's quest' at the end. Modification of the example code to print out possible routes from one position to another is left as an exercise to the reader. I decided to give it a go in attempt to solidify my knowledge about monads a bit, and below is the result.</p>
+
+<p>I'm sure there are far more efficient ways of doing this, and potentially more monad-y ways of implementing shortestMovesFor, so if any other beginners come across this, I'd be interested to see what you came up with!</p>
+
+<p>``` haskell
+import qualified Control.Monad as M
+import Data.List</p>
+
+<p>type KnightPos = (Int, Int)</p>
+
+<p>--As given in learn you a haskell
+moveKnight :: KnightPos -> [KnightPos]
+moveKnight (c, r) = do</p>
+
+<pre><code>(c', r') &lt;- [(c+2, r-1), (c+2, r+1), (c-2, r-1), (c-2, r+1)
+            ,(c+1, r-2), (c+1, r+2), (c-1, r-2), (c-1, r+2)
+            ]
+M.guard (c' `elem` [1..8] &amp;&amp; r' `elem` [1..8])
+return (c', r')
+</code></pre>
+
+<p>--moveKnight, but modified to apply move n times
+moveNWithHistory :: Int -> [KnightPos] -> [[KnightPos]]
+moveNWithHistory n (current:history) = do</p>
+
+<pre><code>if (n &gt; 0) then do
+    nextMove &lt;- (return current) &gt;&gt;= moveKnight
+    moveNWithHistory (n-1) =&lt;&lt; return (nextMove : current : history)
+else return (current:history)
+</code></pre>
+
+<p>shortestMovesFor :: KnightPos -> KnightPos -> [[KnightPos]]
+shortestMovesFor start end = map reverse (filter (endsOn end) historiesForMinN) where</p>
+
+<pre><code>endsOn target (current:history) = (target == current)
+Just historiesForMinN = find (any (endsOn end)) (map (\n -&gt; moveNWithHistory n [start]) [0..])
+</code></pre>
+
+<p>```</p>
+
+<p>And here's some example output:</p>
+
+<p><code>haskell
+*Main&gt; shortestMovesFor (1,1) (3,4)
+[[(1,1),(3,2),(5,3),(3,4)],[(1,1),(3,2),(1,3),(3,4)],[(1,1),(2,3),(4,2),(3,4)],[(1,1),(2,3),(1,5),(3,4)]]
+</code></p>
+
+<p>As you can see it returns a list of the shortest chains of moves from the start square to the target square.</p>
+
+<p>Changes I made to the code from the book:</p>
+
+<ul>
+<li><p>moveNWithHistory is a new function to apply moveKnight n times. It also generates a list of chains of moves for a given n, rather than just the final positions (by passing <code>nextMove : current : history</code> to the next iteration, rather than just the next move).</p></li>
+<li><p>shortestMovesFor is not monadic, and returns the final list of moves. We first generate all move chains from our starting position for increasing n, until we find the smallest n which creates a set of chains that contains a chain ending on the target square. We then filter down the set we found to return only chains that do end on the target square. Finally we map reverse over the chains to make them more readable.</p></li>
+</ul>
+
+]]></content>
+  </entry>
+  
+</feed>

@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: apache | actionshrimp.com]]></title>
+  <link href="http://actionshrimp.github.com/blog/categories/apache/atom.xml" rel="self"/>
+  <link href="http://actionshrimp.github.com/"/>
+  <updated>2015-05-20T19:08:48+01:00</updated>
+  <id>http://actionshrimp.github.com/</id>
+  <author>
+    <name><![CDATA[Dave Aitken]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Using Lightbox with Apache directory listings as an image gallery]]></title>
+    <link href="http://actionshrimp.github.com/2009/03/using-lightbox-with-apache-directory-listings-as-an-image-gallery/"/>
+    <updated>2009-03-01T22:10:00+00:00</updated>
+    <id>http://actionshrimp.github.com/2009/03/using-lightbox-with-apache-directory-listings-as-an-image-gallery</id>
+    <content type="html"><![CDATA[<p><em>This is a guest post from my friend <a href="http://mattjbray.com">Matt Bray</a></em></p>
+
+<p><img src="http://actionshrimp.github.com/images/lightbox-300x184.jpg" width="300" height="184" /> As you may know, if it can't find an <code>index.html</code> the apache web server will show a list of files in the current directory. I was browsing through lists of images on my file server the other day and I thought, wouldn't it be nice to have a next button? So I started digging around.</p>
+
+<p>In the end I used a wonderful little script called <a href="http://www.lokeshdhakar.com/projects/lightbox2/">Lightbox 2</a> and a bit of JavaScript <a href="http://prototypejs.org">Prototype</a> magic to produce <a href="http://bf.mattjbray.com/lightbox_images">this</a> (try clicking on the image files). The directory listings are provided by an apache module going by the name of <code>mod_autoindex</code>. This module allows you to insert a custom header and footer through the directives <code>HeaderName</code> and <code>ReadmeName</code>. The plan is to insert some HTML that includes the Lightbox code and tags all the links to images with the <code>rel=lightbox</code> attribute that Lightbox uses to function.</p>
+
+<!--more-->
+
+
+<p>Create a directory called <code>lightbox</code> in your server's document root. Download <a href="http://www.lokeshdhakar.com/projects/lightbox2/#download">Lightbox 2</a> and extract it to that directory (go to <code>http://www.yourwebsite.com/lightbox</code> to try it out). To get the Lightbox 'loading' and 'next' images to show up, you need to edit a couple of lines in the configuration section of <code>js/lightbox.js</code> that comes with Lightbox. Change the following</p>
+
+<pre><code>LightboxOptions = Object.extend({
+fileLoadingImage:        'images/loading.gif',
+fileBottomNavCloseImage: 'images/closelabel.gif',
+</code></pre>
+
+<p>to look like</p>
+
+<pre><code>LightboxOptions = Object.extend({
+fileLoadingImage:        '/lightbox/images/loading.gif',
+fileBottomNavCloseImage: '/lightbox/images/closelabel.gif',
+</code></pre>
+
+<p>I also adjusted <code>resizeSpeed</code> to 9 to make it feel a little snappier, change this to your taste. Now create a new file called <code>lightbox.html</code> in your <code>/lightbox</code> directory and copy and paste the following:</p>
+
+<pre><code>&lt;script src="http://actionshrimp.github.com/lightbox/js/prototype.js" type="text/javascript"&gt;&lt;/script&gt;
+&lt;script src="http://actionshrimp.github.com/lightbox/js/scriptaculous.js?load=effects,builder" type="text/javascript"&gt;&lt;/script&gt;
+&lt;script src="http://actionshrimp.github.com/lightbox/js/lightbox.js" type="text/javascript"&gt;&lt;/script&gt;
+&lt;script type="text/javascript"&gt;&lt;!--
+    // Insert the lightbox stylesheet into &lt;head&gt;
+    var stylesheet = new Element('link', {  'rel': 'stylesheet',
+                                            'href': '/lightbox/css/lightbox.css',
+                                            'type': 'text/css',
+                                            'media': 'screen'
+                                         });
+    $$('head')[0].appendChild(stylesheet);
+
+    // Check for links preceded by the image icon provided by mod_autoindex.
+    // On my setup the src attribute in the img tag preceding a link to an image
+    // is "/icons/image2.gif". This is used to identify links to images.
+    $$("a").each( function(elmt) {
+            // The default output is tabular, so check the previous cell for the img tag
+            imgelmt = elmt.up().previous().down()
+            // If the FancyIndexes option is set, the output is formatted differently
+            if (imgelmt == undefined) { imgelmt = elmt.previous('img') }
+            if (imgelmt.readAttribute('src') == "/icons/image2.gif")
+            {
+                elmt.setAttribute('rel', 'lightbox[images]');
+
+                // As ps suggested, provide a link to the image in the lightbox description
+                link = "&amp;lt;a href='" + elmt.readAttribute('href') + "'&amp;gt;" + 
+                        elmt.innerHTML.stripScripts().stripTags() + "&amp;lt;/a&amp;gt;";
+                elmt.setAttribute('title', link );
+            }
+        } );
+--&gt;&lt;/script&gt;
+</code></pre>
+
+<p>Now all you have to do is tell apache to include this file in its directory listing page. Simply paste the following two lines into a file named <code>.htaccess</code> and copy it to any directory that you want Lightbox to appear in.</p>
+
+<pre><code>Options Indexes
+ReadmeName /lightbox/lightbox.html
+</code></pre>
+
+<p>Et voila! No php, no databases to maintain. Image galleries don't get much simpler than that.</p>
+
+<p>You can download the files mentioned above <a href="/files/lightbox1.zip">here</a>.</p>
+]]></content>
+  </entry>
+  
+</feed>

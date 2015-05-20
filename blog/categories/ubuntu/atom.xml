@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: ubuntu | actionshrimp.com]]></title>
+  <link href="http://actionshrimp.github.com/blog/categories/ubuntu/atom.xml" rel="self"/>
+  <link href="http://actionshrimp.github.com/"/>
+  <updated>2015-05-20T19:08:48+01:00</updated>
+  <id>http://actionshrimp.github.com/</id>
+  <author>
+    <name><![CDATA[Dave Aitken]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Installing awesome Window Manager on Ubuntu Intrepid]]></title>
+    <link href="http://actionshrimp.github.com/2009/02/installing-awesome-window-manager-on-ubuntu-intrepid/"/>
+    <updated>2009-02-02T16:59:00+00:00</updated>
+    <id>http://actionshrimp.github.com/2009/02/installing-awesome-window-manager-on-ubuntu-intrepid</id>
+    <content type="html"><![CDATA[<p><em>Quick Note: This post was originally published on 02/02/2009, so is probably a bit outdated now.</em></p>
+
+<p><img src="http://actionshrimp.github.com/images/awesomescreenmini.png" width="200" height="98" /> Today I had a go at installing <a href="http://awesome.naquadah.org/">awesome window manager</a>. awesome is a great tiling window manager, useful if you have a large monitor and are fed up with having one window taking up all the space when it doesn't really need it all. For example, having firefox maximised on a 1920x1200 resolution monitor can mean you end up with very large sentences that spread across the screen, decreasing readability. Unfortunately the version of awesome in the Interpid repos is 2.3.2-1, which is now deprecated, and the current stable release is version 3.1-1.  The website suggests building from source - I attempted this but there are currently a couple of issues with compilation mentioned in the wiki, and even with the fix suggested I couldn't quite get it to work - although I didn't try too hard it must be said; instead I found another method which I will walk you through now.</p>
+
+<!--more-->
+
+
+<h2>Installing and Trying It Out</h2>
+
+<p>The method I ended up using revolves using binaries from the Debian experimental repository, which seem to work perfectly. First, you can download the awesome 3.1-1 package (N.B. The binaries I'm linking to here from Debian's website are for i386, for others just search for them on the site), and try and install it with:</p>
+
+<pre><code>$ wget http://ftp.uk.debian.org/debian/pool/main/a/awesome/awesome_3.1-1_i386.deb
+$ sudo dpkg -i awesome_3.1-1_i386.deb
+</code></pre>
+
+<p>However, it will spit out a list of dependencies it couldn't manage - these are packages that are also outdated in the current Ubuntu repos. So next, fetch the ones you need which are listed below:</p>
+
+<pre><code>$ wget http://ftp.uk.debian.org/debian/pool/main/x/xcb-util/libxcb-atom1_0.3.2-1_i386.deb
+$ wget http://ftp.uk.debian.org/debian/pool/main/x/xcb-util/libxcb-aux0_0.3.2-1_i386.deb
+$ wget http://ftp.uk.debian.org/debian/pool/main/x/xcb-util/libxcb-event1_0.3.2-1_i386.deb
+$ wget http://ftp.uk.debian.org/debian/pool/main/x/xcb-util/libxcb-icccm1_0.3.2-1_i386.deb
+$ wget http://ftp.uk.debian.org/debian/pool/main/x/xcb-util/libxcb-keysyms0_0.3.2-1_i386.deb
+$ wget http://ftp.uk.debian.org/debian/pool/main/x/xcb-util/libxcb-property1_0.3.2-1_i386.deb
+$ wget http://ftp.uk.debian.org/debian/pool/main/x/xcb-util/libxcb-render-util0_0.3.2-1_i386.deb
+</code></pre>
+
+<p>Then try and install them all with dpkg:</p>
+
+<pre><code>$ sudo dpkg -i awesome_3.1-1_i386.deb libxcb-atom1_0.3.2-1_i386.deb libxcb-aux0_0.3.2-1_i386.deb \
+libxcb-event1_0.3.2-1_i386.deb libxcb-icccm1_0.3.2-1_i386.deb libxcb-property1_0.3.2-1_i386.deb \
+libxcb-render-util0_0.3.2-1_i386.deb libxcb-keysyms0_0.3.2-1_i386.deb
+</code></pre>
+
+<p>At this point, it might spit out that it needs some extra packages - these are packages that you should just be able to install normally with synaptic or apt: I had to install <code>menu</code> for example, and you may have to install some others as I had a few other dependencies installed from trying to build from source earlier on. Once you have all the packages, run the above command again to install awesome. Once awesome is installed, you'll need a configuration file. A default config file is provided, so go ahead and copy it to your home dir:</p>
+
+<pre><code>$ mkdir ~/.config/awesome
+$ cp /etc/xdg/awesome/rc.lua ~/.config/awesome/rc.lua
+</code></pre>
+
+<p>Now we can see if awesome works - kill your current window manager (in my case compiz), then fire up awesome:</p>
+
+<pre><code>$ killall compiz.real &amp;&amp; awesome&amp;
+</code></pre>
+
+<p>Hopefully everything has gone to plan, and awesome should now be running! Hooray! Have a little play around with it, mess with the config file a bit and see if you like it. Some useful key-bindings are:</p>
+
+<ul>
+<li>Win + Enter - launch a terminal</li>
+<li>Win + F1 - run a command</li>
+<li>Win + J/K - switch windows (à la vim)</li>
+<li>Win + H/L - resize major/minor divide</li>
+<li>Win + Shift + J/K - move windows</li>
+<li>Win + Space - change layout</li>
+<li>Win + Ctrl + r - restart awesome, for example to update if you change the config file</li>
+</ul>
+
+
+<p>There are loads more keybindings that you can find/change in the config file if you wanna know what they all do exactly.</p>
+
+<p>If after using awesome for a while you decide you want to keep it, there are a few loose ends to tie up.</p>
+
+<h2>Setting awesome as the Default Window Manager</h2>
+
+<p>First, fire up gconf-editor:</p>
+
+<pre><code>$ gconf-editor
+</code></pre>
+
+<p>On the list on the left, goto <code>desktop &amp;gt; gnome &amp;gt; session</code>. First of all, we'll get rid of the gnome-panels - awesome already has its own. On the right, there is a name/value pair with name <code>required\_components\_list</code>, containing <code>[windowmanager, panel, filemanager]</code>. Remove panel, so it becomes <code>[windowmanager, filemanager]</code>.</p>
+
+<p>Next we actually tell gnome to load in awesome instead of compiz. On the list on the left, choose the folder <code>required_components</code>. Change the windowmanager field from <code>compiz</code> to <code>awesome</code>. Finally, you'll probably wan't to disable nautilus's desktop (where the desktop icons live etc.) as it can do funny things, and with your magical new tiling windows you will probably never see the desktop. To do this, from the list on the left choose <code>apps &amp;gt; nautilus &amp;gt; preferences</code> and when here, uncheck <code>show_desktop</code>. Now you can kiss sweet goodbye to all the remnants of your old desktop - log out of your system and log back in again to see it take effect. WARNING: If something has gone wrong and awesome doesn't load (maybe you mispelt it in gconf-editor or something), you should still be able to find a way to edit the gconf preferences, but it took me a while to figure out how to logout when the normal gnome logout button had disappeared. To logout in this situation, use <code>gnome-session-save --kill</code>.</p>
+
+<h2>Customising and Configuring</h2>
+
+<p>Due to the highly keyboard oriented nature of awesome, you may now want to install a launcher. A couple of good ones are Gnome-Do (if you opt for this, you will have to change the binding from Win+Space in the awesome preferences, or reconfigure awesome's binding for this combination), an all singing all dancing affair which I used for a while, or dmenu which is quite a lot simpler and I've opted for in this case. To install dmenu:</p>
+
+<pre><code>$ sudo apt-get install dmenu
+</code></pre>
+
+<p>Next we setup a keybinding for it to launch in the awesome config file. Underneath the line:</p>
+
+<pre><code>-- \{\{\{ Keybindings 
+</code></pre>
+
+<p>add (here it is mapped to Win+P - change this if you like):</p>
+
+<pre><code>-- dmenu
+keybinding({ modkey }, "p", function () awful.util.spawn("`dmenu_path | dmenu -b`") end):add()
+</code></pre>
+
+<p>Also, as awesome is aimed at uber geeks the time is displayed by default with.... unix <code>time_t</code>. Unless you're some kind of time_t reading magician, hunt down the section in the config file that looks like this, and comment/uncomment accordingly:</p>
+
+<pre><code>-- For unix time_t lovers
+--mytextbox.text = " " .. os.time() .. " time_t "
+-- Otherwise use:
+mytextbox.text = " " .. os.date() .. " "
+</code></pre>
+
+<p>Finally, I missed my CPU monitor. There is however a set of widgets you can get that adds functionality like this called wicked. Install wicked:</p>
+
+<pre><code>$ git clone git://git.glacicle.com/awesome/wicked.git
+$ sudo cp wicked/wicked.lua /usr/share/awesome/lib/
+$ sudo cp wicked/wicked.7.gz /usr/share/man/man7/
+</code></pre>
+
+<p>in config file, underneath:</p>
+
+<pre><code>-- \{\{\{ Wicked Widgets
+</code></pre>
+
+<p>Add in:</p>
+
+<pre><code>-- \{\{\{ Wicked Widgets
+-- CPU Usage Graph
+cpugraphwidget = widget({
+    type = 'graph',
+    name = 'cpugraphwidget',
+    align = 'left'
+})
+cpugraphwidget.height = 0.85
+cpugraphwidget.width = 45
+cpugraphwidget.bg = '#333333'
+cpugraphwidget.border_color = '#0a0a0a'
+cpugraphwidget.grow = 'right'
+
+cpugraphwidget:plot_properties_set('cpu', {
+    fg = '#AEC6D8',
+    fg_center = '#285577',
+    fg_end = '#285577',
+    vertical_gradient = false
+})
+wicked.register(cpugraphwidget, wicked.widgets.cpu, '$1', 1, 'cpu')
+</code></pre>
+
+<p>Then add in the cpugraphwidget into the mywibox[s].widgets line:</p>
+
+<pre><code>mywibox[s].widgets = { mylauncher,
+    mytaglist[s],
+    mytasklist[s],
+    mypromptbox[s],
+    cpugraphwidget,
+    mytextbox,
+    mylayoutbox[s],
+    ...
+</code></pre>
+
+<p>For full instructions on <a href="http://awesome.naquadah.org/wiki/index.php?title=Wicked">how to use wicked</a>, and configure awesome, check out the <a href="http://awesome.naquadah.org/wiki/index.php?title=Main_Page">awesome wiki</a>. Have fun!</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Laptop hard drive clicking in Hardy]]></title>
+    <link href="http://actionshrimp.github.com/2008/05/laptop-hard-drive-clicking-in-hardy/"/>
+    <updated>2008-05-13T19:00:00+01:00</updated>
+    <id>http://actionshrimp.github.com/2008/05/laptop-hard-drive-clicking-in-hardy</id>
+    <content type="html"><![CDATA[<p>Since I installed Hardy a week or so ago, I noticed the hard drive in my laptop was making a strange clicking noise every 5 seconds or so. At first I thought it must be slowly dying, and I was starting to get a bit worried, but then realised it seemed a bit suspicious that it coincided with Hardy so closely, so I searched around.</p>
+
+<!--more-->
+
+
+<p>Turns out I wasn't the only one with the problem, and I found a solution <a href="http://ubuntuforums.org/showthread.php?t=531866">here</a>. (Thanks to wieman01 on the Ubuntu forums for this.) What was happening was Ubuntu's power management was a bit over zealous and was making the hard drive spin up and down far too often. By changing the power settings this can be fixed, using the command:</p>
+
+<pre><code>$ hdparm -B 254 /dev/xxx 
+</code></pre>
+
+<p>replacing xxx with your drive name, in my case for my SATA drive it was /dev/sda. <code>254</code> here is the lowest level of power management, and <code>255</code> is off completely. You can try playing with higher values if you like some kind of power management. To make this run every time the computer starts, add it to a startup script. For example, save a plain text file containing the above line to:</p>
+
+<pre><code>/etc/init.d/local_settings
+</code></pre>
+
+<p>Then:</p>
+
+<pre><code>$ cd /etc/init.d
+$ sudo chmod +x local_settings
+$ sudo ln -s local_settings /etc/rc2.d/S99local_settings
+</code></pre>
+
+<p>This makes the file executable, and creates a symbolic link to it in the folder which contains the start-up scripts, giving it priority 99. Hopefully your clicking noise will now be gone!</p>
+]]></content>
+  </entry>
+  
+</feed>

@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: TDD | actionshrimp.com]]></title>
+  <link href="http://actionshrimp.github.com/blog/categories/tdd/atom.xml" rel="self"/>
+  <link href="http://actionshrimp.github.com/"/>
+  <updated>2015-05-20T19:08:48+01:00</updated>
+  <id>http://actionshrimp.github.com/</id>
+  <author>
+    <name><![CDATA[Dave Aitken]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[jasmine-node --autotest with vim on OSX]]></title>
+    <link href="http://actionshrimp.github.com/2012/06/jasmine-node-autotest-with-vim-on-osx/"/>
+    <updated>2012-06-17T16:39:00+01:00</updated>
+    <id>http://actionshrimp.github.com/2012/06/jasmine-node-autotest-with-vim-on-osx</id>
+    <content type="html"><![CDATA[<p>My <a href="http://www.actionshrimp.com/2012/06/setting-up-a-client-side-js-development-environment-with-node-js-part-2/">last post</a> was about setting up <code>jasmine-node</code>. I had this all in place, and was getting ready to dive into some development, hoping to use the <code>--autotest</code> feature to help with TDD. I fired up jasmine-node with</p>
+
+<pre><code>jasmine-node --autotest --coffee spec
+</code></pre>
+
+<p>At first glance it looked like everything was working correctly. All specs ran the first time, and when I made a change to a file the specs in just that single file were run. However, any subsequent changes to the file then no longer caused the test runner to trigger automatically.</p>
+
+<p>At first I assumed this was an issue with node.js' implementation of <code>fs.watch</code>, which at the time of writing appears to have <a href="https://github.com/joyent/node/issues/search?q=fs.watch">quite a few issues open against it</a>. After looking at the changelog for some recent node releases, it looked like there were some <code>fs.watch</code> fixes, so I updated to the latest version at the time (v0.6.19). Still no joy - I was having the same problem.</p>
+
+<p>Next I decided to have a poke around in the jasmine-node code itself and see if I could find any problems. The area of code in question is the file jasmine-node/lib/jasmine-node/autotest.js. There is the call to <code>fs.watch</code>, which takes a callback that takes the event as its first parameter:</p>
+
+<pre><code>var watcher = fs.watch(file, function(ev) {
+    ...
+</code></pre>
+
+<p>According to the <a href="http://nodejs.org/docs/latest/api/fs.html#fs_fs_watch_filename_options_listener">node documentation for fs.watch</a>:</p>
+
+<blockquote><p>The listener callback gets two arguments (event, filename). event is either 'rename' or 'change', and filename is the name of the file which triggered the event.</p></blockquote>
+
+<p>I found that when saving a file in vim, the 'rename' event was being triggered, rather than the 'change' event, which gave me a clue to what was happening. I then tracked down <a href="http://stackoverflow.com/questions/7591527/writing-a-file-with-vim-doesnt-fire-a-file-change-event-on-os-x">this post on stackoverflow</a> which seems to describe a similar problem, only with the python library watchdog. Watchdog uses kqueue to implement FS monitoring on OSX - the same implementation as node.</p>
+
+<p>What's happening is vim's use of .swp files is triggering rename. I assume after swapping, kqueue continues to monitor the swapped file rather than the actual filename we're interested in. The workaround that watchdog suggests is to set <code>noswapfile</code> in your .vimrc, which is a solution that some people might be happy with. However as much as I love vim it does occasionally crash on me, and losing changes that would be stored in a swp file during a crash isn't too appealing.</p>
+
+<p>I fiddled around with the autotest.js file to try and get kqueue to set up a new watch on the swapped file briefly, without much success (often the file being swapped in hadn't been moved yet, so node would throw errors saying the file wasn't found). My solution was to instead change the call to fs.watch to use fs.watchFile instead, which slots in exactly in place with the same arguments:</p>
+
+<pre><code>var watcher = fs.watchFile(file, function(ev) {
+    ...
+</code></pre>
+
+<p>The <a href="http://nodejs.org/docs/latest/api/fs.html#fs_fs_watchfile_filename_options_listener">documentation</a> recommends using <code>fs.watch</code> instead of <code>fs.watchFile</code> where possible, but in this case it doesn't look like it cuts the mustard. <code>fs.watchFile</code> is a little less snappy that <code>fs.watch</code> (it polls the file's last modified date to see if there are changes, rather than using an event driven system like kqueue), but it definitely does the trick for now and allows a nice TDD workflow. As it's for testing and won't be in live code I can't see it causing too much harm.</p>
+
+<p>If anyone knows of a better way of getting this working then please let me know below in the comments! I'll update if I find a nicer workaround too.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Setting up a client side JS dev environment with node.js - Part 2]]></title>
+    <link href="http://actionshrimp.github.com/2012/06/setting-up-a-client-side-js-development-environment-with-node-js-part-2/"/>
+    <updated>2012-06-04T16:14:00+01:00</updated>
+    <id>http://actionshrimp.github.com/2012/06/setting-up-a-client-side-js-development-environment-with-node-js-part-2</id>
+    <content type="html"><![CDATA[<p>This is another post in my <a href="http://www.actionshrimp.com/category/puzzli/">puzzli series</a>.</p>
+
+<p>I've already set up node in <a href="http://www.actionshrimp.com/2012/06/setting-up-a-simple-client-side-development-environment-with-node-js-part-1/">part 1</a>, to serve up a simple page to use as a JS development environment. Next I'll be setting up <a href="http://pivotal.github.com/jasmine/">jasmine</a> so I can do TDD on the client side code for puzz.li. This commits for this post are from where we left off on the previous post, up to <a href="https://github.com/actionshrimp/puzz.li/commit/5f1783328516cec99febb01b4d0ce41d112019c7">this commit</a>.</p>
+
+<p>First a quick diversion about dependency management. Up until now I'd just been doing:</p>
+
+<p><code>npm install &lt;modulename&gt;</code></p>
+
+<p>However unless I check all the node_modules I've added into git, as more and more dependencies are added deploying the app elsewhere will become a bit tricky. The solution to this problem is to create a package.json file, where you can define dependencies. This is what mine looks like so far:</p>
+
+<p>``` json</p>
+
+<h2>package.json</h2>
+
+<p>{</p>
+
+<pre><code>"name":         "puzz.li",
+"version":      "0.0.1",
+"description":  "A puzzle website",
+"homepage":     "http://puzz.li",
+"repository":   {
+                    "type": "git",
+                    "url":  "https://github.com/actionshrimp/puzz.li"
+                },
+"author":       "Dave Aitken &lt;dave.aitken@gmail.com&gt;",
+"licences":     ["MIT"],
+"dependencies": {
+                    "express": "2.5.9",
+                    "connect-assets": "2.2.0",
+                    "jade": "0.26.0"
+                 }
+</code></pre>
+
+<p>}
+```</p>
+
+<p>As you can see it gives a bit of info about the package itself, as well as defining the dependencies to get it up and running. Now when checking the app out from the github repo, it just requires a single command:</p>
+
+<p><code>npm install</code></p>
+
+<p>and all the dependencies of the right version will be grabbed automatically as you'd expect.</p>
+
+<p>Back to setting up jasmine now. We kick off by install jasmine-node, a module that sets up jasmine nicely in a node environment, and supports specs written in coffeescript as well. As we (hopefully) won't need jasmine-node to actually deploy the app to production, we can add it into package.json as a devDependency like so:</p>
+
+<p>``` json
+{</p>
+
+<pre><code>... 
+"devDependencies": { 
+    "jasmine-node": "&gt;= 1.0.26"
+}
+...
+</code></pre>
+
+<p>}
+```</p>
+
+<p>and again</p>
+
+<p><code>npm install</code></p>
+
+<p>Finally, we just need to set up a simple link to jasmine's script runner so it's nice and accessible:</p>
+
+<pre><code>$ ln -s node_modules/jasmine-node/bin/jasmine-node run_specs
+$ chmod u+x run_specs
+</code></pre>
+
+<p>Let's see if everything's working by trying to get a simple always-true spec running.</p>
+
+<p>``` coffeescript</p>
+
+<h2>spec/jasmine_spec.coffee</h2>
+
+<p>describe 'Jasmine', -></p>
+
+<pre><code>it 'should be set up correctly', -&gt; 
+    expect(true).toBeTruthy()
+</code></pre>
+
+<p>```</p>
+
+<p>and now we run it with our new command:</p>
+
+<pre><code>$ ./run_specs --coffee spec
+
+.
+
+Finished in 0.008 seconds
+1 test, 1 assertion, 0 failures
+</code></pre>
+
+<p>We're finally in a position to get underway with actually building something, and that will be the subject of the next post.</p>
+]]></content>
+  </entry>
+  
+</feed>

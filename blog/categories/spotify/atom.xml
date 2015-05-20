@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: Spotify | actionshrimp.com]]></title>
+  <link href="http://actionshrimp.github.com/blog/categories/spotify/atom.xml" rel="self"/>
+  <link href="http://actionshrimp.github.com/"/>
+  <updated>2015-05-20T19:08:48+01:00</updated>
+  <id>http://actionshrimp.github.com/</id>
+  <author>
+    <name><![CDATA[Dave Aitken]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Streaming Spotify to a PS3 from Ubuntu]]></title>
+    <link href="http://actionshrimp.github.com/2010/08/streaming-spotify-to-a-ps3-from-ubuntu/"/>
+    <updated>2010-08-15T08:59:00+01:00</updated>
+    <id>http://actionshrimp.github.com/2010/08/streaming-spotify-to-a-ps3-from-ubuntu</id>
+    <content type="html"><![CDATA[<p><img class="alignleft" src="http://actionshrimp.github.com/images/spotify-logo.png" width="76" height="76" /> A post came up a couple of days ago on the Spotify "What's new" feed: <a href="http://www.simpleeditions.com/8001/how-to-stream-spotify-wirelessly-to-your-stereo">how to stream spotify wirelessly to your stereo</a>, which got me thinking about something I've been after for a while - the ability to stream spotify audio to PS3. This is mentioned in the link, but the main method they talk about is for Windows, and a solution for mac is touched upon. I figured I'd have a go at doing this on Ubuntu. Before you have a go at this, I should mention a slight drawback - there's a fair delay on the audio steam that reaches the PS3, around 20 or 30 seconds. This makes it good for playing a playlist as background music, but if you're wanting to be able to flick around loads of different songs then you might get a bit frustrated. Read on if you're still keen...</p>
+
+<!--more-->
+
+
+<p>The general approach we're going for is to convert the computer that's playing spotify's audio feed into a web radio station, which can then be played through a UPnP server that can be read by the ps3. Sounds a bit long winded? Well it is really! I'm sure there are better ways - I tried to pipe the spotify feed to a file and then play the file through the UPnP server instead, but this didn't work with the way the PS3 buffers. Let me know if you find a better way though. Here's how I did it anyway:</p>
+
+<h1>1. Install ps3mediaserver</h1>
+
+<p>You may have come across <a href="http://http://ps3mediaserver.blogspot.com/">ps3mediaserver</a> before if you're a PS3 owner - it's a great UPnP server that requires little setup. Head over to the <a href="http://code.google.com/p/ps3mediaserver/downloads/list">downloads page</a>. I grabbed <code>pms-generic-linux-unix-1.20.409-BETA.tgz</code>, although I'm pretty sure this will work fine with the stable version too. Extract the archive somewhere and fire up ps3mediaserver to try it out. With any luck it should locate your ps3. Add a share with some mp3s/videos in, restart it and give them a spin to check it all works. Try and make sure this is all working fine before carrying on, otherwise the later steps are unlikely to work.</p>
+
+<h1>2. Grab pmsencoder</h1>
+
+<p>The next thing we need is a plugin for ps3mediaserver called <a href="http://github.com/chocolateboy/pmsencoder">pmsencoder</a>. This is pretty handy in itself - it allows you to stream podcasts from a feed URL, shoutcast radio stations and various web video streams. Head over to the pmsencoder page, and look in the installation instructions on how to install the plugin. You pretty much just need to download the plugin .jar file to your ps3mediaserver /plugins folder, and then add the pmsencoder engine to the engines line in the PMS.conf configuration file (if the PMS.conf configuration doesn't exist, open up ps3media server, fiddle with some settings (like adding a share or changing transcoding options, then hit 'save'. This will create the file). When that's all done, restart ps3mediaserver and have a look on your PS3 again. With any luck, there should be a folder called 'Web', with some default web sources available to have a look at (Endgadget Podcast, various Youtube feeds). Again, try these out and see if they work, as if they don't then you'll probably want to get this working before proceeding. In particular, make sure the 'Radio' sources are working, as we're gonna be pushing our Spotify feed through as a radio station.</p>
+
+<h1>3. Grab icecast2</h1>
+
+<p>Once ps3mediaserver and pmsencoder are working, we need to set up an icecast server to broadcast our soon-to-be-made stream to pmsencoder. If you're on ubuntu, you can just do <code>sudo apt-get install icecast2</code> to grab the icecast2 server. Once this is done, edit <code>/etc/icecast2/icecast.xml</code> and change the source and admin password to prevent random hijacking of your radio station. When the passwords have been changed, you'll want to edit <code>/etc/default/icecast2</code> and change the line at the bottom <code>ENABLE=false</code> to <code>ENABLE=true</code>. Now you can launch the icecast server: <code>sudo /etc/init.d/icecast2 start</code> Try and visit http://localhost:8000/ and see if anything displays. If all has gone well, you should get the icecast2 status page.</p>
+
+<h1>4. Add a spotify radio source to pmsencoder</h1>
+
+<p>Now our icecast server is running, we need to let pmsencoder and ps3mediaserver know about it. Open up the file WEB.conf in the directory where you've been running ps3mediaserver from. Under the #shoutcasts section, add a new source:</p>
+
+<pre><code>audiostream.Web,Radios=Spotify,http://localhost:8000/spotify.ogg
+</code></pre>
+
+<p>then restart ps3mediaserver.</p>
+
+<h1>5. Send the computer's audio to icecast2</h1>
+
+<p>Next, we grab the computer's audio and use gstreamer to send it to icecast2. Type the following <code>pacmd list-sources | less</code> to get a list of pulseaudio sources. You should get a bunch of output back, but it should hopefully only list one device. You're looking for the part beginning like this:</p>
+
+<pre><code>...
+&lt;div id="_mcePaste"&gt;index: 0&lt;/div&gt;
+&lt;div id="_mcePaste"&gt;name: &lt;alsa_output.pci-0000_00_08.0.analog-stereo.monitor&gt;&lt;/div&gt;
+&lt;div id="_mcePaste"&gt;driver: &lt;module-alsa-card.c&gt;&lt;/div&gt;
+&lt;div id="_mcePaste"&gt;flags: DECIBEL_VOLUME LATENCY DYNAMIC_LATENCY&lt;/div&gt;
+&lt;div id="_mcePaste"&gt;state: IDLE&lt;/div&gt;
+... 
+</code></pre>
+
+<p>in particular the name, which in my case is alsa_output.pci-0000_00_08.0.analog-stereo.monitor. Make a note of yours. Next we just run a command to convert this pulse source into an ogg file, which is then sent to the icecast2 server. Run the following, replacing the device with your own, and the password at the end with the icecast2 source password you set earlier:</p>
+
+<pre><code>gst-launch-0.10 pulsesrc device=alsa_output.pci-0000_00_08.0.analog-stereo.monitor ! audioconvert ! vorbisenc ! oggmux ! shout2send ip=localhost port=8000 password=hackme mount=spotify.ogg
+</code></pre>
+
+<p>Now all sound that comes through your computer's speakers is being sent to your icecast2 server. All that remains is to fire up Spotify. Start playing a track, and then on your ps3 navigate to the Web folder > Radio > Spotify. With any luck, after 20 or 30 seconds you should hear the track starting on your ps3 as well! Let me know if you have any problems with the last few steps, although any problems with ps3mediaserver or pmsencoder are probably best tackled through the ps3mediaserver forums as I'm no expert on these two. Hopefully someone out there will have found this useful - again, let me know if you do :-)</p>
+]]></content>
+  </entry>
+  
+</feed>

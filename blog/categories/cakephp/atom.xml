@@ -1,0 +1,541 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: CakePHP | actionshrimp.com]]></title>
+  <link href="http://actionshrimp.github.com/blog/categories/cakephp/atom.xml" rel="self"/>
+  <link href="http://actionshrimp.github.com/"/>
+  <updated>2015-05-20T19:08:48+01:00</updated>
+  <id>http://actionshrimp.github.com/</id>
+  <author>
+    <name><![CDATA[Dave Aitken]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[CakePHP: PagesController with Admin Routing]]></title>
+    <link href="http://actionshrimp.github.com/2009/04/cakephp-pagescontroller-with-admin-routing/"/>
+    <updated>2009-04-07T08:44:00+01:00</updated>
+    <id>http://actionshrimp.github.com/2009/04/cakephp-pagescontroller-with-admin-routing</id>
+    <content type="html"><![CDATA[<p><em>Note this page was first published in April 2009, so is likely to be quite out of date now.</em></p>
+
+<p>For small Cake websites with admin routing enabled, I like to use the Auth component to require a login for all admin routes, and allow access to everything else using the following beforeFilter in the AppController superclass:</p>
+
+<p>``` php</p>
+
+<pre><code>&lt;?
+function beforeFilter(){
+    $admin = Configure::read('Routing.admin'); 
+    if (isset($this-&gt;params[$admin]) and $this-&gt;params[$admin]){
+        $this-&gt;layout = 'admin';
+    } else {
+        $this-&gt;Auth-&gt;allow();
+    }
+}
+?&gt;
+</code></pre>
+
+<p>```</p>
+
+<p>The problem with this however is static pages handled by the pages controller cannot be password protected. To resolve this problem, I had to overload the PagesController class that Cake comes with, and add in the required functionality. Part of the reason for doing this for me was to allow a setup where there was a password protected admin welcome page or control panel located at my_app_URL/admin, so I'll show you the necessary routing to achieve that too.</p>
+
+<!--more-->
+
+
+<h1>Adding a route and overloading PagesController</h1>
+
+<p>First of all, copy your_app_dir/cake/libs/controller/pages_controller.php into your_app_dir/app/controllers with the rest of your application's controllers. Then fire up an editor and take a look at your newly copied version.  You'll see there is a function called display, this is what the pages controller uses to display pages. There is a route in app/config/routes.php that maps /pages/* to /pages/display/* to make the URL easier on the eyes, so if we're gonna have /admin/pages/* working properly, we'll need a similar route.</p>
+
+<p>Open up app/config/routes.php, and underneath the line</p>
+
+<p>``` php</p>
+
+<pre><code>&lt;?
+Router::connect('/pages/*', array('controller' =&gt; 'pages', 'action' =&gt; 'display'));
+?&gt;
+</code></pre>
+
+<p>```</p>
+
+<p>add in the following route:</p>
+
+<p>``` php</p>
+
+<pre><code>&lt;?
+Router::connect('/admin/pages/*', array('controller' =&gt; 'pages', 'action' =&gt; 'display', 'admin' =&gt; true));
+?&gt;
+</code></pre>
+
+<p>```</p>
+
+<p>Now, when admin routing is enabled, Cake looks for controller actions appened with "admin_", so we'd better add in the function to handle this in PagesController. Open it up, and underneath the display function, add the following:</p>
+
+<p>``` php</p>
+
+<pre><code>&lt;?
+function admin_display() {
+    $path = func_get_args(); 
+    $temp = null;
+    $count = count($path);
+
+    if ($path[0] != 'admin') { 
+        //This adds admin to the beginning of the path so the pages controller will look in the 'admin' folder in pages directory
+        $path = array_merge((array)'admin', $path); 
+    } else {
+        //This removes admin from the beginning if it's there already, and sends the request round again so we end up with URLs 
+        //that look like app/admin/pages/x when app/admin/pages/admin/x is requested somehow. 
+        $path = array_slice($path, 1);
+        $this-&gt;redirect(array_merge(array('controller' =&gt; 'pages', 'action' =&gt; 'display', 'admin' =&gt; true), $path));
+    }
+
+    if (!$count) { $this-&gt;redirect('/'); }
+
+    $page = $subpage = $title = null;
+
+    if (!empty($path[0])) {
+        $page = $path[0];
+    }
+
+    if (!empty($path[1])) {
+        $subpage = $path[1];
+    }
+
+    if (!empty($path[$count - 1])) {
+        $title = Inflector::humanize($path[$count - 1]);
+    }
+
+    $this-&gt;set(compact('page', 'subpage', 'title'));
+    $this-&gt;render(join('/', $path));
+}
+?&gt;
+</code></pre>
+
+<p>```</p>
+
+<p>As you can see it's fairly similar to the display function, with a few extra lines added in that handle admin pages. There are a few subtleties here which I will explain in a second. Before that however, we also require a slight change to the existing, non-admin display function. Look for the if statement below:</p>
+
+<p>``` php</p>
+
+<pre><code>&lt;?
+if (!empty($path[0])) {
+    $page = $path[0];
+}
+?&gt;
+</code></pre>
+
+<p>```</p>
+
+<p>and change it to:</p>
+
+<p>``` php</p>
+
+<pre><code>&lt;?
+if (!empty($path[0])) {
+    $page = $path[0];
+    if ($page == 'admin') {
+        //Sends admin page requests to their proper place to stop sneaky access attempts
+        $this-&gt;redirect(array_merge(array('controller' =&gt; 'pages', 'action' =&gt; 'display', 'admin' =&gt; true), $path));
+    }
+}
+?&gt;
+</code></pre>
+
+<p>```</p>
+
+<p>Ok so what have we done?</p>
+
+<ol>
+<li>The added nested if statement in the display() function redirects requests for /pages/admin/x to their proper place, /admin/pages/x.</li>
+<li>The 'else' clause of the if ($path[0] == 'admin') in admin_display redirects requests for /admin/pages/admin/x to /admin/pages/x, which just tidies up a URL aesthetics issue.</li>
+<li>Finally, the first part of the same if statement is what handles the /admin/pages/x requests proper - it adds the 'admin' part back to the beginning of the $path variable that point 2 removes. This is actually just exploiting a subtlety of the pages controller, 'subpages' (this seems to be quite hard to find in the documentation actually) - requests sent to /pages/a/b will display a page b stored in the folder your_app_dir/app/views/pages/a, rather than a page b stored in the pages root. Adding this additional logic helps organisation a bit by storing all admin pages in your_app_dir/app/views/pages/admin/.</li>
+</ol>
+
+
+<p>So now this is all in place, everything should work correctly. Requests to /pages/admin/x and /admin/pages/admin/x both get sent to /admin/pages/x, and these require proper authentication. The final step is to add in a route that allows my original use for this whole setup to work properly - displaying an admin homepage or control panel that requires authentication when a user visits your_app_URL/admin, i.e. without referring to any controllers or actions. First, create a page in your_app_dir/app/views/pages/admin/, called home.ctp that contains the content you want. You can now access this from your_app_URL/admin/pages/home, but the shorter URL works after adding the route:</p>
+
+<p>``` php</p>
+
+<pre><code>&lt;?
+Router::connect('/admin', array('controller' =&gt; 'pages', 'action' =&gt; 'display', 'admin' =&gt; true, 'home'));
+?&gt;
+</code></pre>
+
+<p>```</p>
+
+<p>Hooray! We now have an admin homepage. Hope everything worked for you, hit me with a comment if you have an issues and I'll try and help out.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[CakePHP Tutorial Part 2: Authentication and Tweaking]]></title>
+    <link href="http://actionshrimp.github.com/2009/03/cakephp-tutorial-part-2-authentication/"/>
+    <updated>2009-03-31T08:02:00+01:00</updated>
+    <id>http://actionshrimp.github.com/2009/03/cakephp-tutorial-part-2-authentication</id>
+    <content type="html"><![CDATA[<p><img class="alignleft size-full wp-image-252" src="http://actionshrimp.github.com/images/cake-logo1.png" width="180" height="180" /> In the <a href="http://www.actionshrimp.com/2009/03/cakephp-tutorial-part-1-bake-utility/">first part of my CakePHP tutorial</a>, I showed you how to use Cake's Bake utility to set up the basic back end of an online illustration portfolio. In this part, I'll tweak the automatically generated code into useable website and admin section and show you how to use some of Cake's features along the way, including the Authentication component.</p>
+
+<p>If you followed the first part of the tutorial, we currently have a few sections that we've generated models, controllers and views for. By navigating to your_app/controllername/action in your browser, you can access the different functions of the application. But unless your users know this in advance, they have no way of accessing them.</p>
+
+<!--more-->
+
+
+<h1>Joining the sections together</h1>
+
+<p>The easiest way of implementing navigation common to all pages is to use Cake's built in templating system, the page "layout". Cake uses its built-in layout if it finds no user defined layout default available. To add one, create the file your_app_dir/app/views/layouts/default.ctp, and put in your basic page layout. Mine looked like this:</p>
+
+<p>``` html</p>
+
+<pre><code>&lt;html xmlns="http://www.w3.org/1999/xhtml"&gt;
+    &lt;head&gt;
+        &lt;meta http-equiv="Content-Type" content="text/html; charset=utf-8" /&gt;
+        &lt;title&gt;&lt;?php echo $title_for_layout ?&gt;&lt;/title&gt;
+        &lt;link href="favicon.ico" type="image/x-icon" rel="shortcut icon" /&gt;
+        &lt;?php echo $html-&gt;css('default') ?&gt;
+        &lt;?php echo $scripts_for_layout ?&gt;
+    &lt;/head&gt;
+    &lt;body&gt;
+        &lt;div id="container"&gt;
+            &lt;div id="header"&gt;
+                 &lt;h1&gt;King-Jon Illustration&lt;/h1&gt;
+            &lt;/div&gt;
+            &lt;div id="navigation"&gt;
+                &lt;ul&gt;
+                    &lt;li&gt;&lt;?php echo $html-&gt;link('News', array('controller'=&gt;'News'))?&gt;&lt;/li&gt;
+                    &lt;li&gt;&lt;?php echo $html-&gt;link('Works', array('controller'=&gt;'Works'))?&gt;&lt;/li&gt;
+                    &lt;li&gt;&lt;?php echo $html-&gt;link('Sketches', array('controller'=&gt;'Sketches'))?&gt;&lt;/li&gt;
+                    &lt;li&gt;&lt;?php echo $html-&gt;link('Friends', array('controller'=&gt;'Friends'))?&gt;&lt;/li&gt;
+                &lt;/ul&gt;
+            &lt;/div&gt;
+            &lt;div id="content"&gt;
+                &lt;?php echo $content_for_layout ?&gt;
+            &lt;/div&gt;
+            &lt;div id="footer"&gt;
+            &lt;/div&gt;
+        &lt;/div&gt;
+    &lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+
+<p>```</p>
+
+<p>You'll notice this looks like a pretty normal basic page skeleton, with a few extra bits of PHP inserted. The $title_for_layout, $scripts_for_layout and $content_for_layout variables are filled in by Cake automatically depending on what the current page request is and the title and content are fairly self-explanitory.  The scripts variable lets you specify scripts on a per-page basis but still include them in the <code>&lt;head&gt;</code> section. The <code>$html-&gt;xxx</code> code snippets are part of the <a href="http://book.cakephp.org/view/206/Inserting-Well-Formatted-elements">Cake HtmlHelper</a>. This allows you to insert well formatted elements easily - the <code>$html-&gt;css('default')</code> includes the stylesheet "css/default.css" (this is stored in the your_app_dir/app/webroot/css directory), and the <code>$html-&gt;link</code> lines let you point to different parts of your app easily. You could just add normal links, such as <code>&lt;a href="http://actionshrimp.github.com/news/"&gt;</code>, but pointing to the controller allows a bit of flexibility if you want to change anything further down the line.</p>
+
+<h1>Adding a splash page</h1>
+
+<p>As it was an art portfolio website, the owner decided a splash page would be useful, to give a good first impact when entering the site and the ability to show off a bit of artwork right away. Cake uses its built-in pages controller to handle static pages, and the different pages are stored in the folder your_app_dir/app/views/pages. To view a page, you navigate to the URL your_app/pages/pagename. Here, the pages controller doesn't take an action, so the additional directory level on the URL is an argument passed to the controller, in this case the name of the page to display. Cake also automatically serves up a default page, called "home", when a user requests the root of your_app. The name of this page is set by Cake's router, and if we look in your_app_dir/app/config/routes.php, we see at the bottom, the lines:</p>
+
+<p>``` php</p>
+
+<pre><code>&lt;?
+/**
+* Here, we are connecting '/' (base path) to controller called 'Pages',
+* its action called 'display', and we pass a param to select the view file
+* to use (in this case, /app/views/pages/home.ctp)...
+*/
+Router::connect('/', array('controller' =&gt; 'pages', 'action' =&gt; 'display', 'home'));
+/**
+* ...and connect the rest of 'Pages' controller's urls.
+*/
+Router::connect('/pages/*', array('controller' =&gt; 'pages', 'action' =&gt; 'display'));
+?&gt;
+</code></pre>
+
+<p>```</p>
+
+<p>The comments tell us what's going on - this is what maps the pages to the locations I have talked about. You can add your own mappings here too if you like.  For our splash screen however, we can just make use of the already defined "home" page, so edit this to make it look how you want, you'll find it in your_app_dir/app/views/pages/home.ctp. Mine looked like this:</p>
+
+<p>``` php</p>
+
+<pre><code>&lt;?php $this-&gt;layout = "splash" ?&gt;
+&lt;div id="splash"&gt;
+    &lt;?php echo $html-&gt;image("splash.png",
+        array("alt" =&gt; "King Jon Illustration",
+        "url" =&gt; array("controller" =&gt; "news")));
+    ?&gt;
+&lt;/div&gt;
+</code></pre>
+
+<p>```</p>
+
+<p>A couple of things to note here. The first line <code>$this-&gt;layout = "splash"</code>, tells Cake not to use the "default" layout we created earlier, but to instead use one called "splash". I sneakily created a splash layout without telling you here, but it is in fact just an exact copy of the default layout with the navigation div removed, to give the page a more "splashy" feel. Next, I used the image HtmlHelper to include an image called "splash.png" - this is located in my_app_dir/app/webroot/img, the location the image helper looks in. The second argument is an array of additional attributes, "alt" being the alt text, and "url" puts an <a> element around the image, creating a link to the specified address.</p>
+
+<h1>Admin section authentication</h1>
+
+<p><a href="/images/authentic-screen.png"><img class="alignleft size-medium wp-image-251" src="http://actionshrimp.github.com/images/authentic-screen-300x187.png" width="300" height="187" /></a> At the minute, all our sections are wide open for anyone to just stroll in and start adding news, posting works, and generally delete or edit existing pieces of data. This clearly isn't ideal, so next on the agenda is sorting this out. We'll use the <a href="http://book.cakephp.org/view/172/Authentication">authentication component</a> for this. First of all, we want all add/edit capabilities to be kept within the admin section, so the first step is to remove the non-admin versions of these. Go through all five of the your_app_dir/app/controllers/*_controller.php, and delete the functions "add" and "edit" that were automatically generated.</p>
+
+<p>Next, clean up the views associated with these functions - delete the two files your_app_dir/app/views/*/add.ctp and edit.ctp in all five of the view directories. This means now we can only add and edit our data by navigating to your_app/<strong>admin</strong>/controller/add etc. We're going to want to use authentication for all our controllers, as all of them have an admin section that we need to login for. Instead of telling each controller to use this component individually, we can tell the whole controller superclass that we want to use it, to save repetition. Open the file your_app_dir/app/app_controller.php and add the line in the class definition like so:</p>
+
+<p>``` php</p>
+
+<pre><code>&lt;?
+class AppController extends Controller {
+    var $components = array('Auth');
+}
+?&gt;
+</code></pre>
+
+<p>```</p>
+
+<p>Now if you try and visit an admin page in your_app, you'll be greeted with an error messages telling you there's no login action in the Users controller, which is where the Auth component looks by default, so we'd better add this in. Edit the file your_app_dir/app/controllers/users_controller.php, and right at the bottom of the class definition, add these two functions:</p>
+
+<p>``` php</p>
+
+<pre><code>&lt;?
+function admin_login() {
+}
+function admin_logout() {
+    $this-&gt;Redirect($this-&gt;Auth-&gt;logout());
+}
+?&gt;
+</code></pre>
+
+<p>```</p>
+
+<p>Now try and navigate to an admin section again. You're told that there's a missing view this time! Better do what Cake says and add one in. Create the new file your_app_dir/app/views/users/admin_login.ctp, and fill it with the following skeleton login form:</p>
+
+<p>``` php</p>
+
+<pre><code>&lt;?php
+    if  ($session-&gt;check('Message.auth')) $session-&gt;flash('auth');
+    echo $form-&gt;create('User', array('action' =&gt; 'admin_login'));
+    echo $form-&gt;input('username');
+    echo $form-&gt;input('password');
+    echo $form-&gt;end('Login');
+?&gt;
+</code></pre>
+
+<p>```</p>
+
+<p>Now there are two problems: we're greeted with a login for all the admin sections - a slight problem as we don't have credentials... we've locked ourselves out of the whole website! There are also some error messages when we try and view the non-admin sections of the site, which seem to want us to login but can't find a login() action (remember we only created admin_login, and didnt bother with login). Fortunately, we can get around these problems by adding exceptions to the authentication. Open up the users controller, your_app_dir/app/controllers/users_controller.php, and then add in the following <a href="http://book.cakephp.org/view/60/Callbacks">controller callback function</a> (I added it in near the top):</p>
+
+<p>``` php</p>
+
+<pre><code>&lt;?
+function beforeFilter() {
+    $this-&gt;Auth-&gt;allow('admin_add', 'admin_index');
+}
+?&gt;
+</code></pre>
+
+<p>```</p>
+
+<p>This gives access to the admin add and index (which lists all users) actions of the users controller. So now, navigate to your_app/admin/users/add, and create a login for yourself! You'll probably want to remove the allow line once you've added yourself to prevent anyone else creating a login for themselves when you're not looking. We're still however stuck with the problem that none of the non-admin sections work, so we need to add an Auth exception to all non-admin sections. The best way to do this is by adding the following into the your_app_dir/app/app_controller.php AppController class definition, underneath where we told it to load the Auth component earlier:</p>
+
+<p>``` php</p>
+
+<pre><code>&lt;?
+function beforeFilter() {
+    $admin = Configure::read('Routing.admin');
+    if (isset($this-&gt;params[$admin]) and $this-&gt;params[$admin]){
+        //$this-&gt;layout = 'admin';
+    } else {
+        $this-&gt;Auth-&gt;allow();
+    }
+}
+?&gt;
+</code></pre>
+
+<p>```</p>
+
+<p>Now we should be able to navigate the site without any problems. The commented out line above allows the future addition of an admin.ctp layout file that will automatically be loaded when viewing admin sections - I haven't done this yet though. The next phase of the project is to go through and edit all the views, layouts &amp; CSS and get them looking how you want, and this is largely an exercise in usual web development - you can take a look at the default views to see how to include data provided by Cake fairly easily. If I come across anything else I think might be of help while I'm building the rest of the site, I'll make small posts for those too. Hopefully you've been able to follow this introduction to Cake so far, but if not drop me a line in the comments below and I'll try and give you a hand where I can. Good luck!</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[CakePHP Tutorial Part 1: Bake Utility]]></title>
+    <link href="http://actionshrimp.github.com/2009/03/cakephp-tutorial-part-1-bake-utility/"/>
+    <updated>2009-03-28T17:04:00+00:00</updated>
+    <id>http://actionshrimp.github.com/2009/03/cakephp-tutorial-part-1-bake-utility</id>
+    <content type="html"><![CDATA[<p><img class="alignleft size-full wp-image-130" src="http://actionshrimp.github.com/images/cake-logo.png" width="180" height="180" />A friend of mine recently asked me to help him build an online portfolio for his illustration pieces, and I decided to use <a href="http://cakephp.org/" target="_blank">CakePHP 1.2</a> to get the back end up and running quickly. I thought someone might find a tutorial taking a simple website through from start to finish useful, so this tutorial series will do just that. This part of the series takes you through the first few steps I took to get the basic code together.  You'll need a web server and database server such as MySQL, and some basic PHP and webserver management knowledge. We'll be using Cake's "bake" utility to create the basic code as well, so you'll need console access to your webserver, and PHP's command line utility (in Ubuntu/PHP5 you can just install the package php5-cli).</p>
+
+<!--more-->
+
+
+<h1>Downloading and setting up CakePHP</h1>
+
+<p>Create a new directory on your webserver where your cake website will reside (or just use the web root if this is going to be the main webpage).  Next, we'll need to actually download CakePHP.  If you have shell access to your webserver, you can use SVN to get the latest stable release automatically: navigate to the directory and use the command (note the "." at the end of the command)</p>
+
+<pre>$ svn checkout https://svn.cakephp.org/repo/trunk/cake/1.2.x.x/ .</pre>
+
+
+<p> to do so.  If you don't know what any of this means, just download the latest stable release from the CakePHP website and extract the files into the directory you created - make sure the various .htaccess files don't go astray in the process. Some standard setup is also required: we need to tell cake how to connect to our database server, to do this follow the steps on <a href="http://book.cakephp.org/view/331/Cake-Database-Configuration">this page</a>. There's also a couple of optional (but recommended) configuration steps <a href="http://book.cakephp.org/view/332/Optional-Configuration">here</a>. After this, you should be able to browse to the directory in a web browser and see the default page - there shouldn't be any errors or warnings if all configuration has been completed correctly (N.B. if the default page looks a bit plain - no colours, CSS styles etc., then you probably have a mod_rewrite issue, check out <a href="http://book.cakephp.org/view/333/A-Note-on-mod_rewrite">this page</a>). Now we can begin work on the site.</p>
+
+<h1>Bake a cake</h1>
+
+<p>Cake's bake utility is a handy way of generating the basic code structure for a web application, saving a lot of the tedious grunt work that often comes with setting up a new project. The general idea is often seen in frameworks that take advantage of the MVC (model-view-controller) design pattern (such as Ruby on Rails, and others). It involves creating a database structure that describes the various data entites - or "models" - of our application, then running a script that reads this structure and generates the framework code for the models. It can then generate standard interfaces (or "views") for displaying the data, and "controllers" which tie our interfaces and models together, allowing data to be input and manipulated. Of course, these standard pieces of generated code probably won't be exactly what we want, but they can provide a great starting point to work from and then tweak. First of all, we'll create our database structure. I'm using an empty database for this project, although if you're using a database with tables from other projects in, you can set Cake to work with a table prefix fairly easily. Let's get to work building the tables. The first model will be "News", containing data for a news section where the owner can post updates and information onto the site.  To represent this, I created a table "news", with four fields:</p>
+
+<ul>
+<li><strong>id</strong> - type: int - extra: auto_increment - primary key <em>(A unique identifier for each record)</em></li>
+<li><strong>date</strong> - type: date</li>
+<li><strong>title</strong> - type: text</li>
+<li><p><strong>body</strong> - type: text The next model is for representing finished works placed onto the site - the main part of the portfolio. Create a table called "works" with the four fields:</p></li>
+<li><p><strong>id</strong> - type: int - extra: auto_increment - primary key</p></li>
+<li><strong>date</strong> - type: date</li>
+<li><strong>title</strong> - type: text</li>
+<li><strong>desc</strong> - type: text</li>
+</ul>
+
+
+<p>Next up, a sketches model. This is pretty much the same as "works" but will contain sketches as opposed to finished pieces. Create a table called "sketches" with the same four fields as above.</p>
+
+<p><a href="/images/screenshot-1.png"><img class="alignright size-medium wp-image-153" src="http://actionshrimp.github.com/images/screenshot-1-300x187.png" width="300" height="187" /></a></p>
+
+<p>A friends model for a page that will contain links to websites belonging to friends of the owner, along with a thumbnail and description. Create the table "friends", with the fields:</p>
+
+<ul>
+<li><strong>id</strong> - type: int - extra: auto_increment - primary key</li>
+<li><strong>name</strong> - type: text</li>
+<li><strong>url</strong> - type:  text</li>
+<li><strong>desc</strong> - type:  text</li>
+</ul>
+
+
+<p>There is one last model we'll need: "users". By creating a table with a username/password, we can let the owner login to manage the site, add new works, sketches and friends. Multiple users will mean we can also have a login to test out the site. So create the "users" table, with fields:</p>
+
+<ul>
+<li><strong>id</strong> - type: int - extra: auto_increment - primary key</li>
+<li><strong>username</strong> - type: varchar(20)</li>
+<li><strong>password</strong> - type:  varchar(50)</li>
+<li><p><strong>displayname</strong> - type:  varchar(20) (Name shown when making posts etc - can be different from login name) Now all our tables are created, we can get to baking. In a console, navigate to yourdir/cake/console, and then run the command</p>
+
+<p>$ ./cake bake</p></li>
+</ul>
+
+
+<p>and you'll be presented with:</p>
+
+<p><a href="http://actionshrimp.github.com/images/screenshot-2.png"><img class="alignright size-medium wp-image-154" src="http://actionshrimp.github.com/images/screenshot-2-300x187.png" width="300" height="187" /></a></p>
+
+<pre><code>Welcome to CakePHP v1.2.2.8120 Console
+---------------------------------------------------------------
+App : app
+Path: /home/dave/public_html/kingjon/app
+---------------------------------------------------------------
+Interactive Bake Shell
+---------------------------------------------------------------
+[D]atabase Configuration
+[M]odel
+[V]iew
+[C]ontroller
+[P]roject
+[Q]uit
+What would you like to Bake? (D/M/V/C/P/Q)
+&gt; 
+</code></pre>
+
+<p>at this point, if you haven't setup your database configuration yet, you can create it with the "[D]atabase Configuration" option. We'll be choosing the "[M]odel" option however:</p>
+
+<pre><code>&gt; m
+---------------------------------------------------------------
+Bake Model
+Path: /home/dave/public_html/kingjon/app/models/
+---------------------------------------------------------------
+Possible Models based on your current database:
+1. Friend
+2. News
+3. Sketch
+4. User
+5. Work
+
+Enter a number from the list above, type in the name of another model, or 'q' to exit
+[q] &gt;
+</code></pre>
+
+<p>notice our database tables have been read, and cake has automatically figured out that an entry in "works" will be a "Work", "sketches" give a "Sketch" and so on, but "news" is still "News".  We may as well start with the first entry, so enter 1, and hit enter. You'll be asked the following:</p>
+
+<pre><code>[q] &gt; 1
+Would you like to supply validation criteria for the fields in your model? (y/n)
+[y] &gt;
+</code></pre>
+
+<p>Cake has a set of predefined validation criteria to make sure that data entered for a model is correct. We may as well take advantage of these, so hit "y" and press return. Next Cake goes through each of the fields in our table, and asks what validation criteria we want for each.</p>
+
+<p><strong>id</strong> is first, and I chose "blank" (number 3 in my case, athough I guess this number may change depending on which version of cake you're using). This ensures that no data is entered for the id, which is what we want as the field is auto generated by mySQL's auto_increment. For <strong>name</strong> I chose "Do not do any validation on this field" as the name can contain any text. For <strong>url</strong> I chose the rather fitting "url" (number 27) validation type. Finally, for <strong>desc</strong> I chose "Do not do any validation on this field" as well. A final couple of questions now pop up: model associations - for this I just hit "n" as our model is simple and has no relational properties - and a confirmation to check your settings are ok:</p>
+
+<pre><code>---------------------------------------------------------------
+The following Model will be created:
+---------------------------------------------------------------
+Name:       Friend
+Validation: Array
+(
+    [id] =&gt; blank
+    [url] =&gt; url
+)
+
+Associations:
+---------------------------------------------------------------
+Look okay? (y/n)
+[y] &gt;
+</code></pre>
+
+<p>Confirm this and there's a final question about SimpleTest and unit test files. This is to do with Cake's testing framework which I personally haven't tried, so just hit "n" here unless you feel like giving it a spin.  Congratulations, you've successfully baked your first model! Continue the process now, and bake the other models with appropriate validation criteria (I used "blank" for all the IDs, "date" for the date fields, and no validation for all the title/description fields - although for the users table, I chose "notEmpty" for the username, password and displayname fields as blank entries here would cause problems). Next up, time to bake some controllers. I'll show you the output from my run through first including the options I chose, and explain to you afterwards what some of them mean and why I chose them:</p>
+
+<pre><code>What would you like to Bake? (D/M/V/C/P/Q)
+&gt; c
+---------------------------------------------------------------
+Bake Controller
+Path: /home/dave/public_html/kingjon/app/controllers/
+---------------------------------------------------------------
+Possible Controllers based on your current database:
+1. Friends
+2. News
+3. Sketches
+4. Users
+5. Works
+Enter a number from the list above, type in the name of another controller, or 'q' to exit
+[q] &gt; 1
+---------------------------------------------------------------
+Baking FriendsController
+---------------------------------------------------------------
+Would you like to build your controller interactively? (y/n)
+[y] &gt; y
+Would you like to use scaffolding? (y/n)
+[n] &gt; n
+Would you like to include some basic class methods (index(), add(), view(), edit())? (y/n)
+[n] &gt; y
+Would you like to create the methods for admin routing? (y/n)
+[n] &gt; y
+Would you like this controller to use other helpers besides HtmlHelper and FormHelper? (y/n)
+[n] &gt; n
+Would you like this controller to use any components? (y/n)
+[n] &gt; n
+Would you like to use Sessions? (y/n)
+[y] &gt; y
+You need to enable Configure::write('Routing.admin','admin') in /app/config/core.php to use admin routing.
+What would you like the admin route to be?
+Example: www.example.com/admin/controller
+What would you like the admin route to be?
+[admin] &gt; 
+
+---------------------------------------------------------------
+The following controller will be created:
+---------------------------------------------------------------
+Controller Name:  Friends
+---------------------------------------------------------------
+Look okay? (y/n)
+[y] &gt;
+
+Creating file /home/dave/public_html/kingjon/app/controllers/friends_controller.php
+Wrote /home/dave/public_html/kingjon/app/controllers/friends_controller.php
+SimpleTest is not installed.  Do you want to bake unit test files anyway? (y/n)
+[y] &gt; n
+</code></pre>
+
+<p>Ok, I started by building the controller for the friends section again. Building interactively gives you access to more options in the setup, so I went for that.</p>
+
+<p><a href="http://book.cakephp.org/view/105/Scaffolding">Scaffolding</a> is basically a flag you set in your controller telling cake that you want basic skeleton app behaviour to be created at runtime. By baking we are given the advantage of pre-generating code that does more or less the same thing, but that we can also edit later, so choosing "n" for scaffolding is a wise plan in our case. The next question about basic methods is where our pre-generated skeleton code comes from, so choose "y" here. Admin routing creates an admin section for adding/deleting/modifying records. As we don't want visitors to the website to be able to do this, but the portfolio owner will be wanting to do this, an admin section is a good idea, so "y" to this question as well. We are now asked about <a href="http://book.cakephp.org/view/181/Core-Helpers">helpers</a>. Helpers are libraries built into cake that add functionality and generally make your life easier. At the minute we'll just use the default two, so choose "n", although more can be added later easily if we need them. Next up are <a href="http://book.cakephp.org/view/170/Core-Components">components</a> which are similar to helpers, although these are more at a behind-the-scenes level, and helpers are used more for displaying and formatting data on the interface side of things. Again we may use some of these later, but at the minute just hit "n" for components. Finally hit "y" for sessions, and I agreed to the default name for the admin section, "admin", although you may wish to change this.  Hit "y" for the confirmation, and then "n" for the testing question again. Repeat this for the other controllers. Finally we have to make some views, so here we go again, although this step is a lot quicker. Choose "[V]iew" from the main menu, and I'm starting off with Friends again. The first question it asks is seemly about the scaffolding again:</p>
+
+<pre><code>Would you like to create some scaffolded views (index, add, view, edit) for this controller?
+NOTE: Before doing so, you'll need to create your controller and model classes (including associated models). (y/n)
+[n] &gt; y
+</code></pre>
+
+<p>Before we wanted nothing to do with scaffolding, but here we hit "y": this generates the views for the basic class methods we agreed to in the controller generation. We're then asked about admin routing views, and we press "y" again, and the script tells us it's generated the files we need. Repeat this process for the other views, and then we're done with baking.</p>
+
+<h1>Let's see what we've done so far...</h1>
+
+<p><a href="/images/screenshot.png"><img class="alignleft size-medium wp-image-143" src="http://actionshrimp.github.com/images/screenshot-300x187.png" width="300" height="187" /></a> Now what exactly has all that baking achieved? If you go to the index page of your app directory in the web browser, you'll just be greeted with the same welcome page. But try navigating to your_app_folder/news or your_app_folder/works and a new page comes up. You can give adding a piece of a news a go with the "New News" link on the news page. A form pops up letting you fill in the date, title and post body, and you'll notice the entry form lets you fill in the date correctly and so on.  We aren't prompted to enter an ID because our validation criteria said we wanted this to be blank as it would be generated automatically. Once the post has been added, an entry comes up on the main page, letting us view the individual post, edit it or delete it. In fact, if you've been keeping an eye on the URLs, you'll have noticed that they take the form your_app_folder/controller/action. The actions were generated automatically by our baking process, and we'll take a look at them in a bit more detail later on. You'll notice you can also go to your_app_folder/admin/news to get the same page - this is our admin routing. At the minute there is no difference between the two sections, but we'll edit it so that you wont be able to add/edit/delete thing unless you're in the admin section, and logged in correctly. As you can see, baking has set up all the basic logic for our various sections, we just need to tweak it and glue it together a bit, and I'll deal with that in the <a href="http://www.actionshrimp.com/2009/03/cakephp-tutorial-part-2-authentication/">next part of the tutorial</a>.</p>
+]]></content>
+  </entry>
+  
+</feed>
