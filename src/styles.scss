@@ -1,18 +1,4 @@
-// Google Fonts
-// @import url(http://fonts.googleapis.com/css?family=Roboto+Slab|Open+Sans:400italic,700italic,400,700);
-@import url(https://fonts.googleapis.com/css2?family=Lobster&family=Roboto+Mono&family=Roboto:wght@400;900&display=swap);
-
-// Font Variables
-$lobster: 'Lobster', cursive;
-$roboto: 'Roboto', sans-serif;
-$roboto-mono: 'Roboto Mono', monospace;
-
-/* SCSS HEX */
-$rich-black-fogra-29: #0d1b2aff;
-$oxford-blue: #1b263bff;
-$bdazzled-blue: #415a77ff;
-$shadow-blue: #778da9ff;
-$platinum: #e0e1ddff;
+@import 'styles/common';
 
 body {
     background-color: $rich-black-fogra-29;

@@ -4,5 +4,7 @@ This is the source for actionshrimp.com. I got sick of forgetting how the blog s
 
 ## dev
 
-    npm ci
-    npx parcel index.html
+    make deps
+    make pages-dev
+
+Then navigate to http://localhost:1234/index.html. *Note*: you need `/index.html`.
