@@ -52,7 +52,7 @@ a {
 
         img {
             width: 80%;
-            box-shadow: 2px 2px darken($charleston-green, 5%);
+            box-shadow: 8px 8px darken($charleston-green, 5%);
         }
     }
 
@@ -64,7 +64,7 @@ a {
 
         img {
             width: 80%;
-            box-shadow: 2px 2px darken($charleston-green, 5%);
+            box-shadow: 8px 8px darken($charleston-green, 5%);
         }
     }
 
@@ -96,6 +96,14 @@ a {
         margin-top: -2px;
         width: 30px;
         fill: $cultured;
+    }
+
+    &__time-taken {
+        display: flex;
+
+        .icon {
+            margin-right: 10px;
+        }
     }
 
 
@@ -143,6 +151,17 @@ a {
 
         .toggle-label-text {
             margin-left: 10px;
+        }
+    }
+
+    #itab {
+        .itab-ingredient {
+            font-weight: bold;
+            padding-right: 50px;
+
+            &--total {
+                font-size: 0.8em;
+            }
         }
     }
 
