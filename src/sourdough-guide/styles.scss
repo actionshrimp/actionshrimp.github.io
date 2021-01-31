@@ -26,7 +26,7 @@ a {
     width: 800px;
     margin: 0 auto;
     margin-top: 50px;
-    margin-bottom: 200px;
+    margin-bottom: 50px;
     font-size: 20px;
     line-height: 1.5em;
 
@@ -37,6 +37,29 @@ a {
             margin-right: 20px;
         }
 
+    }
+
+    &__header-image {
+        display: flex;
+        justify-content: space-around;
+        margin-bottom: 40px;
+
+        img {
+            width: 50%;
+            box-shadow: 2px 2px #0c0a02;
+        }
+    }
+
+    &__sourdough-man-image {
+        margin-top: 100px;
+        display: flex;
+        justify-content: space-around;
+
+
+        img {
+            width: 50%;
+            box-shadow: 2px 2px #0c0a02;
+        }
     }
 
     h1 {
