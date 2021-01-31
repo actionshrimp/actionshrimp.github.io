@@ -19,6 +19,7 @@ body {
         width: 100%;
         padding: 10px;
         box-shadow: 2px 2px black;
+
     }
 
     &__content {
@@ -26,8 +27,13 @@ body {
         align-items: center;
         user-select: none;
 
+
         &__logo {
             width: 100px;
+
+            @media (max-width: 600px) {
+                width: 50px;
+            }
 
             img {
                 width: 100%;
@@ -40,6 +46,10 @@ body {
             font-size: 50px;
             color: $shadow-blue;
             text-shadow: -1px -1px 0px $platinum, 1px 1px 0px $oxford-blue;
+
+            @media (max-width: 600px) {
+                font-size: 32px;
+            }
         }
     }
 }
