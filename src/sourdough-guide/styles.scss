@@ -23,15 +23,20 @@ a {
 }
 
 .sourdough-guide {
-    width: 800px;
+    max-width: 800px;
+    padding: 20px;
     margin: 0 auto;
-    margin-top: 50px;
-    margin-bottom: 50px;
     font-size: 20px;
     line-height: 1.5em;
+    text-align: justify;
 
     &__title {
         display: flex;
+        justify-content: space-around;
+
+        &__inner {
+            display: flex;
+        }
 
         .icon {
             margin-right: 20px;
@@ -46,7 +51,7 @@ a {
         margin-bottom: 40px;
 
         img {
-            width: 50%;
+            width: 80%;
             box-shadow: 2px 2px darken($charleston-green, 5%);
         }
     }
@@ -58,7 +63,7 @@ a {
 
 
         img {
-            width: 50%;
+            width: 80%;
             box-shadow: 2px 2px darken($charleston-green, 5%);
         }
     }
@@ -74,66 +79,71 @@ a {
     h3 {
         color: $gainsboro;
     }
-}
 
-.hide {
-    display: none;
-}
-
-.toggle {
-    cursor: pointer;
-}
-
-.icon {
-    margin-top: -2px;
-    width: 30px;
-    fill: $cultured;
-}
-
-
-.toggle-section {
-    label {
-        cursor: pointer;
-        user-select: none;
-        display: flex;
-        align-items: center;
+    ul {
+        padding-left: 20px;
     }
 
-    input[type=checkbox] {
+    .hide {
         display: none;
     }
 
+    .toggle {
+        cursor: pointer;
+    }
 
-    input {
-        & + label {
-            .toggle-collapse {
-                display: none;
+    .icon {
+        margin-top: -2px;
+        width: 30px;
+        fill: $cultured;
+    }
+
+
+    .toggle-section {
+        label {
+            cursor: pointer;
+            user-select: none;
+            display: flex;
+            align-items: center;
+        }
+
+        input[type=checkbox] {
+            display: none;
+        }
+
+
+        input {
+            & + label {
+                .toggle-collapse {
+                    display: none;
+                }
+
+                & + .toggle-content {
+                    display: none;
+                }
+            }
+        }
+
+        input:checked {
+            & + label {
+                .toggle-collapse {
+                    display: unset;
+                }
+
+                .toggle-expand {
+                    display: none;
+                }
+
+                & + .toggle-content {
+                    display: unset;
+                }
             }
 
-            & + .toggle-content {
-                display: none;
-            }
+        }
+
+        .toggle-label-text {
+            margin-left: 10px;
         }
     }
 
-    input:checked {
-        & + label {
-            .toggle-collapse {
-                display: unset;
-            }
-
-            .toggle-expand {
-                display: none;
-            }
-
-            & + .toggle-content {
-                display: unset;
-            }
-        }
-
-    }
-
-    .toggle-label-text {
-        margin-left: 10px;
-    }
 }
