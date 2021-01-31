@@ -30,6 +30,15 @@ a {
     font-size: 20px;
     line-height: 1.5em;
 
+    &__title {
+        display: flex;
+
+        .icon {
+            margin-right: 20px;
+        }
+
+    }
+
     h1 {
         color: $cultured;
     }
