@@ -1,5 +1,104 @@
 @import '../styles/common.scss';
 
+$cultured: #f8f9faff;
+$cultured-2: #e9ecefff;
+$gainsboro: #dee2e6ff;
+$light-gray: #ced4daff;
+$cadet-blue-crayola: #adb5bdff;
+$slate-gray: #6c757dff;
+$davys-grey: #495057ff;
+$gunmetal: #343a40ff;
+$charleston-green: #212529ff;
+
 body {
-    background-color: green;
+    background-color: $charleston-green;
+    font-family: $roboto;
+    color: $cadet-blue-crayola;
+    padding: 0;
+    margin: 0;
+}
+
+a {
+    color: $cultured;
+}
+
+.sourdough-guide {
+    width: 800px;
+    margin: 0 auto;
+    margin-top: 200px;
+    font-size: 20px;
+    line-height: 1.5em;
+
+    h1 {
+        color: $cultured;
+    }
+
+    h2 {
+        color: $cultured-2;
+    }
+
+    h3 {
+        color: $gainsboro;
+    }
+}
+
+.hide {
+    display: none;
+}
+
+.toggle {
+    cursor: pointer;
+}
+
+.icon {
+    width: 30px;
+    fill: $cultured;
+}
+
+
+.toggle-section {
+    label {
+        cursor: pointer;
+        user-select: none;
+        display: flex;
+        align-items: center;
+    }
+
+    input[type=checkbox] {
+        display: none;
+    }
+
+
+    input {
+        & + label {
+            .toggle-collapse {
+                display: none;
+            }
+
+            & + .toggle-content {
+                display: none;
+            }
+        }
+    }
+
+    input:checked {
+        & + label {
+            .toggle-collapse {
+                display: unset;
+            }
+
+            .toggle-expand {
+                display: none;
+            }
+
+            & + .toggle-content {
+                display: unset;
+            }
+        }
+
+    }
+
+    .toggle-label-text {
+        margin-left: 10px;
+    }
 }
